@@ -1,10 +1,7 @@
 #pragma once
 
-#ifdef BOOST_USE_SYSTEM
-  #include <boost/endian.hpp>
-#else
-  #include "boost/endian.hpp"
-#endif
+
+#include "boost/endian.hpp"
 
 #include "CAN/CANKernelTypes.hpp"
 

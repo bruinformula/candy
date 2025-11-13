@@ -7,7 +7,6 @@
 
 namespace CAN {
 
-    // Constructor
     CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size)
         : base_path(base_path),
         shutdown_requested(false),
@@ -25,7 +24,6 @@ namespace CAN {
         writer_thread = std::thread(&CSVTranscoder::writer_loop, this);
     }
 
-    // Destructor
     CSVTranscoder::~CSVTranscoder() {
         {
             std::lock_guard<std::mutex> lock(queue_mutex);
@@ -45,7 +43,7 @@ namespace CAN {
         }
     }
 
-    // Public Methods
+    // public Methods
     void CSVTranscoder::transcode(CANTime timestamp, CANFrame frame) {
         enqueue_task([this, timestamp, frame]() {
             batch_frame(timestamp, frame);

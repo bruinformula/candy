@@ -1,0 +1,1241 @@
+VERSION "0.1"
+
+NS_ :
+
+BS_:
+
+BU_: CM4 V2C
+
+BO_ 256 Time: 8 CM4
+ SG_ Time : 0|32@1+ (0.001,0) [0|100000] "s" V2C
+
+BO_ 257 Distance: 8 CM4
+ SG_ Distance : 0|32@1+ (0.001,0) [0|100000] "ft" V2C
+
+BO_ 258 Brake_Pressure_RL: 8 CM4
+ SG_ Brake_Pressure_RL : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 259 Electric_Axle_Torque_FR: 8 CM4
+ SG_ Electric_Axle_Torque_FR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 260 Time_Phys: 8 CM4
+ SG_ Time_Phys : 0|32@1+ (0.001,0) [0|100000] "s" V2C
+
+BO_ 261 Axle_Torque_FR: 8 CM4
+ SG_ Axle_Torque_FR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 262 G_Force_Vert: 8 CM4
+ SG_ G_Force_Vert : 0|32@1+ (0.001,0) [-10000|10000] "G" V2C
+
+BO_ 263 Tire_Spring_Rate_FL: 8 CM4
+ SG_ Tire_Spring_Rate_FL : 0|32@1+ (0.001,0) [0|100000] "N/mm" V2C
+
+BO_ 264 Brake_Torque_RR: 8 CM4
+ SG_ Brake_Torque_RR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 265 Camber_RR: 8 CM4
+ SG_ Camber_RR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 266 Toe_In_FL: 8 CM4
+ SG_ Toe_In_FL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 267 Tire_MZ_RR: 8 CM4
+ SG_ Tire_MZ_RR : 0|32@1+ (0.001,0) [0|100000] "N.m" V2C
+
+BO_ 268 Ride_Height_RR: 8 CM4
+ SG_ Ride_Height_RR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 269 Engine_Limiter: 8 CM4
+ SG_ Engine_Limiter : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 270 Tire_Spring_Rate_FR: 8 CM4
+ SG_ Tire_Spring_Rate_FR : 0|32@1+ (0.001,0) [0|100000] "N/mm" V2C
+
+BO_ 271 Toe_In_RR: 8 CM4
+ SG_ Toe_In_RR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 272 Tire_Slip_Angle_RR: 8 CM4
+ SG_ Tire_Slip_Angle_RR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 273 Tire_FX_RL: 8 CM4
+ SG_ Tire_FX_RL : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 274 Tire_Virtual_KM_RR: 8 CM4
+ SG_ Tire_Virtual_KM_RR : 0|32@1+ (0.001,0) [0|100000] "km" V2C
+
+BO_ 275 Tire_Sliding_Velocity_Y_FL: 8 CM4
+ SG_ Tire_Sliding_Velocity_Y_FL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 276 Wing_GH_FW_Wing_PlateL: 8 CM4
+ SG_ Wing_GH_FW_Wing_PlateL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 277 Tire_Temp_Core_FL: 8 CM4
+ SG_ Tire_Temp_Core_FL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 278 Steering_Pinion_Torque: 8 CM4
+ SG_ Steering_Pinion_Torque : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 279 Tire_Road_Velocity_Net_RL: 8 CM4
+ SG_ Tire_Road_Velocity_Net_RL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 280 Chassis_Yaw_Angle: 8 CM4
+ SG_ Chassis_Yaw_Angle : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 281 Tire_Virtual_KM_RL: 8 CM4
+ SG_ Tire_Virtual_KM_RL : 0|32@1+ (0.001,0) [0|100000] "km" V2C
+
+BO_ 282 Engine_RPM: 8 CM4
+ SG_ Engine_RPM : 0|32@1+ (0.001,0) [0|100000] "rpm" V2C
+
+BO_ 283 Tire_MX_RL: 8 CM4
+ SG_ Tire_MX_RL : 0|32@1+ (0.001,0) [0|100000] "N.m" V2C
+
+BO_ 284 Wind_Speed: 8 CM4
+ SG_ Wind_Speed : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 285 Brake_Pressure_FR: 8 CM4
+ SG_ Brake_Pressure_FR : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 286 Tire_Relax_Length_FR: 8 CM4
+ SG_ Tire_Relax_Length_FR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 287 Tire_Sliding_Velocity_Net_FR: 8 CM4
+ SG_ Tire_Sliding_Velocity_Net_FR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 288 Tire_Dirt_Level_RR: 8 CM4
+ SG_ Tire_Dirt_Level_RR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 289 Tire_Slip_Ratio_RL: 8 CM4
+ SG_ Tire_Slip_Ratio_RL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 290 Brake_Temp_Core_FR: 8 CM4
+ SG_ Brake_Temp_Core_FR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 291 Tire_Dirt_Level_FR: 8 CM4
+ SG_ Tire_Dirt_Level_FR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 292 Tire_DY_Mult_RL: 8 CM4
+ SG_ Tire_DY_Mult_RL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 293 Brake_Pressure_RR: 8 CM4
+ SG_ Brake_Pressure_RR : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 294 Chassis_Linear_Velocity_X: 8 CM4
+ SG_ Chassis_Linear_Velocity_X : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 295 Brake_Temp_Core_RL: 8 CM4
+ SG_ Brake_Temp_Core_RL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 296 Tire_Temp_Carcass_FL: 8 CM4
+ SG_ Tire_Temp_Carcass_FL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 297 Tire_Radius_FL: 8 CM4
+ SG_ Tire_Radius_FL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 298 Gear_Ratio: 8 CM4
+ SG_ Gear_Ratio : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 299 Brake_Temp_Core_FL: 8 CM4
+ SG_ Brake_Temp_Core_FL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 300 Tire_Load_RL: 8 CM4
+ SG_ Tire_Load_RL : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 301 Air_Temp: 8 CM4
+ SG_ Air_Temp : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 302 Chassis_Linear_Velocity_Z: 8 CM4
+ SG_ Chassis_Linear_Velocity_Z : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 303 Tire_Slip_Ratio_FR: 8 CM4
+ SG_ Tire_Slip_Ratio_FR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 304 Tire_Pressure_RR: 8 CM4
+ SG_ Tire_Pressure_RR : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 305 ABS_Intervention_FR: 8 CM4
+ SG_ ABS_Intervention_FR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 306 Tire_Slip_Ratio_RR: 8 CM4
+ SG_ Tire_Slip_Ratio_RR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 307 Num_Tires_Off_Track: 8 CM4
+ SG_ Num_Tires_Off_Track : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 308 Tire_Road_Velocity_Net_RR: 8 CM4
+ SG_ Tire_Road_Velocity_Net_RR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 309 Tire_Temp_Core_RR: 8 CM4
+ SG_ Tire_Temp_Core_RR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 310 Tire_FY_RR: 8 CM4
+ SG_ Tire_FY_RR : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 311 Wing_Angle_FW_Wing_PlateR: 8 CM4
+ SG_ Wing_Angle_FW_Wing_PlateR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 312 Tire_Load_FR: 8 CM4
+ SG_ Tire_Load_FR : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 313 Brake_Pressure_FL: 8 CM4
+ SG_ Brake_Pressure_FL : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 314 Tire_Temp_Carcass_RL: 8 CM4
+ SG_ Tire_Temp_Carcass_RL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 315 Tire_Slip_Angle_RL: 8 CM4
+ SG_ Tire_Slip_Angle_RL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 316 Tire_DY_Mult_FL: 8 CM4
+ SG_ Tire_DY_Mult_FL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 317 Tire_Temp_Outer_FR: 8 CM4
+ SG_ Tire_Temp_Outer_FR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 318 Tire_FX_FL: 8 CM4
+ SG_ Tire_FX_FL : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 319 Tire_Temp_Outer_RL: 8 CM4
+ SG_ Tire_Temp_Outer_RL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 320 Tire_Load_FL: 8 CM4
+ SG_ Tire_Load_FL : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 321 Electric_Axle_Torque_RL: 8 CM4
+ SG_ Electric_Axle_Torque_RL : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 322 Tire_Compound_Index: 8 CM4
+ SG_ Tire_Compound_Index : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 323 Chassis_Linear_Velocity_Y: 8 CM4
+ SG_ Chassis_Linear_Velocity_Y : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 324 Brake_Torque_FR: 8 CM4
+ SG_ Brake_Torque_FR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 325 Tire_Pressure_FR: 8 CM4
+ SG_ Tire_Pressure_FR : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 326 Electric_Axle_Torque_RR: 8 CM4
+ SG_ Electric_Axle_Torque_RR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 327 Self_Align_Torque_RR: 8 CM4
+ SG_ Self_Align_Torque_RR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 328 Brake_Pos: 8 CM4
+ SG_ Brake_Pos : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 329 Tire_Wear_FR: 8 CM4
+ SG_ Tire_Wear_FR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 330 Wing_Angle_UA: 8 CM4
+ SG_ Wing_Angle_UA : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 331 Chassis_Angle_Surface_X: 8 CM4
+ SG_ Chassis_Angle_Surface_X : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 332 Driver_Brake_Force: 8 CM4
+ SG_ Driver_Brake_Force : 0|32@1+ (0.001,0) [-10000|10000] "N" V2C
+
+BO_ 333 Tire_Slip_Angle_FR: 8 CM4
+ SG_ Tire_Slip_Angle_FR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 334 Steering_PS_Torque: 8 CM4
+ SG_ Steering_PS_Torque : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 335 Ride_Height_FR: 8 CM4
+ SG_ Ride_Height_FR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 336 TC1_Setting: 8 CM4
+ SG_ TC1_Setting : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 337 TC_Active: 8 CM4
+ SG_ TC_Active : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 338 Tire_Spring_Rate_RR: 8 CM4
+ SG_ Tire_Spring_Rate_RR : 0|32@1+ (0.001,0) [0|100000] "N/mm" V2C
+
+BO_ 339 Brake_Temp_RL: 8 CM4
+ SG_ Brake_Temp_RL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 340 Throttle_Pos: 8 CM4
+ SG_ Throttle_Pos : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 341 Clutch_Pos: 8 CM4
+ SG_ Clutch_Pos : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 342 Brake_Pressure_F: 8 CM4
+ SG_ Brake_Pressure_F : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 343 Tire_FX_FR: 8 CM4
+ SG_ Tire_FX_FR : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 344 Tire_Radius_FR: 8 CM4
+ SG_ Tire_Radius_FR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 345 Camber_FR: 8 CM4
+ SG_ Camber_FR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 346 Toe_In_RL: 8 CM4
+ SG_ Toe_In_RL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 347 Tire_Sliding_Velocity_X_FL: 8 CM4
+ SG_ Tire_Sliding_Velocity_X_FL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 348 Tire_Rolling_Radius_RR: 8 CM4
+ SG_ Tire_Rolling_Radius_RR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 349 Max_RPM: 8 CM4
+ SG_ Max_RPM : 0|32@1+ (0.001,0) [0|100000] "rpm" V2C
+
+BO_ 350 Track_Surface_Grip_FL: 8 CM4
+ SG_ Track_Surface_Grip_FL : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 351 ABS_Intervention_FL: 8 CM4
+ SG_ ABS_Intervention_FL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 352 Chassis_Angle_World_X: 8 CM4
+ SG_ Chassis_Angle_World_X : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 353 Tire_Rolling_Radius_RL: 8 CM4
+ SG_ Tire_Rolling_Radius_RL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 354 Brake_Temp_FR: 8 CM4
+ SG_ Brake_Temp_FR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 355 Tire_Relax_Length_RR: 8 CM4
+ SG_ Tire_Relax_Length_RR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 356 Tire_MZ_RL: 8 CM4
+ SG_ Tire_MZ_RL : 0|32@1+ (0.001,0) [0|100000] "N.m" V2C
+
+BO_ 357 Camber_FL: 8 CM4
+ SG_ Camber_FL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 358 Tire_Sliding_Velocity_X_RR: 8 CM4
+ SG_ Tire_Sliding_Velocity_X_RR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 359 Tire_Wear_RL: 8 CM4
+ SG_ Tire_Wear_RL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 360 Camber_RL: 8 CM4
+ SG_ Camber_RL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 361 Brake_Bias: 8 CM4
+ SG_ Brake_Bias : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 362 Gear: 8 CM4
+ SG_ Gear : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 363 Tire_Rubber_Grip_FL: 8 CM4
+ SG_ Tire_Rubber_Grip_FL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 364 Tire_FY_RL: 8 CM4
+ SG_ Tire_FY_RL : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 365 Chassis_Angular_Velocity_Z: 8 CM4
+ SG_ Chassis_Angular_Velocity_Z : 0|32@1+ (0.001,0) [-180|180] "deg/s" V2C
+
+BO_ 366 Steering_Torque: 8 CM4
+ SG_ Steering_Torque : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 367 Wheel_Angular_Speed_RR: 8 CM4
+ SG_ Wheel_Angular_Speed_RR : 0|32@1+ (0.001,0) [-500|500] "rad/s" V2C
+
+BO_ 368 Tire_Sliding_Velocity_Y_FR: 8 CM4
+ SG_ Tire_Sliding_Velocity_Y_FR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 369 DRS_Active: 8 CM4
+ SG_ DRS_Active : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 370 Wheel_Angular_Speed_FL: 8 CM4
+ SG_ Wheel_Angular_Speed_FL : 0|32@1+ (0.001,0) [-500|500] "rad/s" V2C
+
+BO_ 371 Brake_Pressure_R: 8 CM4
+ SG_ Brake_Pressure_R : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 372 ABS_Intervention_RL: 8 CM4
+ SG_ ABS_Intervention_RL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 373 ABS_Active: 8 CM4
+ SG_ ABS_Active : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 374 Tire_Virtual_KM_FL: 8 CM4
+ SG_ Tire_Virtual_KM_FL : 0|32@1+ (0.001,0) [0|100000] "km" V2C
+
+BO_ 375 Tire_FX_RR: 8 CM4
+ SG_ Tire_FX_RR : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 376 Axle_Torque_FL: 8 CM4
+ SG_ Axle_Torque_FL : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 377 Tire_Dirt_Level_FL: 8 CM4
+ SG_ Tire_Dirt_Level_FL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 378 Tire_FY_FL: 8 CM4
+ SG_ Tire_FY_FL : 0|32@1+ (0.001,0) [0|100000] "lbf" V2C
+
+BO_ 379 Tire_Temp_Outer_RR: 8 CM4
+ SG_ Tire_Temp_Outer_RR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 380 Tire_Pressure_RL: 8 CM4
+ SG_ Tire_Pressure_RL : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 381 CG_Height: 8 CM4
+ SG_ CG_Height : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 382 Suspension_Travel_RR: 8 CM4
+ SG_ Suspension_Travel_RR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 383 FFB_Signal: 8 CM4
+ SG_ FFB_Signal : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 384 Surface_Grip: 8 CM4
+ SG_ Surface_Grip : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 385 Wing_GH_FW_Wing_PlateR: 8 CM4
+ SG_ Wing_GH_FW_Wing_PlateR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 386 Tire_Temp_Inner_RL: 8 CM4
+ SG_ Tire_Temp_Inner_RL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 387 Tire_Sliding_Velocity_Y_RL: 8 CM4
+ SG_ Tire_Sliding_Velocity_Y_RL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 388 Tire_Sliding_Velocity_X_FR: 8 CM4
+ SG_ Tire_Sliding_Velocity_X_FR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 389 Tire_MX_FL: 8 CM4
+ SG_ Tire_MX_FL : 0|32@1+ (0.001,0) [0|100000] "ft.lbf" V2C
+
+BO_ 390 Tire_Temp_Core_FR: 8 CM4
+ SG_ Tire_Temp_Core_FR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 391 Tire_MX_RR: 8 CM4
+ SG_ Tire_MX_RR : 0|32@1+ (0.001,0) [0|100000] "N.m" V2C
+
+BO_ 392 Tire_Wear_RR: 8 CM4
+ SG_ Tire_Wear_RR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 393 Tire_Temp_Inner_FL: 8 CM4
+ SG_ Tire_Temp_Inner_FL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 394 Chassis_Angle_Surface_Z: 8 CM4
+ SG_ Chassis_Angle_Surface_Z : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 395 Suspension_Travel_FL: 8 CM4
+ SG_ Suspension_Travel_FL : 0|32@1+ (0.001,0) [0|100000] "in" V2C
+
+BO_ 396 Tire_Rubber_Grip_FR: 8 CM4
+ SG_ Tire_Rubber_Grip_FR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 397 Tire_FY_FR: 8 CM4
+ SG_ Tire_FY_FR : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 398 Tire_Temp_Inner_FR: 8 CM4
+ SG_ Tire_Temp_Inner_FR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 399 Chassis_Angular_Velocity_X: 8 CM4
+ SG_ Chassis_Angular_Velocity_X : 0|32@1+ (0.001,0) [-180|180] "deg/s" V2C
+
+BO_ 400 Brake_Temp_RR: 8 CM4
+ SG_ Brake_Temp_RR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 401 Tire_Sliding_Velocity_Y_RR: 8 CM4
+ SG_ Tire_Sliding_Velocity_Y_RR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 402 Tire_Temp_Carcass_RR: 8 CM4
+ SG_ Tire_Temp_Carcass_RR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 403 Tire_Spring_Rate_RL: 8 CM4
+ SG_ Tire_Spring_Rate_RL : 0|32@1+ (0.001,0) [0|100000] "N/mm" V2C
+
+BO_ 404 Wind_Heading: 8 CM4
+ SG_ Wind_Heading : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 405 ABS_Intervention_RR: 8 CM4
+ SG_ ABS_Intervention_RR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 406 Transponder_Cuts: 8 CM4
+ SG_ Transponder_Cuts : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 407 Tire_Radius_RL: 8 CM4
+ SG_ Tire_Radius_RL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 408 Tire_Sliding_Velocity_Net_FL: 8 CM4
+ SG_ Tire_Sliding_Velocity_Net_FL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 409 G_Force_Lat: 8 CM4
+ SG_ G_Force_Lat : 0|32@1+ (0.001,0) [-10000|10000] "G" V2C
+
+BO_ 410 Tire_Virtual_KM_FR: 8 CM4
+ SG_ Tire_Virtual_KM_FR : 0|32@1+ (0.001,0) [0|100000] "km" V2C
+
+BO_ 411 Chassis_Angle_Surface_Y: 8 CM4
+ SG_ Chassis_Angle_Surface_Y : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 412 Tire_Temp_Middle_RR: 8 CM4
+ SG_ Tire_Temp_Middle_RR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 413 Ride_Height_RL: 8 CM4
+ SG_ Ride_Height_RL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 414 Tire_Pressure_FL: 8 CM4
+ SG_ Tire_Pressure_FL : 0|32@1+ (0.001,0) [0|1000] "psi" V2C
+
+BO_ 415 Aero_Drag: 8 CM4
+ SG_ Aero_Drag : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 416 Tire_DX_Mult_RR: 8 CM4
+ SG_ Tire_DX_Mult_RR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 417 Chassis_World_Pos_X: 8 CM4
+ SG_ Chassis_World_Pos_X : 0|32@1+ (0.001,0) [0|100000] "m" V2C
+
+BO_ 418 Tire_Temp_Core_RL: 8 CM4
+ SG_ Tire_Temp_Core_RL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 419 Air_Density: 8 CM4
+ SG_ Air_Density : 0|32@1+ (0.001,0) [0|100000] "kg/m3" V2C
+
+BO_ 420 Tire_Relax_Length_FL: 8 CM4
+ SG_ Tire_Relax_Length_FL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 421 Wing_GH_RW_Wing_PlateL: 8 CM4
+ SG_ Wing_GH_RW_Wing_PlateL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 422 Tire_Sliding_Velocity_Net_RL: 8 CM4
+ SG_ Tire_Sliding_Velocity_Net_RL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 423 Axle_Torque_RL: 8 CM4
+ SG_ Axle_Torque_RL : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 424 Chassis_Angle_World_Y: 8 CM4
+ SG_ Chassis_Angle_World_Y : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 425 Road_Temp: 8 CM4
+ SG_ Road_Temp : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 426 Ride_Height_FL: 8 CM4
+ SG_ Ride_Height_FL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 427 Tire_DX_Mult_RL: 8 CM4
+ SG_ Tire_DX_Mult_RL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 428 Tire_Load_RR: 8 CM4
+ SG_ Tire_Load_RR : 0|32@1+ (0.001,0) [0|100000] "N" V2C
+
+BO_ 429 Tire_MZ_FL: 8 CM4
+ SG_ Tire_MZ_FL : 0|32@1+ (0.001,0) [0|100000] "ft.lbf" V2C
+
+BO_ 430 Tire_Road_Velocity_Net_FR: 8 CM4
+ SG_ Tire_Road_Velocity_Net_FR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 431 Tire_Dirt_Level_RL: 8 CM4
+ SG_ Tire_Dirt_Level_RL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 432 Track_Surface_Grip_RR: 8 CM4
+ SG_ Track_Surface_Grip_RR : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 433 Self_Align_Torque_FR: 8 CM4
+ SG_ Self_Align_Torque_FR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 434 Tire_Relax_Length_RL: 8 CM4
+ SG_ Tire_Relax_Length_RL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 435 Wing_Angle_RW_Wing_PlateL: 8 CM4
+ SG_ Wing_Angle_RW_Wing_PlateL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 436 Tire_Slip_Angle_FL: 8 CM4
+ SG_ Tire_Slip_Angle_FL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 437 Tire_Loaded_Radius_FL: 8 CM4
+ SG_ Tire_Loaded_Radius_FL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 438 Tire_Temp_Middle_FL: 8 CM4
+ SG_ Tire_Temp_Middle_FL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 439 Wheel_Angular_Speed_RL: 8 CM4
+ SG_ Wheel_Angular_Speed_RL : 0|32@1+ (0.001,0) [-500|500] "rad/s" V2C
+
+BO_ 440 Track_Surface_Grip_FR: 8 CM4
+ SG_ Track_Surface_Grip_FR : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 441 Brake_Temp_Core_RR: 8 CM4
+ SG_ Brake_Temp_Core_RR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 442 Wing_GH_RW_Wing_PlateR: 8 CM4
+ SG_ Wing_GH_RW_Wing_PlateR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 443 Tire_Rubber_Grip_RR: 8 CM4
+ SG_ Tire_Rubber_Grip_RR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 444 Handbrake_Pos: 8 CM4
+ SG_ Handbrake_Pos : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 445 Brake_Torque_RL: 8 CM4
+ SG_ Brake_Torque_RL : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 446 Aero_Downforce_R: 8 CM4
+ SG_ Aero_Downforce_R : 0|32@1+ (0.001,0) [-10000|10000] "N" V2C
+
+BO_ 447 Steering_Angle: 8 CM4
+ SG_ Steering_Angle : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 448 Tire_Sliding_Velocity_Net_RR: 8 CM4
+ SG_ Tire_Sliding_Velocity_Net_RR : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 449 Chassis_World_Pos_Y: 8 CM4
+ SG_ Chassis_World_Pos_Y : 0|32@1+ (0.001,0) [0|100000] "m" V2C
+
+BO_ 450 Driver_Throttle_Pos: 8 CM4
+ SG_ Driver_Throttle_Pos : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 451 Toe_In_FR: 8 CM4
+ SG_ Toe_In_FR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 452 Brake_Temp_FL: 8 CM4
+ SG_ Brake_Temp_FL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 453 Tire_Road_Velocity_Net_FL: 8 CM4
+ SG_ Tire_Road_Velocity_Net_FL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 454 Engine_Torque: 8 CM4
+ SG_ Engine_Torque : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 455 Tire_DY_Mult_FR: 8 CM4
+ SG_ Tire_DY_Mult_FR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 456 Wheel_Angular_Speed_FR: 8 CM4
+ SG_ Wheel_Angular_Speed_FR : 0|32@1+ (0.001,0) [-500|500] "rad/s" V2C
+
+BO_ 457 Tire_DY_Mult_RR: 8 CM4
+ SG_ Tire_DY_Mult_RR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 458 Tire_Temp_Outer_FL: 8 CM4
+ SG_ Tire_Temp_Outer_FL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 459 Suspension_Travel_RL: 8 CM4
+ SG_ Suspension_Travel_RL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 460 Lap_Progression: 8 CM4
+ SG_ Lap_Progression : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 461 Tire_MX_FR: 8 CM4
+ SG_ Tire_MX_FR : 0|32@1+ (0.001,0) [0|100000] "N.m" V2C
+
+BO_ 462 Chassis_World_Pos_Z: 8 CM4
+ SG_ Chassis_World_Pos_Z : 0|32@1+ (0.001,0) [0|100000] "m" V2C
+
+BO_ 463 Brake_Torque_FL: 8 CM4
+ SG_ Brake_Torque_FL : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 464 Wing_GH_UA: 8 CM4
+ SG_ Wing_GH_UA : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 465 Tire_Temp_Middle_RL: 8 CM4
+ SG_ Tire_Temp_Middle_RL : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 466 Chassis_Yaw_Rate: 8 CM4
+ SG_ Chassis_Yaw_Rate : 0|32@1+ (0.001,0) [-180|180] "deg/s" V2C
+
+BO_ 467 Wing_Angle_RW_Wing_PlateR: 8 CM4
+ SG_ Wing_Angle_RW_Wing_PlateR : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 468 Tire_MZ_FR: 8 CM4
+ SG_ Tire_MZ_FR : 0|32@1+ (0.001,0) [0|100000] "N.m" V2C
+
+BO_ 469 Tire_Loaded_Radius_RL: 8 CM4
+ SG_ Tire_Loaded_Radius_RL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 470 Self_Align_Torque_RL: 8 CM4
+ SG_ Self_Align_Torque_RL : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 471 Aero_Downforce_F: 8 CM4
+ SG_ Aero_Downforce_F : 0|32@1+ (0.001,0) [-10000|10000] "N" V2C
+
+BO_ 472 Lap_Invalidated: 8 CM4
+ SG_ Lap_Invalidated : 0|32@1+ (0.001,0) [0|100000] "" V2C
+
+BO_ 473 Chassis_Angle_World_Z: 8 CM4
+ SG_ Chassis_Angle_World_Z : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 474 Tire_DX_Mult_FL: 8 CM4
+ SG_ Tire_DX_Mult_FL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 475 Self_Align_Torque_FL: 8 CM4
+ SG_ Self_Align_Torque_FL : 0|32@1+ (0.001,0) [-10000|10000] "ft.lbf" V2C
+
+BO_ 476 Fuel_Level: 8 CM4
+ SG_ Fuel_Level : 0|32@1+ (0.001,0) [0|100000] "l" V2C
+
+BO_ 477 Time_OS: 8 CM4
+ SG_ Time_OS : 0|32@1+ (0.001,0) [0|100000] "s" V2C
+
+BO_ 478 Tire_Temp_Carcass_FR: 8 CM4
+ SG_ Tire_Temp_Carcass_FR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 479 Tire_Temp_Inner_RR: 8 CM4
+ SG_ Tire_Temp_Inner_RR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 480 Wing_Angle_FW_Wing_PlateL: 8 CM4
+ SG_ Wing_Angle_FW_Wing_PlateL : 0|32@1+ (0.001,0) [-180|180] "deg" V2C
+
+BO_ 481 Tire_Rubber_Grip_RL: 8 CM4
+ SG_ Tire_Rubber_Grip_RL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 482 Chassis_Angular_Velocity_Y: 8 CM4
+ SG_ Chassis_Angular_Velocity_Y : 0|32@1+ (0.001,0) [-180|180] "deg/s" V2C
+
+BO_ 483 Tire_Wear_FL: 8 CM4
+ SG_ Tire_Wear_FL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 484 G_Force_Long: 8 CM4
+ SG_ G_Force_Long : 0|32@1+ (0.001,0) [-10000|10000] "G" V2C
+
+BO_ 485 Tire_Radius_RR: 8 CM4
+ SG_ Tire_Radius_RR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 486 Tire_DX_Mult_FR: 8 CM4
+ SG_ Tire_DX_Mult_FR : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 487 Drive_Train_Speed: 8 CM4
+ SG_ Drive_Train_Speed : 0|32@1+ (0.001,0) [-500|500] "rad/s" V2C
+
+BO_ 488 Tire_Loaded_Radius_RR: 8 CM4
+ SG_ Tire_Loaded_Radius_RR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 489 Tire_Rolling_Radius_FR: 8 CM4
+ SG_ Tire_Rolling_Radius_FR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 490 Tire_Slip_Ratio_FL: 8 CM4
+ SG_ Tire_Slip_Ratio_FL : 0|32@1+ (0.001,0) [0|100000] "ratio" V2C
+
+BO_ 491 Axle_Torque_RR: 8 CM4
+ SG_ Axle_Torque_RR : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 492 Tire_Loaded_Radius_FR: 8 CM4
+ SG_ Tire_Loaded_Radius_FR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 493 Tire_Temp_Middle_FR: 8 CM4
+ SG_ Tire_Temp_Middle_FR : 0|32@1+ (0.001,0) [-50|500] "C" V2C
+
+BO_ 494 Electric_Axle_Torque_FL: 8 CM4
+ SG_ Electric_Axle_Torque_FL : 0|32@1+ (0.001,0) [-10000|10000] "N.m" V2C
+
+BO_ 495 Track_Surface_Grip_RL: 8 CM4
+ SG_ Track_Surface_Grip_RL : 0|32@1+ (0.001,0) [0|100000] "%" V2C
+
+BO_ 496 Ground_Speed: 8 CM4
+ SG_ Ground_Speed : 0|32@1+ (0.001,0) [-500|500] "mph" V2C
+
+BO_ 497 Aero_Speed: 8 CM4
+ SG_ Aero_Speed : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+BO_ 498 Tire_Rolling_Radius_FL: 8 CM4
+ SG_ Tire_Rolling_Radius_FL : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 499 Suspension_Travel_FR: 8 CM4
+ SG_ Suspension_Travel_FR : 0|32@1+ (0.001,0) [0|100000] "mm" V2C
+
+BO_ 500 Tire_Sliding_Velocity_X_RL: 8 CM4
+ SG_ Tire_Sliding_Velocity_X_RL : 0|32@1+ (0.001,0) [-500|500] "m/s" V2C
+
+EV_ V2CTxTime: 0 [0|60000] "ms" 2000 1 DUMMY_NODE_VECTOR1 V2C;
+EV_ GPSGroupTxFreq: 0 [0|60000] "ms" 600 11 DUMMY_NODE_VECTOR1 V2C;
+EV_ EnergyGroupTxFreq: 0 [0|60000] "ms" 500 12 DUMMY_NODE_VECTOR1 V2C;
+
+BA_DEF_ BO_ "TxGroupFreq" STRING ;
+BA_DEF_ SG_ "AggType" STRING ;
+
+BA_ "AggType" SG_ 256 Time "LAST";
+BA_ "AggType" SG_ 257 Distance "LAST";
+BA_ "AggType" SG_ 258 Brake_Pressure_RL "LAST";
+BA_ "AggType" SG_ 259 Electric_Axle_Torque_FR "LAST";
+BA_ "AggType" SG_ 260 Time_Phys "LAST";
+BA_ "AggType" SG_ 261 Axle_Torque_FR "LAST";
+BA_ "AggType" SG_ 262 G_Force_Vert "LAST";
+BA_ "AggType" SG_ 263 Tire_Spring_Rate_FL "LAST";
+BA_ "AggType" SG_ 264 Brake_Torque_RR "LAST";
+BA_ "AggType" SG_ 265 Camber_RR "LAST";
+BA_ "AggType" SG_ 266 Toe_In_FL "LAST";
+BA_ "AggType" SG_ 267 Tire_MZ_RR "LAST";
+BA_ "AggType" SG_ 268 Ride_Height_RR "LAST";
+BA_ "AggType" SG_ 269 Engine_Limiter "LAST";
+BA_ "AggType" SG_ 270 Tire_Spring_Rate_FR "LAST";
+BA_ "AggType" SG_ 271 Toe_In_RR "LAST";
+BA_ "AggType" SG_ 272 Tire_Slip_Angle_RR "LAST";
+BA_ "AggType" SG_ 273 Tire_FX_RL "LAST";
+BA_ "AggType" SG_ 274 Tire_Virtual_KM_RR "LAST";
+BA_ "AggType" SG_ 275 Tire_Sliding_Velocity_Y_FL "LAST";
+BA_ "AggType" SG_ 276 Wing_GH_FW_Wing_PlateL "LAST";
+BA_ "AggType" SG_ 277 Tire_Temp_Core_FL "LAST";
+BA_ "AggType" SG_ 278 Steering_Pinion_Torque "LAST";
+BA_ "AggType" SG_ 279 Tire_Road_Velocity_Net_RL "LAST";
+BA_ "AggType" SG_ 280 Chassis_Yaw_Angle "LAST";
+BA_ "AggType" SG_ 281 Tire_Virtual_KM_RL "LAST";
+BA_ "AggType" SG_ 282 Engine_RPM "LAST";
+BA_ "AggType" SG_ 283 Tire_MX_RL "LAST";
+BA_ "AggType" SG_ 284 Wind_Speed "LAST";
+BA_ "AggType" SG_ 285 Brake_Pressure_FR "LAST";
+BA_ "AggType" SG_ 286 Tire_Relax_Length_FR "LAST";
+BA_ "AggType" SG_ 287 Tire_Sliding_Velocity_Net_FR "LAST";
+BA_ "AggType" SG_ 288 Tire_Dirt_Level_RR "LAST";
+BA_ "AggType" SG_ 289 Tire_Slip_Ratio_RL "LAST";
+BA_ "AggType" SG_ 290 Brake_Temp_Core_FR "LAST";
+BA_ "AggType" SG_ 291 Tire_Dirt_Level_FR "LAST";
+BA_ "AggType" SG_ 292 Tire_DY_Mult_RL "LAST";
+BA_ "AggType" SG_ 293 Brake_Pressure_RR "LAST";
+BA_ "AggType" SG_ 294 Chassis_Linear_Velocity_X "LAST";
+BA_ "AggType" SG_ 295 Brake_Temp_Core_RL "LAST";
+BA_ "AggType" SG_ 296 Tire_Temp_Carcass_FL "LAST";
+BA_ "AggType" SG_ 297 Tire_Radius_FL "LAST";
+BA_ "AggType" SG_ 298 Gear_Ratio "LAST";
+BA_ "AggType" SG_ 299 Brake_Temp_Core_FL "LAST";
+BA_ "AggType" SG_ 300 Tire_Load_RL "LAST";
+BA_ "AggType" SG_ 301 Air_Temp "LAST";
+BA_ "AggType" SG_ 302 Chassis_Linear_Velocity_Z "LAST";
+BA_ "AggType" SG_ 303 Tire_Slip_Ratio_FR "LAST";
+BA_ "AggType" SG_ 304 Tire_Pressure_RR "LAST";
+BA_ "AggType" SG_ 305 ABS_Intervention_FR "LAST";
+BA_ "AggType" SG_ 306 Tire_Slip_Ratio_RR "LAST";
+BA_ "AggType" SG_ 307 Num_Tires_Off_Track "LAST";
+BA_ "AggType" SG_ 308 Tire_Road_Velocity_Net_RR "LAST";
+BA_ "AggType" SG_ 309 Tire_Temp_Core_RR "LAST";
+BA_ "AggType" SG_ 310 Tire_FY_RR "LAST";
+BA_ "AggType" SG_ 311 Wing_Angle_FW_Wing_PlateR "LAST";
+BA_ "AggType" SG_ 312 Tire_Load_FR "LAST";
+BA_ "AggType" SG_ 313 Brake_Pressure_FL "LAST";
+BA_ "AggType" SG_ 314 Tire_Temp_Carcass_RL "LAST";
+BA_ "AggType" SG_ 315 Tire_Slip_Angle_RL "LAST";
+BA_ "AggType" SG_ 316 Tire_DY_Mult_FL "LAST";
+BA_ "AggType" SG_ 317 Tire_Temp_Outer_FR "LAST";
+BA_ "AggType" SG_ 318 Tire_FX_FL "LAST";
+BA_ "AggType" SG_ 319 Tire_Temp_Outer_RL "LAST";
+BA_ "AggType" SG_ 320 Tire_Load_FL "LAST";
+BA_ "AggType" SG_ 321 Electric_Axle_Torque_RL "LAST";
+BA_ "AggType" SG_ 322 Tire_Compound_Index "LAST";
+BA_ "AggType" SG_ 323 Chassis_Linear_Velocity_Y "LAST";
+BA_ "AggType" SG_ 324 Brake_Torque_FR "LAST";
+BA_ "AggType" SG_ 325 Tire_Pressure_FR "LAST";
+BA_ "AggType" SG_ 326 Electric_Axle_Torque_RR "LAST";
+BA_ "AggType" SG_ 327 Self_Align_Torque_RR "LAST";
+BA_ "AggType" SG_ 328 Brake_Pos "LAST";
+BA_ "AggType" SG_ 329 Tire_Wear_FR "LAST";
+BA_ "AggType" SG_ 330 Wing_Angle_UA "LAST";
+BA_ "AggType" SG_ 331 Chassis_Angle_Surface_X "LAST";
+BA_ "AggType" SG_ 332 Driver_Brake_Force "LAST";
+BA_ "AggType" SG_ 333 Tire_Slip_Angle_FR "LAST";
+BA_ "AggType" SG_ 334 Steering_PS_Torque "LAST";
+BA_ "AggType" SG_ 335 Ride_Height_FR "LAST";
+BA_ "AggType" SG_ 336 TC1_Setting "LAST";
+BA_ "AggType" SG_ 337 TC_Active "LAST";
+BA_ "AggType" SG_ 338 Tire_Spring_Rate_RR "LAST";
+BA_ "AggType" SG_ 339 Brake_Temp_RL "LAST";
+BA_ "AggType" SG_ 340 Throttle_Pos "LAST";
+BA_ "AggType" SG_ 341 Clutch_Pos "LAST";
+BA_ "AggType" SG_ 342 Brake_Pressure_F "LAST";
+BA_ "AggType" SG_ 343 Tire_FX_FR "LAST";
+BA_ "AggType" SG_ 344 Tire_Radius_FR "LAST";
+BA_ "AggType" SG_ 345 Camber_FR "LAST";
+BA_ "AggType" SG_ 346 Toe_In_RL "LAST";
+BA_ "AggType" SG_ 347 Tire_Sliding_Velocity_X_FL "LAST";
+BA_ "AggType" SG_ 348 Tire_Rolling_Radius_RR "LAST";
+BA_ "AggType" SG_ 349 Max_RPM "LAST";
+BA_ "AggType" SG_ 350 Track_Surface_Grip_FL "LAST";
+BA_ "AggType" SG_ 351 ABS_Intervention_FL "LAST";
+BA_ "AggType" SG_ 352 Chassis_Angle_World_X "LAST";
+BA_ "AggType" SG_ 353 Tire_Rolling_Radius_RL "LAST";
+BA_ "AggType" SG_ 354 Brake_Temp_FR "LAST";
+BA_ "AggType" SG_ 355 Tire_Relax_Length_RR "LAST";
+BA_ "AggType" SG_ 356 Tire_MZ_RL "LAST";
+BA_ "AggType" SG_ 357 Camber_FL "LAST";
+BA_ "AggType" SG_ 358 Tire_Sliding_Velocity_X_RR "LAST";
+BA_ "AggType" SG_ 359 Tire_Wear_RL "LAST";
+BA_ "AggType" SG_ 360 Camber_RL "LAST";
+BA_ "AggType" SG_ 361 Brake_Bias "LAST";
+BA_ "AggType" SG_ 362 Gear "LAST";
+BA_ "AggType" SG_ 363 Tire_Rubber_Grip_FL "LAST";
+BA_ "AggType" SG_ 364 Tire_FY_RL "LAST";
+BA_ "AggType" SG_ 365 Chassis_Angular_Velocity_Z "LAST";
+BA_ "AggType" SG_ 366 Steering_Torque "LAST";
+BA_ "AggType" SG_ 367 Wheel_Angular_Speed_RR "LAST";
+BA_ "AggType" SG_ 368 Tire_Sliding_Velocity_Y_FR "LAST";
+BA_ "AggType" SG_ 369 DRS_Active "LAST";
+BA_ "AggType" SG_ 370 Wheel_Angular_Speed_FL "LAST";
+BA_ "AggType" SG_ 371 Brake_Pressure_R "LAST";
+BA_ "AggType" SG_ 372 ABS_Intervention_RL "LAST";
+BA_ "AggType" SG_ 373 ABS_Active "LAST";
+BA_ "AggType" SG_ 374 Tire_Virtual_KM_FL "LAST";
+BA_ "AggType" SG_ 375 Tire_FX_RR "LAST";
+BA_ "AggType" SG_ 376 Axle_Torque_FL "LAST";
+BA_ "AggType" SG_ 377 Tire_Dirt_Level_FL "LAST";
+BA_ "AggType" SG_ 378 Tire_FY_FL "LAST";
+BA_ "AggType" SG_ 379 Tire_Temp_Outer_RR "LAST";
+BA_ "AggType" SG_ 380 Tire_Pressure_RL "LAST";
+BA_ "AggType" SG_ 381 CG_Height "LAST";
+BA_ "AggType" SG_ 382 Suspension_Travel_RR "LAST";
+BA_ "AggType" SG_ 383 FFB_Signal "LAST";
+BA_ "AggType" SG_ 384 Surface_Grip "LAST";
+BA_ "AggType" SG_ 385 Wing_GH_FW_Wing_PlateR "LAST";
+BA_ "AggType" SG_ 386 Tire_Temp_Inner_RL "LAST";
+BA_ "AggType" SG_ 387 Tire_Sliding_Velocity_Y_RL "LAST";
+BA_ "AggType" SG_ 388 Tire_Sliding_Velocity_X_FR "LAST";
+BA_ "AggType" SG_ 389 Tire_MX_FL "LAST";
+BA_ "AggType" SG_ 390 Tire_Temp_Core_FR "LAST";
+BA_ "AggType" SG_ 391 Tire_MX_RR "LAST";
+BA_ "AggType" SG_ 392 Tire_Wear_RR "LAST";
+BA_ "AggType" SG_ 393 Tire_Temp_Inner_FL "LAST";
+BA_ "AggType" SG_ 394 Chassis_Angle_Surface_Z "LAST";
+BA_ "AggType" SG_ 395 Suspension_Travel_FL "LAST";
+BA_ "AggType" SG_ 396 Tire_Rubber_Grip_FR "LAST";
+BA_ "AggType" SG_ 397 Tire_FY_FR "LAST";
+BA_ "AggType" SG_ 398 Tire_Temp_Inner_FR "LAST";
+BA_ "AggType" SG_ 399 Chassis_Angular_Velocity_X "LAST";
+BA_ "AggType" SG_ 400 Brake_Temp_RR "LAST";
+BA_ "AggType" SG_ 401 Tire_Sliding_Velocity_Y_RR "LAST";
+BA_ "AggType" SG_ 402 Tire_Temp_Carcass_RR "LAST";
+BA_ "AggType" SG_ 403 Tire_Spring_Rate_RL "LAST";
+BA_ "AggType" SG_ 404 Wind_Heading "LAST";
+BA_ "AggType" SG_ 405 ABS_Intervention_RR "LAST";
+BA_ "AggType" SG_ 406 Transponder_Cuts "LAST";
+BA_ "AggType" SG_ 407 Tire_Radius_RL "LAST";
+BA_ "AggType" SG_ 408 Tire_Sliding_Velocity_Net_FL "LAST";
+BA_ "AggType" SG_ 409 G_Force_Lat "LAST";
+BA_ "AggType" SG_ 410 Tire_Virtual_KM_FR "LAST";
+BA_ "AggType" SG_ 411 Chassis_Angle_Surface_Y "LAST";
+BA_ "AggType" SG_ 412 Tire_Temp_Middle_RR "LAST";
+BA_ "AggType" SG_ 413 Ride_Height_RL "LAST";
+BA_ "AggType" SG_ 414 Tire_Pressure_FL "LAST";
+BA_ "AggType" SG_ 415 Aero_Drag "LAST";
+BA_ "AggType" SG_ 416 Tire_DX_Mult_RR "LAST";
+BA_ "AggType" SG_ 417 Chassis_World_Pos_X "LAST";
+BA_ "AggType" SG_ 418 Tire_Temp_Core_RL "LAST";
+BA_ "AggType" SG_ 419 Air_Density "LAST";
+BA_ "AggType" SG_ 420 Tire_Relax_Length_FL "LAST";
+BA_ "AggType" SG_ 421 Wing_GH_RW_Wing_PlateL "LAST";
+BA_ "AggType" SG_ 422 Tire_Sliding_Velocity_Net_RL "LAST";
+BA_ "AggType" SG_ 423 Axle_Torque_RL "LAST";
+BA_ "AggType" SG_ 424 Chassis_Angle_World_Y "LAST";
+BA_ "AggType" SG_ 425 Road_Temp "LAST";
+BA_ "AggType" SG_ 426 Ride_Height_FL "LAST";
+BA_ "AggType" SG_ 427 Tire_DX_Mult_RL "LAST";
+BA_ "AggType" SG_ 428 Tire_Load_RR "LAST";
+BA_ "AggType" SG_ 429 Tire_MZ_FL "LAST";
+BA_ "AggType" SG_ 430 Tire_Road_Velocity_Net_FR "LAST";
+BA_ "AggType" SG_ 431 Tire_Dirt_Level_RL "LAST";
+BA_ "AggType" SG_ 432 Track_Surface_Grip_RR "LAST";
+BA_ "AggType" SG_ 433 Self_Align_Torque_FR "LAST";
+BA_ "AggType" SG_ 434 Tire_Relax_Length_RL "LAST";
+BA_ "AggType" SG_ 435 Wing_Angle_RW_Wing_PlateL "LAST";
+BA_ "AggType" SG_ 436 Tire_Slip_Angle_FL "LAST";
+BA_ "AggType" SG_ 437 Tire_Loaded_Radius_FL "LAST";
+BA_ "AggType" SG_ 438 Tire_Temp_Middle_FL "LAST";
+BA_ "AggType" SG_ 439 Wheel_Angular_Speed_RL "LAST";
+BA_ "AggType" SG_ 440 Track_Surface_Grip_FR "LAST";
+BA_ "AggType" SG_ 441 Brake_Temp_Core_RR "LAST";
+BA_ "AggType" SG_ 442 Wing_GH_RW_Wing_PlateR "LAST";
+BA_ "AggType" SG_ 443 Tire_Rubber_Grip_RR "LAST";
+BA_ "AggType" SG_ 444 Handbrake_Pos "LAST";
+BA_ "AggType" SG_ 445 Brake_Torque_RL "LAST";
+BA_ "AggType" SG_ 446 Aero_Downforce_R "LAST";
+BA_ "AggType" SG_ 447 Steering_Angle "LAST";
+BA_ "AggType" SG_ 448 Tire_Sliding_Velocity_Net_RR "LAST";
+BA_ "AggType" SG_ 449 Chassis_World_Pos_Y "LAST";
+BA_ "AggType" SG_ 450 Driver_Throttle_Pos "LAST";
+BA_ "AggType" SG_ 451 Toe_In_FR "LAST";
+BA_ "AggType" SG_ 452 Brake_Temp_FL "LAST";
+BA_ "AggType" SG_ 453 Tire_Road_Velocity_Net_FL "LAST";
+BA_ "AggType" SG_ 454 Engine_Torque "LAST";
+BA_ "AggType" SG_ 455 Tire_DY_Mult_FR "LAST";
+BA_ "AggType" SG_ 456 Wheel_Angular_Speed_FR "LAST";
+BA_ "AggType" SG_ 457 Tire_DY_Mult_RR "LAST";
+BA_ "AggType" SG_ 458 Tire_Temp_Outer_FL "LAST";
+BA_ "AggType" SG_ 459 Suspension_Travel_RL "LAST";
+BA_ "AggType" SG_ 460 Lap_Progression "LAST";
+BA_ "AggType" SG_ 461 Tire_MX_FR "LAST";
+BA_ "AggType" SG_ 462 Chassis_World_Pos_Z "LAST";
+BA_ "AggType" SG_ 463 Brake_Torque_FL "LAST";
+BA_ "AggType" SG_ 464 Wing_GH_UA "LAST";
+BA_ "AggType" SG_ 465 Tire_Temp_Middle_RL "LAST";
+BA_ "AggType" SG_ 466 Chassis_Yaw_Rate "LAST";
+BA_ "AggType" SG_ 467 Wing_Angle_RW_Wing_PlateR "LAST";
+BA_ "AggType" SG_ 468 Tire_MZ_FR "LAST";
+BA_ "AggType" SG_ 469 Tire_Loaded_Radius_RL "LAST";
+BA_ "AggType" SG_ 470 Self_Align_Torque_RL "LAST";
+BA_ "AggType" SG_ 471 Aero_Downforce_F "LAST";
+BA_ "AggType" SG_ 472 Lap_Invalidated "LAST";
+BA_ "AggType" SG_ 473 Chassis_Angle_World_Z "LAST";
+BA_ "AggType" SG_ 474 Tire_DX_Mult_FL "LAST";
+BA_ "AggType" SG_ 475 Self_Align_Torque_FL "LAST";
+BA_ "AggType" SG_ 476 Fuel_Level "LAST";
+BA_ "AggType" SG_ 477 Time_OS "LAST";
+BA_ "AggType" SG_ 478 Tire_Temp_Carcass_FR "LAST";
+BA_ "AggType" SG_ 479 Tire_Temp_Inner_RR "LAST";
+BA_ "AggType" SG_ 480 Wing_Angle_FW_Wing_PlateL "LAST";
+BA_ "AggType" SG_ 481 Tire_Rubber_Grip_RL "LAST";
+BA_ "AggType" SG_ 482 Chassis_Angular_Velocity_Y "LAST";
+BA_ "AggType" SG_ 483 Tire_Wear_FL "LAST";
+BA_ "AggType" SG_ 484 G_Force_Long "LAST";
+BA_ "AggType" SG_ 485 Tire_Radius_RR "LAST";
+BA_ "AggType" SG_ 486 Tire_DX_Mult_FR "LAST";
+BA_ "AggType" SG_ 487 Drive_Train_Speed "LAST";
+BA_ "AggType" SG_ 488 Tire_Loaded_Radius_RR "LAST";
+BA_ "AggType" SG_ 489 Tire_Rolling_Radius_FR "LAST";
+BA_ "AggType" SG_ 490 Tire_Slip_Ratio_FL "LAST";
+BA_ "AggType" SG_ 491 Axle_Torque_RR "LAST";
+BA_ "AggType" SG_ 492 Tire_Loaded_Radius_FR "LAST";
+BA_ "AggType" SG_ 493 Tire_Temp_Middle_FR "LAST";
+BA_ "AggType" SG_ 494 Electric_Axle_Torque_FL "LAST";
+BA_ "AggType" SG_ 495 Track_Surface_Grip_RL "LAST";
+BA_ "AggType" SG_ 496 Ground_Speed "LAST";
+BA_ "AggType" SG_ 497 Aero_Speed "LAST";
+BA_ "AggType" SG_ 498 Tire_Rolling_Radius_FL "LAST";
+BA_ "AggType" SG_ 499 Suspension_Travel_FR "LAST";
+BA_ "AggType" SG_ 500 Tire_Sliding_Velocity_X_RL "LAST";
+
+BA_ "TxGroupFreq" BO_ 256 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 257 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 258 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 259 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 260 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 261 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 262 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 263 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 264 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 265 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 266 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 267 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 268 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 269 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 270 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 271 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 272 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 273 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 274 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 275 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 276 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 277 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 278 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 279 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 280 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 281 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 282 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 283 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 284 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 285 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 286 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 287 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 288 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 289 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 290 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 291 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 292 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 293 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 294 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 295 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 296 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 297 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 298 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 299 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 300 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 301 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 302 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 303 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 304 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 305 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 306 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 307 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 308 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 309 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 310 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 311 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 312 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 313 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 314 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 315 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 316 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 317 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 318 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 319 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 320 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 321 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 322 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 323 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 324 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 325 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 326 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 327 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 328 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 329 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 330 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 331 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 332 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 333 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 334 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 335 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 336 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 337 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 338 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 339 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 340 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 341 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 342 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 343 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 344 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 345 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 346 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 347 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 348 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 349 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 350 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 351 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 352 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 353 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 354 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 355 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 356 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 357 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 358 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 359 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 360 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 361 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 362 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 363 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 364 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 365 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 366 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 367 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 368 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 369 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 370 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 371 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 372 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 373 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 374 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 375 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 376 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 377 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 378 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 379 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 380 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 381 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 382 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 383 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 384 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 385 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 386 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 387 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 388 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 389 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 390 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 391 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 392 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 393 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 394 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 395 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 396 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 397 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 398 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 399 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 400 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 401 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 402 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 403 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 404 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 405 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 406 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 407 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 408 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 409 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 410 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 411 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 412 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 413 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 414 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 415 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 416 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 417 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 418 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 419 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 420 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 421 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 422 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 423 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 424 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 425 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 426 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 427 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 428 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 429 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 430 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 431 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 432 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 433 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 434 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 435 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 436 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 437 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 438 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 439 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 440 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 441 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 442 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 443 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 444 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 445 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 446 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 447 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 448 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 449 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 450 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 451 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 452 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 453 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 454 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 455 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 456 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 457 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 458 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 459 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 460 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 461 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 462 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 463 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 464 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 465 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 466 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 467 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 468 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 469 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 470 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 471 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 472 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 473 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 474 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 475 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 476 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 477 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 478 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 479 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 480 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 481 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 482 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 483 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 484 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 485 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 486 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 487 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 488 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 489 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 490 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 491 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 492 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 493 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 494 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 495 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 496 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 497 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 498 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 499 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 500 "EnergyGroupTxFreq";

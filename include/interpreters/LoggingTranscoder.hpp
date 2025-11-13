@@ -41,4 +41,4 @@ namespace CAN {
     };
     
 }
-#endif // LOGGING_DBC_INTERPRETER_HPP
+#endif

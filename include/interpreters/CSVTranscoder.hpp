@@ -19,7 +19,8 @@
 
 #include "DBC/DBCInterpreter.hpp"
 #include "CAN/CANKernelTypes.hpp"
-#include "interpreters/SQL/SQLHelperTypes.hpp"
+#include "interpreters/HelperTypes.hpp"
+#include "CAN/CANTranscoder.hpp"
 
 namespace CAN {
 
@@ -32,7 +33,7 @@ namespace CAN {
             : operation(std::move(op)), promise(std::make_unique<std::promise<void>>(std::move(p))) {}
     };
 
-    class CSVTranscoder : public DBCInterpreter<CSVTranscoder> {
+    class CSVTranscoder final : public DBCInterpreter<CSVTranscoder>, public CANTranscoder<CSVTranscoder> {
     public:
         CSVTranscoder(const std::string& base_path, size_t batch_size = 10000);
         ~CSVTranscoder();
@@ -59,16 +60,16 @@ namespace CAN {
 
     private:
         std::string base_path;
-        std::unordered_map<canid_t, MessageDefinition> messages;
         std::unordered_map<std::string, std::unique_ptr<std::ofstream>> csv_files;
         std::unordered_map<std::string, bool> headers_written;
-        size_t batch_size;
-        size_t frames_batch_count;
-        size_t decoded_signals_batch_count;
-        
         // Batching buffers
         std::vector<std::string> frames_batch;
         std::vector<std::string> decoded_signals_batch;
+
+        std::unordered_map<canid_t, MessageDefinition> messages;
+        size_t batch_size;
+        size_t frames_batch_count;
+        size_t decoded_signals_batch_count;
         
         mutable std::mutex queue_mutex;
         std::condition_variable queue_cv;
@@ -86,6 +87,7 @@ namespace CAN {
         void flush_frames_batch();
         void flush_decoded_signals_batch();
         void flush_all_batches();
+        
         std::string build_csv_row(const std::vector<std::pair<std::string, std::string>>& data);
         void ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers);
         void write_to_csv(const std::string& filename, const std::string& row);

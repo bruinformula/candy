@@ -7,7 +7,6 @@
 
 namespace CAN {
 
-    // Constructor
     SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size)
         : db_path(db_file_path),
         shutdown_requested(false),
@@ -34,7 +33,6 @@ namespace CAN {
         writer_thread = std::thread(&SQLTranscoder::writer_loop, this);
     }
 
-    // Destructor
     SQLTranscoder::~SQLTranscoder() {
         {
             std::lock_guard<std::mutex> lock(queue_mutex);
@@ -49,7 +47,7 @@ namespace CAN {
         finalize_statements();
     }
 
-    // Public Methods
+    //methods 
     void SQLTranscoder::transcode(CANTime timestamp, CANFrame frame) {
         enqueue_task([this, timestamp, frame]() {
             batch_frame(timestamp, frame);

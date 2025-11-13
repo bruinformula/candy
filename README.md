@@ -63,6 +63,7 @@ Or run individual test executables:
 
 - The project uses [ggml](https://github.com/ggerganov/ggml) for linear algebra operations, which is automatically fetched and built by the project
 - Two additional dependencies (SQLite, Boost Spirit) are managed via CMake and can either use system installations or be automatically fetched and built as shared libraries
+
 - DBC file parsing enables interpretation of CAN bus message definitions
 
 ---

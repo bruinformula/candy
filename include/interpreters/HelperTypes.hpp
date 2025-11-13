@@ -28,16 +28,4 @@ namespace CAN {
         std::vector<SignalDefinition> signals;
         std::optional<SignalDefinition> multiplexer;
     };
-
-struct SQLTask {
-    std::function<void()> operation;
-    std::unique_ptr<std::promise<void>> promise;
-    
-    // For fire-and-forget operations
-    SQLTask(std::function<void()> op) : operation(std::move(op)), promise(nullptr) {}
-    
-    // For operations that need synchronization
-    SQLTask(std::function<void()> op, std::promise<void> p) 
-    : operation(std::move(op)), promise(std::make_unique<std::promise<void>>(std::move(p))) {}
-};
 }
