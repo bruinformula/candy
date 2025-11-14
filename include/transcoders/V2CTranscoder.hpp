@@ -9,16 +9,14 @@
 
 #include "CAN/CANKernelTypes.hpp"
 
-#include "interpreters/V2C/TransmissionGroup.hpp"
-#include "interpreters/V2C/translation/TranslatedMessage.hpp"
-#include "interpreters/V2C/translation/TranslatedSignal.hpp"
-#include "interpreters/V2C/translation/TranslatedMultiplexer.hpp"
+#include "transcoders/V2C/TransmissionGroup.hpp"
+#include "transcoders/V2C/translation/TranslatedMessage.hpp"
+#include "transcoders/V2C/translation/TranslatedSignal.hpp"
+#include "transcoders/V2C/translation/TranslatedMultiplexer.hpp"
 
 #include "DBC/DBCInterpreter.hpp"
 
-
 namespace CAN {
-
     class V2CTranscoder : public DBCInterpreter<V2CTranscoder> {
         std::chrono::milliseconds publish_frequency;
         std::chrono::milliseconds update_frequency{0};

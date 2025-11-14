@@ -9,7 +9,7 @@
 #include <random>
 
 #include "DBC/DBCParser.hpp"
-#include "interpreters/SQLTranscoder.hpp"
+#include "transcoders/SQLTranscoder.hpp"
 #include "CAN/frame/FrameIterator.hpp"
 #include "CAN/CANHelpers.hpp"
 
@@ -26,7 +26,7 @@ int main() {
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed = CAN::parse_dbc(CAN::read_file("test/network.dbc"), transcoder);
+    bool parsed = transcoder.parse_dbc(CAN::read_file("test/network.dbc"));
     if (!parsed) {
         std::cerr << "Failed to parse DBC file." << std::endl;
         return 1;

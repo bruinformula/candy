@@ -1,4 +1,4 @@
-include("${CMAKE_SOURCE_DIR}/cmake/GetBoostSpirit.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/GetBoost.cmake")
 include("${CMAKE_SOURCE_DIR}/cmake/GetSQLite.cmake")
 
 file(GLOB_RECURSE can_land_CXX_FILES CONFIGURE_DEPENDS *.cpp)

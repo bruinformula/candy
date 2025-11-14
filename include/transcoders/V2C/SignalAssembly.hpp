@@ -5,8 +5,8 @@
 #include <concepts>
 #include <iostream>
 
-#include "interpreters/V2C/translation/TranslatedSignal.hpp"
-#include "interpreters/V2C/translation/TranslatedMultiplexer.hpp"
+#include "transcoders/V2C/translation/TranslatedSignal.hpp"
+#include "transcoders/V2C/translation/TranslatedMultiplexer.hpp"
 #include "CAN/signal/SignalCalculationType.hpp"
 #include "CAN/signal/NumericValue.hpp"
 

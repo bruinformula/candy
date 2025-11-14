@@ -25,4 +25,8 @@ namespace CAN {
     MotecGenerator::MotecGenerator(const std::string& csv_path) 
         : path(csv_path), current(0) {
     }
+
+    bool MotecGenerator::parse_csv() {
+        return false;
+    }
 }

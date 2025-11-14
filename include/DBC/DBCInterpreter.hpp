@@ -9,7 +9,7 @@
 
 #include "boost/spirit/home/x3.hpp"
 
-
+#include "DBC/DBCParser.hpp"
 #include "DBC/DBCInterpreterConcepts.hpp"
 
 namespace CAN {
@@ -189,8 +189,33 @@ namespace CAN {
                 static_cast<Derived&>(*this).sg_mul_val(msg_id, signal, selector, ranges);
             }
         }
+    
+    public:
+
+        ParseResult parse_version(std::string_view rng);
+        ParseResult parse_ns_(std::string_view rng);
+        ParseResult parse_bs_(std::string_view rng);
+        ParseResult parse_bu_(std::string_view rng, nodes_t& nodes);
+        ParseResult parse_sg_(std::string_view rng, const nodes_t& nodes, uint32_t can_id);
+        ParseResult parse_bo_(std::string_view rng, const nodes_t& nodes);
+        ParseResult parse_ev_(std::string_view rng, const nodes_t& nodes);
+        ParseResult parse_envvar_data_(std::string_view rng);
+        ParseResult parse_sgtype_(std::string_view rng, const nodes_t& val_tables);
+        ParseResult parse_cm_(std::string_view rng, const nodes_t& nodes);
+        ParseResult parse_sig_group_(std::string_view rng);
+        ParseResult parse_ba_def_(std::string_view rng, attr_types_t& ats_);
+        ParseResult parse_ba_def_def_(std::string_view rng, const attr_types_t& ats_);
+        ParseResult parse_ba_(std::string_view rng, const nodes_t& nodes, const attr_types_t& ats_);
+        ParseResult parse_val_(std::string_view rng);
+        ParseResult parse_val_table_(std::string_view rng, nodes_t& val_tables);
+        ParseResult parse_sig_valtype_(std::string_view rng);
+        ParseResult parse_bo_tx_bu(std::string_view rng);
+        ParseResult parse_sg_mul_val_(std::string_view rng);
+    
+        bool parse_dbc(std::string_view dbc_src);
+
     };
 
-
+    
 }
 

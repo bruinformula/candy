@@ -4,11 +4,7 @@
 #include "boost/spirit/home/x3.hpp"
 #include "boost/fusion/adapted/std_pair.hpp"
 
-#include "interpreters/V2C/translation/TranslatedMultiplexer.hpp"
-
-#include "interpreters/V2CTranscoder.hpp"
-
-#include "DBC/DBCInterpreter.hpp"
+#include "transcoders/V2C/translation/TranslatedMultiplexer.hpp"
 
 namespace x3 = boost::spirit::x3;
 
@@ -95,60 +91,6 @@ namespace CAN {
         return std::make_pair(s, v);
     }
 
-
-    const ParseResult parse_ns_(std::string_view rng);
-
-    const ParseResult parse_bs_(std::string_view rng);
-
-    template<typename T>
-    const ParseResult parse_bu_(std::string_view rng, nodes_t& nodes, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_sg_(std::string_view rng, const nodes_t& nodes, DBCInterpreter<T>& ipt, uint32_t can_id);
-
-    template<typename T>
-    const ParseResult parse_bo_(std::string_view rng, const nodes_t& nodes, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_ev_(std::string_view rng, const nodes_t& nodes, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_envvar_data_(std::string_view rng, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_sgtype_(std::string_view rng, const nodes_t& val_tables, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_sig_group_(std::string_view rng, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_ba_def_(std::string_view rng, attr_types_t& ats_, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_ba_def_def_(std::string_view rng, const attr_types_t& ats_, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_ba_(std::string_view rng, const nodes_t& nodes, const attr_types_t& ats_, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_val_(std::string_view rng, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_val_table_(std::string_view rng, nodes_t& val_tables, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_sig_valtype_(std::string_view rng, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_bo_tx_bu(std::string_view rng, DBCInterpreter<T>& ipt);
-
-    template<typename T>
-    const ParseResult parse_sg_mul_val_(std::string_view rng, DBCInterpreter<T>& ipt);
-
-    template<typename T>
     bool syntax_error(std::string_view where, std::string_view what = "");
-
-    template<typename T>
-    bool parse_dbc(std::string_view dbc_src, DBCInterpreter<T>& ipt);
 
 }

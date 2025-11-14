@@ -6,10 +6,10 @@
 #include <vector>
 #include <cstdint>
 
-#include "interpreters/V2C/SignalAssembly.hpp"
+#include "transcoders/V2C/SignalAssembly.hpp"
 
 #include "CAN/signal/SignalCalculationType.hpp"
-#include "interpreters/V2C/translation/TranslatedMessage.hpp"
+#include "transcoders/V2C/translation/TranslatedMessage.hpp"
 
 namespace CAN {
 

@@ -1,6 +1,6 @@
 #include <numeric>
 
-#include "interpreters/V2CTranscoder.hpp"
+#include "transcoders/V2CTranscoder.hpp"
 
 namespace CAN {
 FramePacket V2CTranscoder::transcode(CANTime stamp, CANFrame frame) {

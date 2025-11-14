@@ -3,16 +3,13 @@
 #include <stdexcept>
 #include <filesystem>
 
-#include "interpreters/CSVTranscoder.hpp"
+#include "transcoders/CSVTranscoder.hpp"
 
 namespace CAN {
 
-    CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size)
-        : base_path(base_path),
-        shutdown_requested(false),
-        batch_size(batch_size),
-        frames_batch_count(0),
-        decoded_signals_batch_count(0)
+    CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size) : 
+        CANTranscoder(false, batch_size, 0, 0),
+        base_path(base_path)
     {
         // Ensure the base directory exists
         std::filesystem::create_directories(base_path);
@@ -88,127 +85,7 @@ namespace CAN {
         return future;
     }
 
-    void CSVTranscoder::flush() {
-        enqueue_task([this]() {
-            flush_all_batches();
-        });
-    }
-
-    void CSVTranscoder::flush_sync() {
-        std::promise<void> promise;
-        auto future = promise.get_future();
-        enqueue_task_with_promise([this]() {
-            flush_all_batches();
-        }, std::move(promise));
-        future.wait();
-    }
-
-    void CSVTranscoder::flush_async(std::function<void()> callback) {
-        enqueue_task([this, callback]() {
-            flush_all_batches();
-            callback();
-        });
-    }
-
-    void CSVTranscoder::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
-                        unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-                        double factor, double offset, double min_val, double max_val,
-                        std::string unit, std::vector<size_t> receivers)
-    {
-        SignalDefinition sig_def;
-        sig_def.name = signal_name;
-        sig_def.codec = std::make_unique<SignalCodec>(start_bit, bit_size, byte_order, sign_type);
-        sig_def.numeric_value = std::make_unique<NumericValue>(factor, offset);
-        sig_def.min_val = min_val;
-        sig_def.max_val = max_val;
-        sig_def.unit = unit;
-        sig_def.mux_val = mux_val;
-
-        messages[message_id].signals.push_back(std::move(sig_def));
-    }
-
-    void CSVTranscoder::sg_mux(canid_t message_id, const std::string& signal_name,
-                            unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-                            std::string unit, std::vector<size_t> receivers)
-    {
-        SignalDefinition mux_def;
-        mux_def.name = signal_name;
-        mux_def.codec = std::make_unique<SignalCodec>(start_bit, bit_size, byte_order, sign_type);
-        mux_def.numeric_value = std::make_unique<NumericValue>(1.0, 0.0);
-        mux_def.unit = unit;
-        mux_def.is_multiplexer = true;
-
-        messages[message_id].multiplexer = std::move(mux_def);
-    }
-
-    void CSVTranscoder::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter) {
-        messages[message_id].name = message_name;
-        messages[message_id].size = message_size;
-        messages[message_id].transmitter = transmitter;
-
-        transcode("messages.csv", {
-            {"message_id", std::to_string(message_id)},
-            {"message_name", message_name},
-            {"message_size", std::to_string(message_size)}
-        });
-    }
-
-    void CSVTranscoder::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type) {
-        auto& msg = messages[message_id];
-        for (auto& sig : msg.signals) {
-            if (sig.name == signal_name) {
-                sig.value_type = static_cast<NumericValueType>(value_type);
-                break;
-            }
-        }
-    }
-
-    // Private Methods
-    void CSVTranscoder::writer_loop() {
-        while (true) {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            queue_cv.wait(lock, [this] {
-                return !task_queue.empty() || shutdown_requested;
-            });
-
-            while (!task_queue.empty()) {
-                is_processing = true;
-                CSVTask task = std::move(task_queue.front());
-                task_queue.pop();
-                lock.unlock();
-
-                try {
-                    task.operation();
-                    tasks_processed++;
-                    if (task.promise) task.promise->set_value();
-                } catch (...) {
-                    if (task.promise) task.promise->set_exception(std::current_exception());
-                }
-
-                lock.lock();
-            }
-
-            is_processing = false;
-
-            if (shutdown_requested) {
-                flush_all_batches();
-                break;
-            }
-        }
-    }
-
-    void CSVTranscoder::enqueue_task(std::function<void()> task) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        task_queue.emplace(std::move(task));
-        queue_cv.notify_one();
-    }
-
-    void CSVTranscoder::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        task_queue.emplace(std::move(task), std::move(promise));
-        queue_cv.notify_one();
-    }
-
+    // protected Methods
     void CSVTranscoder::batch_frame(CANTime timestamp, CANFrame frame) {
         auto msg_it = messages.find(frame.can_id);
         std::string message_name = (msg_it != messages.end()) ? msg_it->second.name : "";

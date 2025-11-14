@@ -1,7 +1,7 @@
 
 #include "CAN/CANKernelTypes.hpp"
 
-#include "interpreters/V2C/TransmissionGroup.hpp"
+#include "transcoders/V2C/TransmissionGroup.hpp"
 
 namespace CAN {
 

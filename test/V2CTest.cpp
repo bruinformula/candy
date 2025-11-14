@@ -7,7 +7,7 @@
 #include <filesystem>
 
 #include "DBC/DBCParser.hpp"
-#include "interpreters/V2CTranscoder.hpp"
+#include "transcoders/V2CTranscoder.hpp"
 #include "DBC/DBCParser.hpp"
 
 #include "CAN/frame/FrameIterator.hpp"
@@ -37,7 +37,7 @@ int main() {
 
 	auto start = std::chrono::system_clock::now();
 
-	bool parsed = CAN::parse_dbc(CAN::read_file("test/can_land/network.dbc"), transcoder);
+	bool parsed = transcoder.parse_dbc(CAN::read_file("test/can_land/network.dbc"));
 	if (!parsed)
 		return 1;
 

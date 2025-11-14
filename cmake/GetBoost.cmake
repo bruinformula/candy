@@ -5,7 +5,7 @@ set(BOOST_USE_SYSTEM ON CACHE BOOL "Use system-installed Boost libraries if avai
 # Optionally specify a local Boost path
 # Usage: cmake -DBOOST_LOCAL_PATH=/path/to/boost ..
 if(DEFINED BOOST_USE_SYSTEM AND BOOST_USE_SYSTEM)
-     find_package(Boost REQUIRED)
+    find_package(Boost CONFIG REQUIRED)
      message(STATUS "Using system-installed Boost: ${Boost_INCLUDE_DIRS}")
      # You can link to Boost::boost or Boost::filesystem, etc., as needed
 else()

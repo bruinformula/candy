@@ -1,22 +1,21 @@
 #include <string_view>
 
-
 #include "boost/spirit/home/x3.hpp"
 #include "boost/fusion/adapted/std_pair.hpp"
 
-
-#include "interpreters/V2CTranscoder.hpp"
-#include "interpreters/SQLTranscoder.hpp"
-#include "interpreters/CSVTranscoder.hpp"
+#include "transcoders/V2CTranscoder.hpp"
+#include "transcoders/SQLTranscoder.hpp"
+#include "transcoders/CSVTranscoder.hpp"
 
 #include "DBC/DBCParser.hpp"
+#include "DBC/DBCInterpreter.hpp"
 
 namespace x3 = boost::spirit::x3;
 
 namespace CAN {
 
     template<typename T>
-    const ParseResult parse_version(std::string_view rng, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_version(std::string_view rng) {
         //std::cerr << "[parseVersion] input: " << std::string(rng.begin(), rng.end()) << "\n";
         bool has_sect = false;
         std::string version;
@@ -29,12 +28,13 @@ namespace CAN {
             //std::cout << "f " << std::endl;
             return make_rv(rng, !has_sect);
 
-        ipt.version_vrtl(std::move(version));
+        version_vrtl(std::move(version));
         
         return make_rv(iter, rng.end(), true);
     };
 
-    const ParseResult parse_ns_(std::string_view rng) {
+    template<typename T>
+    ParseResult DBCInterpreter<T>::parse_ns_(std::string_view rng) {
         struct ns_syms : x3::symbols<unsigned> {
             ns_syms() {
                 add
@@ -62,7 +62,8 @@ namespace CAN {
         return make_rv(iter, rng.end(), true);
     }
 
-    const ParseResult parse_bs_(std::string_view rng) {
+    template<typename T>
+    ParseResult DBCInterpreter<T>::parse_bs_(std::string_view rng) {
         const auto bs_ = x3::omit[x3::lexeme[x3::lit("BS_:")]] >>
             x3::omit[-(x3::uint_ >> ':' >> x3::uint_ >> ',' >> x3::uint_)] >> end_cmd_;
 
@@ -75,7 +76,7 @@ namespace CAN {
     };
 
     template<typename T>
-    const ParseResult parse_bu_(std::string_view rng, nodes_t& nodes, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_bu_(std::string_view rng, nodes_t& nodes) {
         std::vector<std::string> node_names;
 
         const auto bu_ = x3::omit[x3::lexeme[x3::lit("BU_:")]] >>
@@ -90,12 +91,12 @@ namespace CAN {
             nodes.add(nn, node_ord++);
         nodes.add("Vector__XXX", node_ord);
 
-        ipt.bu_vrtl(std::move(node_names));
+        bu_vrtl(std::move(node_names));
         return make_rv(iter, rng.end(), true);
     };
 
     template<typename T>
-    const ParseResult parse_sg_(std::string_view rng, const nodes_t& nodes, DBCInterpreter<T>& ipt, uint32_t can_id) {
+    ParseResult DBCInterpreter<T>::parse_sg_(std::string_view rng, const nodes_t& nodes, uint32_t can_id) {
         bool has_sect = false;
         std::optional<unsigned> sg_mux_switch_val;
         std::string sg_name;
@@ -127,12 +128,12 @@ namespace CAN {
                 return make_rv(iter, rng.end(), !has_sect);
 
             if (sg_mux_switch.value_or(' ') == 'M')
-                ipt.sg_mux_vrtl(
+                sg_mux_vrtl(
                     can_id, sg_name, sg_start_bit, sg_size, sg_byte_order,
                     sg_sign, std::move(sg_unit), std::move(rec_ords)
                 );
             else
-                ipt.sg_vrtl(
+                sg_vrtl(
                     can_id, sg_mux_switch_val, sg_name, sg_start_bit, sg_size, sg_byte_order,
                     sg_sign, sg_factor, sg_offset, sg_min, sg_max, std::move(sg_unit), std::move(rec_ords)
                 );
@@ -141,7 +142,7 @@ namespace CAN {
     }
 
     template<typename T>
-    const ParseResult parse_bo_(std::string_view rng, const nodes_t& nodes, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_bo_(std::string_view rng, const nodes_t& nodes) {
         bool has_sect = false;
         uint32_t can_id;
         std::string msg_name;
@@ -157,9 +158,9 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), bo_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.bo_vrtl(can_id, std::move(msg_name), msg_size, transmitter_ord);
+            bo_vrtl(can_id, std::move(msg_name), msg_size, transmitter_ord);
 
-            auto [remain_rng, expected] = parse_sg_({ iter, rng.end() }, nodes, ipt, can_id);
+            auto [remain_rng, expected] = parse_sg_({ iter, rng.end() }, nodes, can_id);
             if (!expected)
                 return make_rv(remain_rng, false);
             iter = remain_rng.begin();
@@ -169,7 +170,7 @@ namespace CAN {
     }
 
     template<typename T>
-    const ParseResult parse_ev_(std::string_view rng, const nodes_t& nodes, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_ev_(std::string_view rng, const nodes_t& nodes) {
         bool has_sect = false;
         std::string ev_name;
         unsigned ev_type;
@@ -195,7 +196,7 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), ev_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.ev_vrtl(std::move(ev_name), ev_type, ev_min, ev_max, std::move(ev_unit),
+            ev_vrtl(std::move(ev_name), ev_type, ev_min, ev_max, std::move(ev_unit),
                 ev_initial, ev_id, std::move(ev_access_type), std::move(ev_access_nodes_ords)
             );
         }
@@ -203,7 +204,7 @@ namespace CAN {
     }
 
     template<typename T>
-    const ParseResult parse_envvar_data_(std::string_view rng, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_envvar_data_(std::string_view rng) {
         bool has_sect = false;
         std::string ev_name;
         unsigned data_size;
@@ -216,14 +217,14 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), envar_data_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.envvar_data_vrtl(std::move(ev_name), data_size);
+            envvar_data_vrtl(std::move(ev_name), data_size);
         }
 
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_sgtype_(std::string_view rng, const nodes_t& val_tables, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_sgtype_(std::string_view rng, const nodes_t& val_tables) {
         bool has_sect = false;
         std::optional<unsigned> msg_id;
         std::string sg_name, sg_type_name;
@@ -256,10 +257,10 @@ namespace CAN {
                 return make_rv(iter, rng.end(), !has_sect);
 
             if (msg_id.has_value()) {
-                ipt.sgtype_ref_vrtl(msg_id.value(), std::move(sg_name), std::move(sg_type_name));
+                sgtype_ref_vrtl(msg_id.value(), std::move(sg_name), std::move(sg_type_name));
             }
             else {
-                ipt.sgtype_vrtl(
+                sgtype_vrtl(
                     std::move(sg_type_name), sg_size, sg_byte_order, sg_sign, sg_factor, sg_offset,
                     sg_min, sg_max, std::move(sg_unit), sg_default_val, val_table_ord
                 );
@@ -269,7 +270,7 @@ namespace CAN {
     }
 
     template<typename T>
-    const ParseResult parse_sig_group_(std::string_view rng, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_sig_group_(std::string_view rng) {
         bool has_sect = false;
         unsigned msg_id;
         std::string sig_group_name;
@@ -284,13 +285,13 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), sig_group_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.sig_group_vrtl(msg_id, std::move(sig_group_name), repetitions, std::move(sig_names));
+            sig_group_vrtl(msg_id, std::move(sig_group_name), repetitions, std::move(sig_names));
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_cm_(std::string_view rng, const nodes_t& nodes, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_cm_(std::string_view rng, const nodes_t& nodes) {
         bool has_sect = false;
         std::string object_type, comment_text;
 
@@ -323,21 +324,21 @@ namespace CAN {
                 return make_rv(iter, rng.end(), !has_sect);
 
             if (object_type.empty())
-                ipt.cm_glob_vrtl(std::move(comment_text));
+                cm_glob_vrtl(std::move(comment_text));
             else if (object_type == "BU_")
-                ipt.cm_bu_vrtl(bu_ord, std::move(comment_text));
+                cm_bu_vrtl(bu_ord, std::move(comment_text));
             else if (object_type == "BO_")
-                ipt.cm_bo_vrtl(message_id, std::move(comment_text));
+                cm_bo_vrtl(message_id, std::move(comment_text));
             else if (object_type == "SG_")
-                ipt.cm_sg_vrtl(message_id, std::move(object_name), std::move(comment_text));
+                cm_sg_vrtl(message_id, std::move(object_name), std::move(comment_text));
             else if (object_type == "EV_")
-                ipt.cm_ev_vrtl(std::move(object_name), std::move(comment_text));
+                cm_ev_vrtl(std::move(object_name), std::move(comment_text));
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_ba_def_(std::string_view rng, attr_types_t& ats_, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_ba_def_(std::string_view rng, attr_types_t& ats_) {
         bool has_sect = false;
         std::string object_type, attr_name, data_type;
         int32_t int_min, int_max;
@@ -379,26 +380,26 @@ namespace CAN {
 
             if (data_type == "ENUM") {
                 ats_.add("\"" + attr_name + "\"", quoted_name_ | x3::int_);
-                ipt.ba_enum_vrtl(std::move(attr_name), std::move(object_type), std::move(enum_vals));
+                ba_enum_vrtl(std::move(attr_name), std::move(object_type), std::move(enum_vals));
             }
             else if (data_type == "INT" || data_type == "HEX") {
                 ats_.add("\"" + attr_name + "\"", x3::int_);
-                ipt.ba_int_vrtl(std::move(attr_name), std::move(object_type), int_min, int_max);
+                ba_int_vrtl(std::move(attr_name), std::move(object_type), int_min, int_max);
             }
             else if (data_type == "FLOAT") {
                 ats_.add("\"" + attr_name + "\"", x3::double_);
-                ipt.ba_float_vrtl(std::move(attr_name), std::move(object_type), dbl_min, dbl_max);
+                ba_float_vrtl(std::move(attr_name), std::move(object_type), dbl_min, dbl_max);
             }
             else if (data_type == "STRING") {
                 ats_.add("\"" + attr_name + "\"", quoted_name_);
-                ipt.ba_string_vrtl(std::move(attr_name), std::move(object_type));
+                ba_string_vrtl(std::move(attr_name), std::move(object_type));
             }
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_ba_def_def_(std::string_view rng, const attr_types_t& ats_, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_ba_def_def_(std::string_view rng, const attr_types_t& ats_) {
         bool has_sect = false;
         std::string attr_name;
         attr_val_t attr_val;
@@ -417,13 +418,13 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), ba_def_def_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.ba_def_vrtl(std::move(attr_name), std::move(attr_val));
+            ba_def_vrtl(std::move(attr_name), std::move(attr_val));
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_ba_(std::string_view rng, const nodes_t& nodes, const attr_types_t& ats_, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_ba_(std::string_view rng, const nodes_t& nodes, const attr_types_t& ats_) {
         bool has_sect = false;
         std::string attr_name, object_type;
         attr_val_t attr_val;
@@ -456,7 +457,7 @@ namespace CAN {
 
             // TODO: can break this up into multiple CPOs
 
-            ipt.ba_vrtl( std::move(attr_name), std::move(object_type), std::move(object_name),
+            ba_vrtl( std::move(attr_name), std::move(object_type), std::move(object_name),
                 bu_ord, message_id, std::move(attr_val)
             );
         }
@@ -464,7 +465,7 @@ namespace CAN {
     }
 
     template<typename T>
-    const ParseResult parse_val_(std::string_view rng, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_val_(std::string_view rng) {
         using val_desc = std::pair<unsigned, std::string>;
 
         bool has_sect = false;
@@ -484,15 +485,15 @@ namespace CAN {
                 return make_rv(iter, rng.end(), !has_sect);
 
             if (!msg_id.has_value())
-                ipt.val_env_vrtl(env_var_name, std::move(val_descs));
+                val_env_vrtl(env_var_name, std::move(val_descs));
             else
-                ipt.val_sg_vrtl(msg_id.value(), signal_name, std::move(val_descs));
+                val_sg_vrtl(msg_id.value(), signal_name, std::move(val_descs));
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_val_table_(std::string_view rng, nodes_t& val_tables, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_val_table_(std::string_view rng, nodes_t& val_tables) {
         using val_desc = std::pair<unsigned, std::string>;
 
         bool has_sect = false;
@@ -511,13 +512,13 @@ namespace CAN {
 
             val_tables.add(table_name, val_table_ord++);
 
-            ipt.val_table_vrtl(std::move(table_name), std::move(val_descs));
+            val_table_vrtl(std::move(table_name), std::move(val_descs));
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_sig_valtype_(std::string_view rng, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_sig_valtype_(std::string_view rng) {
         bool has_sect = false;
         unsigned msg_id;
         std::string sig_name;
@@ -531,13 +532,13 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), sig_valtype_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.sig_valtype_vrtl(msg_id, std::move(sig_name), sig_ext_val_type);
+            sig_valtype_vrtl(msg_id, std::move(sig_name), sig_ext_val_type);
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_bo_tx_bu(std::string_view rng, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_bo_tx_bu(std::string_view rng) {
         bool has_sect = false;
         unsigned msg_id;
         std::vector<std::string> transmitters;
@@ -550,13 +551,13 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), sig_valtype_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.bo_tx_bu_vrtl(msg_id, std::move(transmitters));
+            bo_tx_bu_vrtl(msg_id, std::move(transmitters));
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
     template<typename T>
-    const ParseResult parse_sg_mul_val_(std::string_view rng, DBCInterpreter<T>& ipt) {
+    ParseResult DBCInterpreter<T>::parse_sg_mul_val_(std::string_view rng) {
         using value_range = std::pair<unsigned, unsigned>;
 
         bool has_sect = false;
@@ -576,12 +577,12 @@ namespace CAN {
             if (!phrase_parse(iter, rng.end(), sg_mul_val_, skipper_))
                 return make_rv(iter, rng.end(), !has_sect);
 
-            ipt.sg_mul_val_vrtl(msg_id, std::move(mux_sig_name), std::move(mux_switch_name), std::move(val_ranges));
+            sg_mul_val_vrtl(msg_id, std::move(mux_sig_name), std::move(mux_switch_name), std::move(val_ranges));
         }
         return make_rv(rng.end(), rng.end(), true);
     }
 
-    bool syntax_error(std::string_view where, std::string_view what = "") {
+    bool syntax_error(std::string_view where, std::string_view what) {
         auto eol = where.find('\n');
         std::string_view line{
             where.begin(),
@@ -592,18 +593,18 @@ namespace CAN {
     }
 
     template<typename T>
-    bool parse_dbc(std::string_view dbc_src, DBCInterpreter<T>& ipt) {
+    bool DBCInterpreter<T>::parse_dbc(std::string_view dbc_src) {
         auto pv = skip_blines(dbc_src);
         bool expected = true;
 
-        auto result = parse_version(pv, ipt);
+        auto result = parse_version(pv);
         std::cerr << "parseVersion returned: {view_len=" << result.first.size() << ", success=" << result.second << "}\n";
         pv = result.first;
         expected = result.second;
 
         if (!expected) return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_version(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_version(pv); !expected)
             return syntax_error(pv);
 
         if (std::tie(pv, expected) = parse_ns_(pv); !expected)
@@ -614,56 +615,56 @@ namespace CAN {
 
         nodes_t nodes;
 
-        if (std::tie(pv, expected) = parse_bu_(pv, nodes, ipt); !expected)
+        if (std::tie(pv, expected) = parse_bu_(pv, nodes); !expected)
             return syntax_error(pv, "(expected correct BU_)");
 
         nodes_t val_tables;
 
-        if (std::tie(pv, expected) = parse_val_table_(pv, val_tables, ipt); !expected)
+        if (std::tie(pv, expected) = parse_val_table_(pv, val_tables); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_bo_(pv, nodes, ipt); !expected)
+        if (std::tie(pv, expected) = parse_bo_(pv, nodes); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_bo_tx_bu(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_bo_tx_bu(pv); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_ev_(pv, nodes, ipt); !expected)
+        if (std::tie(pv, expected) = parse_ev_(pv, nodes); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_envvar_data_(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_envvar_data_(pv); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_val_(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_val_(pv); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_sgtype_(pv, val_tables, ipt); !expected)
+        if (std::tie(pv, expected) = parse_sgtype_(pv, val_tables); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_sig_group_(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_sig_group_(pv); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_cm_(pv, nodes, ipt); !expected)
+        if (std::tie(pv, expected) = parse_cm_(pv, nodes); !expected)
             return syntax_error(pv);
 
         attr_types_t attr_types;
 
-        if (std::tie(pv, expected) = parse_ba_def_(pv, attr_types, ipt); !expected)
+        if (std::tie(pv, expected) = parse_ba_def_(pv, attr_types); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_ba_def_def_(pv, attr_types, ipt); !expected)
+        if (std::tie(pv, expected) = parse_ba_def_def_(pv, attr_types); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_ba_(pv, nodes, attr_types, ipt); !expected)
+        if (std::tie(pv, expected) = parse_ba_(pv, nodes, attr_types); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_val_(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_val_(pv); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_sig_valtype_(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_sig_valtype_(pv); !expected)
             return syntax_error(pv);
 
-        if (std::tie(pv, expected) = parse_sg_mul_val_(pv, ipt); !expected)
+        if (std::tie(pv, expected) = parse_sg_mul_val_(pv); !expected)
             return syntax_error(pv);
 
         if (!pv.empty())
@@ -672,56 +673,8 @@ namespace CAN {
         return true;
     }
 
-
-    template const ParseResult parse_bu_<V2CTranscoder>(std::string_view rng, nodes_t& nodes, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_sg_<V2CTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<V2CTranscoder>& ipt, uint32_t can_id);
-    template const ParseResult parse_bo_<V2CTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_ev_<V2CTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_envvar_data_<V2CTranscoder>(std::string_view rng, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_sgtype_<V2CTranscoder>(std::string_view rng, const nodes_t& val_tables, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_sig_group_<V2CTranscoder>(std::string_view rng, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_ba_def_<V2CTranscoder>(std::string_view rng, attr_types_t& ats_, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_ba_def_def_<V2CTranscoder>(std::string_view rng, const attr_types_t& ats_, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_ba_<V2CTranscoder>(std::string_view rng, const nodes_t& nodes, const attr_types_t& ats_, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_val_<V2CTranscoder>(std::string_view rng, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_val_table_<V2CTranscoder>(std::string_view rng, nodes_t& val_tables, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_sig_valtype_<V2CTranscoder>(std::string_view rng, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_bo_tx_bu<V2CTranscoder>(std::string_view rng, DBCInterpreter<V2CTranscoder>& ipt);
-    template const ParseResult parse_sg_mul_val_<V2CTranscoder>(std::string_view rng, DBCInterpreter<V2CTranscoder>& ipt);
-    template bool parse_dbc<V2CTranscoder>(std::string_view dbc_src, DBCInterpreter<V2CTranscoder>& ipt);
-
-    template const ParseResult parse_bu_<SQLTranscoder>(std::string_view rng, nodes_t& nodes, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_sg_<SQLTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<SQLTranscoder>& ipt, uint32_t can_id);
-    template const ParseResult parse_bo_<SQLTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_ev_<SQLTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_envvar_data_<SQLTranscoder>(std::string_view rng, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_sgtype_<SQLTranscoder>(std::string_view rng, const nodes_t& val_tables, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_sig_group_<SQLTranscoder>(std::string_view rng, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_ba_def_<SQLTranscoder>(std::string_view rng, attr_types_t& ats_, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_ba_def_def_<SQLTranscoder>(std::string_view rng, const attr_types_t& ats_, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_ba_<SQLTranscoder>(std::string_view rng, const nodes_t& nodes, const attr_types_t& ats_, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_val_<SQLTranscoder>(std::string_view rng, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_val_table_<SQLTranscoder>(std::string_view rng, nodes_t& val_tables, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_sig_valtype_<SQLTranscoder>(std::string_view rng, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_bo_tx_bu<SQLTranscoder>(std::string_view rng, DBCInterpreter<SQLTranscoder>& ipt);
-    template const ParseResult parse_sg_mul_val_<SQLTranscoder>(std::string_view rng, DBCInterpreter<SQLTranscoder>& ipt);
-    template bool parse_dbc<SQLTranscoder>(std::string_view dbc_src, DBCInterpreter<SQLTranscoder>& ipt);
-
-    template const ParseResult parse_bu_<CSVTranscoder>(std::string_view rng, nodes_t& nodes, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_sg_<CSVTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<CSVTranscoder>& ipt, uint32_t can_id);
-    template const ParseResult parse_bo_<CSVTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_ev_<CSVTranscoder>(std::string_view rng, const nodes_t& nodes, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_envvar_data_<CSVTranscoder>(std::string_view rng, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_sgtype_<CSVTranscoder>(std::string_view rng, const nodes_t& val_tables, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_sig_group_<CSVTranscoder>(std::string_view rng, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_ba_def_<CSVTranscoder>(std::string_view rng, attr_types_t& ats_, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_ba_def_def_<CSVTranscoder>(std::string_view rng, const attr_types_t& ats_, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_ba_<CSVTranscoder>(std::string_view rng, const nodes_t& nodes, const attr_types_t& ats_, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_val_<CSVTranscoder>(std::string_view rng, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_val_table_<CSVTranscoder>(std::string_view rng, nodes_t& val_tables, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_sig_valtype_<CSVTranscoder>(std::string_view rng, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_bo_tx_bu<CSVTranscoder>(std::string_view rng, DBCInterpreter<CSVTranscoder>& ipt);
-    template const ParseResult parse_sg_mul_val_<CSVTranscoder>(std::string_view rng, DBCInterpreter<CSVTranscoder>& ipt);
-    template bool parse_dbc<CSVTranscoder>(std::string_view dbc_src, DBCInterpreter<CSVTranscoder>& ipt);
+    template class DBCInterpreter<V2CTranscoder>;
+    template class DBCInterpreter<CANTranscoder<SQLTranscoder, SQLTask>>;
+    template class DBCInterpreter<CANTranscoder<CSVTranscoder, CSVTask>>;
 
 }

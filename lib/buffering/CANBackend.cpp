@@ -7,16 +7,12 @@
 
 #include "buffering/BackendInterface.hpp"
 #include "buffering/CANDataBuffer.hpp"
-#include "interpreters/SQLTranscoder.hpp"
-#include "interpreters/CSVTranscoder.hpp"
 #include "buffering/CANDataBuffer.hpp"
-#include "interpreters/SQLTranscoder.hpp"
-#include "interpreters/CSVTranscoder.hpp"
-#include <sqlite3.h>
-#include <fstream>
-#include <sstream>
-#include <filesystem>
-#include <algorithm>
+
+#include "transcoders/SQLTranscoder.hpp"
+#include "transcoders/CSVTranscoder.hpp"
+#include "transcoders/SQLTranscoder.hpp"
+#include "transcoders/CSVTranscoder.hpp"
 
 namespace CAN {
 

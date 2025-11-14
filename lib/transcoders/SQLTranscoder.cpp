@@ -2,18 +2,15 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "interpreters/SQLTranscoder.hpp"
+#include "transcoders/SQLTranscoder.hpp"
 
 
 namespace CAN {
 
-    SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size)
-        : db_path(db_file_path),
-        shutdown_requested(false),
-        db(nullptr, sqlite3_close),
-        batch_size(batch_size),
-        frames_batch_count(0),
-        decoded_signals_batch_count(0)
+    SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size) : 
+        CANTranscoder(false, batch_size, 0, 0),
+        db_path(db_file_path),
+        db(nullptr, sqlite3_close)
     {
         sqlite3* raw_db = nullptr;
         if (sqlite3_open(db_file_path.c_str(), &raw_db) != SQLITE_OK) {
@@ -81,127 +78,7 @@ namespace CAN {
         return future;
     }
 
-    void SQLTranscoder::flush() {
-        enqueue_task([this]() {
-            flush_all_batches();
-        });
-    }
-
-    void SQLTranscoder::flush_sync() {
-        std::promise<void> promise;
-        auto future = promise.get_future();
-        enqueue_task_with_promise([this]() {
-            flush_all_batches();
-        }, std::move(promise));
-        future.wait();
-    }
-
-    void SQLTranscoder::flush_async(std::function<void()> callback) {
-        enqueue_task([this, callback]() {
-            flush_all_batches();
-            callback();
-        });
-    }
-
-    void SQLTranscoder::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
-                        unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-                        double factor, double offset, double min_val, double max_val,
-                        std::string unit, std::vector<size_t> receivers)
-    {
-        SignalDefinition sig_def;
-        sig_def.name = signal_name;
-        sig_def.codec = std::make_unique<SignalCodec>(start_bit, bit_size, byte_order, sign_type);
-        sig_def.numeric_value = std::make_unique<NumericValue>(factor, offset);
-        sig_def.min_val = min_val;
-        sig_def.max_val = max_val;
-        sig_def.unit = unit;
-        sig_def.mux_val = mux_val;
-
-        messages[message_id].signals.push_back(std::move(sig_def));
-    }
-
-    void SQLTranscoder::sg_mux(canid_t message_id, const std::string& signal_name,
-                            unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-                            std::string unit, std::vector<size_t> receivers)
-    {
-        SignalDefinition mux_def;
-        mux_def.name = signal_name;
-        mux_def.codec = std::make_unique<SignalCodec>(start_bit, bit_size, byte_order, sign_type);
-        mux_def.numeric_value = std::make_unique<NumericValue>(1.0, 0.0);
-        mux_def.unit = unit;
-        mux_def.is_multiplexer = true;
-
-        messages[message_id].multiplexer = std::move(mux_def);
-    }
-
-    void SQLTranscoder::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter) {
-        messages[message_id].name = message_name;
-        messages[message_id].size = message_size;
-        messages[message_id].transmitter = transmitter;
-
-        transcode("messages", {
-            {"message_id", std::to_string(message_id)},
-            {"message_name", message_name},
-            {"message_size", std::to_string(message_size)}
-        });
-    }
-
-    void SQLTranscoder::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type) {
-        auto& msg = messages[message_id];
-        for (auto& sig : msg.signals) {
-            if (sig.name == signal_name) {
-                sig.value_type = static_cast<NumericValueType>(value_type);
-                break;
-            }
-        }
-    }
-
     // Private Methods
-    void SQLTranscoder::writer_loop() {
-        while (true) {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            queue_cv.wait(lock, [this] {
-                return !task_queue.empty() || shutdown_requested;
-            });
-
-            while (!task_queue.empty()) {
-                is_processing = true;
-                SQLTask task = std::move(task_queue.front());
-                task_queue.pop();
-                lock.unlock();
-
-                try {
-                    task.operation();
-                    tasks_processed++;
-                    if (task.promise) task.promise->set_value();
-                } catch (...) {
-                    if (task.promise) task.promise->set_exception(std::current_exception());
-                }
-
-                lock.lock();
-            }
-
-            is_processing = false;
-
-            if (shutdown_requested) {
-                flush_all_batches();
-                break;
-            }
-        }
-    }
-
-    void SQLTranscoder::enqueue_task(std::function<void()> task) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        task_queue.emplace(std::move(task));
-        queue_cv.notify_one();
-    }
-
-    void SQLTranscoder::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        task_queue.emplace(std::move(task), std::move(promise));
-        queue_cv.notify_one();
-    }
-
     void SQLTranscoder::prepare_statements() {
         const char* frames_sql = "INSERT INTO frames (timestamp, can_id, dlc, data, message_name) VALUES (?, ?, ?, ?, ?)";
         if (sqlite3_prepare_v2(db.get(), frames_sql, -1, &frames_insert_stmt, nullptr) != SQLITE_OK) {
@@ -401,5 +278,22 @@ namespace CAN {
         return escaped;
     }
     
+    /*
+    template void CANTranscoder<SQLTranscoder, SQLTask>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
+                        unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
+                        double factor, double offset, double min_val, double max_val,
+                        std::string unit, std::vector<size_t> receivers);
+    template void CANTranscoder<SQLTranscoder, SQLTask>::sg_mux(canid_t message_id, const std::string& signal_name,
+                            unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
+                            std::string unit, std::vector<size_t> receivers);
 
-} // namespace CAN
+    template void CANTranscoder<SQLTranscoder, SQLTask>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter);
+    template void CANTranscoder<SQLTranscoder, SQLTask>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
+    template void CANTranscoder<SQLTranscoder, SQLTask>::writer_loop();
+    template void CANTranscoder<SQLTranscoder, SQLTask>::enqueue_task(std::function<void()> task);
+    template void CANTranscoder<SQLTranscoder, SQLTask>::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise);
+    template void CANTranscoder<SQLTranscoder, SQLTask>::flush_async(std::function<void()> callback);
+    template void CANTranscoder<SQLTranscoder, SQLTask>::flush_sync();
+    template void CANTranscoder<SQLTranscoder, SQLTask>::flush();
+    */
+}

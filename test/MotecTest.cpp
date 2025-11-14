@@ -9,7 +9,7 @@
 #include <random>
 
 #include "DBC/DBCParser.hpp"
-#include "interpreters/CSVTranscoder.hpp"
+#include "transcoders/CSVTranscoder.hpp"
 #include "CAN/frame/FrameIterator.hpp"
 #include "CAN/CANHelpers.hpp"
 #include "interpreters/MotecGenerator.hpp"
@@ -27,14 +27,12 @@ int main() {
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed_dbc = CAN::parse_dbc(CAN::read_file("test/network.dbc"), transcoder);
+    bool parsed_dbc = transcoder.parse_dbc(CAN::read_file("test/network.dbc"));
     if (!parsed_dbc) {
         std::cerr << "Failed to parse DBC file." << std::endl;
         return 1;
     }
 
-
-    
     auto end = std::chrono::high_resolution_clock::now();
     auto parse_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << "   ✓ DBC parsed_dbc successfully in " << parse_time.count() << "ms" << std::endl;

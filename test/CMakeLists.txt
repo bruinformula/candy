@@ -1,5 +1,5 @@
 #DBC Parser Test
-include("${CMAKE_SOURCE_DIR}/cmake/GetBoostSpirit.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/GetBoost.cmake")
 
 add_executable(test_v2c V2CTest.cpp)
 

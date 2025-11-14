@@ -1,7 +1,7 @@
 #include "buffering/CANDataBuffer.hpp"
 #include "buffering/BackendInterface.hpp"
-#include "interpreters/SQLTranscoder.hpp"
-#include "interpreters/CSVTranscoder.hpp"
+#include "transcoders/SQLTranscoder.hpp"
+#include "transcoders/CSVTranscoder.hpp"
 
 namespace CAN {
 

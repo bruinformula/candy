@@ -6,7 +6,7 @@
 
 #include "DBC/DBCInterpreter.hpp"
 #include "CAN/CANKernelTypes.hpp"
-#include "interpreters/HelperTypes.hpp"
+#include "transcoders/CANTranscoderHelperTypes.hpp"
 
 namespace CAN {
 

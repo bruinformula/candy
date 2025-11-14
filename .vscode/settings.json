@@ -27,6 +27,9 @@
         "vector": "cpp",
         "__locale": "cpp",
         "tuple": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "iostream": "cpp",
+        "sstream": "cpp",
+        "unordered_map": "cpp"
     }
 }
