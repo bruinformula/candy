@@ -1,9 +1,9 @@
-#include "buffering/CANDataBuffer.hpp"
-#include "buffering/BackendInterface.hpp"
-#include "transcoders/SQLTranscoder.hpp"
-#include "transcoders/CSVTranscoder.hpp"
+#include "Candy/Buffer/CANDataBuffer.hpp"
+#include "Candy/Buffer/BackendInterface.hpp"
+#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
+#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
 
-namespace CAN {
+namespace Candy {
 
     // CANDataBuffer constructor
     CANDataBuffer::CANDataBuffer(const std::string& stream_name, 

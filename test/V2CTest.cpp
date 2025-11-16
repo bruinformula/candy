@@ -6,19 +6,14 @@
 #include <sstream>
 #include <filesystem>
 
-#include "DBC/DBCParser.hpp"
-#include "transcoders/V2CTranscoder.hpp"
-#include "DBC/DBCParser.hpp"
+#include "Candy/Candy.h"
 
-#include "CAN/frame/FrameIterator.hpp"
-#include "CAN/CANHelpers.hpp"
-
-void print_frames(const CAN::FramePacket& fp, CAN::V2CTranscoder& transcoder, int32_t frame_counter) {
+void print_frames(const Candy::FramePacket& fp, Candy::V2CTranscoder& transcoder, int32_t frame_counter) {
 	using namespace std::chrono;
 
 	std::cout << "New frame_packet (from " << frame_counter << " frames):" << std::endl;
 
-	for (auto it = CAN::begin(fp); it != CAN::end(fp); ++it) {
+	for (auto it = Candy::begin(fp); it != Candy::end(fp); ++it) {
 		const auto& [ts, frame] = *it;
 		auto frame_data = std::bit_cast<int64_t>(frame.data);
 		auto t = duration_cast<milliseconds>(ts.time_since_epoch()).count() / 1000.0;
@@ -33,11 +28,11 @@ void print_frames(const CAN::FramePacket& fp, CAN::V2CTranscoder& transcoder, in
 }
 
 int main() {
-	CAN::V2CTranscoder transcoder;
+	Candy::V2CTranscoder transcoder;
 
 	auto start = std::chrono::system_clock::now();
 
-	bool parsed = transcoder.parse_dbc(CAN::read_file("test/can_land/network.dbc"));
+	bool parsed = transcoder.parse_dbc(Candy::read_file("test/candy/network.dbc"));
 	if (!parsed)
 		return 1;
 
@@ -49,7 +44,7 @@ int main() {
 
 	while (true) {
 		// Simulate receiving a frame from CAN bus
-		CANFrame frame = CAN::generate_frame();
+		CANFrame frame = Candy::generate_frame();
 		frame_counter++;
 
 		auto fp = transcoder.transcode(std::chrono::system_clock::now(), frame);

@@ -1,9 +1,9 @@
 #include <vector>
 #include <cstring>
 
-#include "CAN/signal/SignalCalculationType.hpp"
+#include "Candy/CAN/Signal/SignalCalculationType.hpp"
 
-namespace CAN {
+namespace Candy {
 
     template <ValidSignalType T>
     SignalCalculationType<T>::SignalCalculationType(uint64_t raw_value) {

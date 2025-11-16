@@ -1,10 +1,10 @@
-#include "CAN/signal/SignalCodec.hpp"
+#include "Candy/CAN/Signal/SignalCodec.hpp"
 
 using boost::endian::order;
 using boost::endian::load_little_u64;
 using boost::endian::load_big_u64;
 
-namespace CAN {
+namespace Candy {
 
     SignalCodec::SignalCodec(unsigned sb, unsigned bs, char bo, char st)
     : _start_bit(sb), _bit_size(bs),

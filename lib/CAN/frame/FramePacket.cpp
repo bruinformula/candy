@@ -1,8 +1,8 @@
 #include <cstring>
 
-#include "CAN/frame/FramePacket.hpp"
+#include "Candy/CAN/Frame/FramePacket.hpp"
 
-namespace CAN {
+namespace Candy {
 
     FramePacket::FramePacket() {}
 

@@ -1,18 +1,18 @@
 #include <string_view>
 
-#include "boost/spirit/home/x3.hpp"
-#include "boost/fusion/adapted/std_pair.hpp"
+#include <boost/spirit/home/x3.hpp>
+#include <boost/fusion/adapted/std_pair.hpp>
 
-#include "transcoders/V2CTranscoder.hpp"
-#include "transcoders/SQLTranscoder.hpp"
-#include "transcoders/CSVTranscoder.hpp"
+#include "Candy/DBC/Transcoders/V2CTranscoder.hpp"
+#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
+#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
 
-#include "DBC/DBCParser.hpp"
-#include "DBC/DBCInterpreter.hpp"
+#include "Candy/DBC/DBCParser.hpp"
+#include "Candy/DBC/DBCInterpreter.hpp"
 
 namespace x3 = boost::spirit::x3;
 
-namespace CAN {
+namespace Candy {
 
     template<typename T>
     ParseResult DBCInterpreter<T>::parse_version(std::string_view rng) {

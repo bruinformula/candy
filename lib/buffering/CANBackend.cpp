@@ -5,16 +5,16 @@
 #include <filesystem>
 #include <algorithm>
 
-#include "buffering/BackendInterface.hpp"
-#include "buffering/CANDataBuffer.hpp"
-#include "buffering/CANDataBuffer.hpp"
+#include "Candy/Buffer/BackendInterface.hpp"
+#include "Candy/Buffer/CANDataBuffer.hpp"
+#include "Candy/Buffer/CANDataBuffer.hpp"
 
-#include "transcoders/SQLTranscoder.hpp"
-#include "transcoders/CSVTranscoder.hpp"
-#include "transcoders/SQLTranscoder.hpp"
-#include "transcoders/CSVTranscoder.hpp"
+#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
+#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
+#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
+#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
 
-namespace CAN {
+namespace Candy {
 
     // SQLBackend Implementation
 

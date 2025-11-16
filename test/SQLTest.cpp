@@ -8,17 +8,14 @@
 #include <thread>
 #include <random>
 
-#include "DBC/DBCParser.hpp"
-#include "transcoders/SQLTranscoder.hpp"
-#include "CAN/frame/FrameIterator.hpp"
-#include "CAN/CANHelpers.hpp"
+#include "Candy/Candy.h"
 
 int main() {
     // Clean up any existing test database
     std::filesystem::remove("./test.db");
     
     // Initialize SQLTranscoder with a database file
-    CAN::SQLTranscoder transcoder("./test.db");
+    Candy::SQLTranscoder transcoder("./test.db");
     
     std::cout << "=== CAN SQL Transcoder Test ===" << std::endl;
     
@@ -26,7 +23,7 @@ int main() {
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed = transcoder.parse_dbc(CAN::read_file("test/network.dbc"));
+    bool parsed = transcoder.parse_dbc(Candy::read_file("test/network.dbc"));
     if (!parsed) {
         std::cerr << "Failed to parse DBC file." << std::endl;
         return 1;
@@ -57,7 +54,7 @@ int main() {
             frame.data[j] = data_dist(gen);
         }
         
-        CAN::CANTime timestamp = std::chrono::system_clock::now();
+        Candy::CANTime timestamp = std::chrono::system_clock::now();
 
         transcoder.transcode(timestamp, frame);
     }

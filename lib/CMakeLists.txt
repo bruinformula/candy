@@ -1,25 +1,20 @@
-include("${CMAKE_SOURCE_DIR}/cmake/GetBoost.cmake")
 include("${CMAKE_SOURCE_DIR}/cmake/GetSQLite.cmake")
+include("${CMAKE_SOURCE_DIR}/cmake/GetBoost.cmake")
 
-file(GLOB_RECURSE can_land_CXX_FILES CONFIGURE_DEPENDS *.cpp)
+file(GLOB_RECURSE candy_CXX_FILES CONFIGURE_DEPENDS *.cpp)
 
-add_library(can_land STATIC ${can_land_CXX_FILES})
+add_library(candy STATIC ${candy_CXX_FILES})
 
-target_include_directories(can_land PUBLIC "${CMAKE_SOURCE_DIR}/include" "${ggml_SOURCE_DIR}/include")
+target_include_directories(candy PUBLIC "${CMAKE_SOURCE_DIR}/include")
 
+#add_dependencies(candy boost)
+target_link_libraries(candy PUBLIC ${Boost_LIBS})
+target_include_directories(candy PUBLIC ${Boost_INCLUDE_DIRS})
 
-#target_link_libraries(can_land PRIVATE ggml)
-
-if (NOT BOOST_USE_SYSTEM)
-    target_include_directories(can_land PRIVATE include ${boost_SOURCE_DIR})
-    target_link_libraries(can_land PRIVATE boost_spirit)
-else()
-    target_link_libraries(can_land PRIVATE Boost::boost)
-endif()
 
 if (NOT SQL_USE_SYSTEM)
-    target_include_directories(can_land PUBLIC ${sqlite3_ext_SOURCE_DIR} )
-    target_link_libraries(can_land PRIVATE SQLite3)
+    target_include_directories(candy PUBLIC ${sqlite3_ext_SOURCE_DIR} )
+    target_link_libraries(candy PRIVATE SQLite3)
 else()
-    target_link_libraries(can_land PRIVATE SQLite::SQLite3)
+    target_link_libraries(candy PRIVATE SQLite::SQLite3)
 endif()

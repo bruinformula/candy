@@ -2,10 +2,10 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "transcoders/SQLTranscoder.hpp"
+#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
 
 
-namespace CAN {
+namespace Candy {
 
     SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size) : 
         CANTranscoder(false, batch_size, 0, 0),

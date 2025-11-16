@@ -1,9 +1,9 @@
 #include <cstring>
 
-#include "CAN/CANKernelTypes.hpp"
-#include "CAN/frame/FrameIterator.hpp"
+#include "Candy/CAN/CANKernelTypes.hpp"
+#include "Candy/CAN/Frame/FrameIterator.hpp"
 
-namespace CAN {
+namespace Candy {
     FrameIterator::FrameIterator(const FramePacket& fp)
         : frame_packet(fp), 
         payload_data(fp.payload()), 

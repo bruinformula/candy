@@ -8,18 +8,14 @@
 #include <thread>
 #include <random>
 
-#include "DBC/DBCParser.hpp"
-#include "transcoders/CSVTranscoder.hpp"
-#include "CAN/frame/FrameIterator.hpp"
-#include "CAN/CANHelpers.hpp"
-#include "interpreters/MotecGenerator.hpp"
+#include "Candy/Candy.h"
 
 int main() {
     // Clean up any existing test database
     //std::filesystem::remove("./test_csv_output");
     
     // Initialize CSVTranscoder this will output 3 csv files
-    CAN::CSVTranscoder transcoder("./test_csv_output", 1000);  // batch size of 1000
+    Candy::CSVTranscoder transcoder("./test_csv_output", 1000);  // batch size of 1000
     
     std::cout << "=== Motec CSV Transcoder Test ===" << std::endl;
     
@@ -27,7 +23,7 @@ int main() {
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed_dbc = transcoder.parse_dbc(CAN::read_file("test/network.dbc"));
+    bool parsed_dbc = transcoder.parse_dbc(Candy::read_file("test/network.dbc"));
     if (!parsed_dbc) {
         std::cerr << "Failed to parse DBC file." << std::endl;
         return 1;
@@ -40,7 +36,7 @@ int main() {
     // Test 2: Generate and process CAN frames
     std::cout << "\n2. Processing CAN frames..." << std::endl;
     
-    CAN::MotecGenerator generator("test/motec_test.csv");
+    Candy::MotecGenerator generator("test/motec_test.csv");
 
     bool parsed_csv = generator.parse_csv();
 
@@ -62,7 +58,7 @@ int main() {
             frame.data[j] = data_dist(gen);
         }
         
-        CAN::CANTime timestamp = std::chrono::system_clock::now();
+        Candy::CANTime timestamp = std::chrono::system_clock::now();
 
         transcoder.transcode(timestamp, frame);
     }

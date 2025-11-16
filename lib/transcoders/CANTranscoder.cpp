@@ -1,8 +1,8 @@
-#include "transcoders/CANTranscoder.hpp"
-#include "transcoders/CSVTranscoder.hpp"
-#include "transcoders/SQLTranscoder.hpp"
+#include "Candy/DBC/Transcoders/CANTranscoder.hpp"
+#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
+#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
 
-namespace CAN {
+namespace Candy {
 
     template<typename T, typename TaskType>
     void CANTranscoder<T, TaskType>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,

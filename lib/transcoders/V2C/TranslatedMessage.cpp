@@ -6,20 +6,20 @@
 #include <vector>
 #include <cstdint>
 
-#include "transcoders/V2C/SignalAssembly.hpp"
+#include "Candy/DBC/Transcoders/V2C/SignalAssembly.hpp"
 
-#include "CAN/signal/SignalCalculationType.hpp"
-#include "transcoders/V2C/translation/TranslatedMessage.hpp"
+#include "Candy/CAN/Signal/SignalCalculationType.hpp"
+#include "Candy/DBC/Transcoders/V2C/TranslatedMessage.hpp"
 
-namespace CAN {
+namespace Candy {
 
     template <template <typename> typename AssemblerType>
     static SignalAssemblerVariant make_sig_agg(const TranslatedSignal& sig) {
         switch (sig.value_type()) {
-            case CAN::NumericValueType::i64: return AssemblerType<int64_t>(sig);
-            case CAN::NumericValueType::u64: return AssemblerType<uint64_t>(sig);
-            case CAN::NumericValueType::f32: return AssemblerType<float>(sig);
-            case CAN::NumericValueType::f64: return AssemblerType<double>(sig);
+            case Candy::NumericValueType::i64: return AssemblerType<int64_t>(sig);
+            case Candy::NumericValueType::u64: return AssemblerType<uint64_t>(sig);
+            case Candy::NumericValueType::f32: return AssemblerType<float>(sig);
+            case Candy::NumericValueType::f64: return AssemblerType<double>(sig);
         }
         fprintf(stderr, "Signal %s doesn't have a valid value_type\n", sig.name().c_str());
         return { AverageSignal<int64_t>(sig) };

@@ -1,11 +1,10 @@
-#include "buffering/CANDataBuffer.hpp"
-#include "buffering/BackendInterface.hpp"
 #include <iostream>
 #include <thread>
 #include <filesystem>
 
-using namespace CAN;
+#include "Candy/Candy.h"
 
+using namespace Candy;
 
 void example_usage() {
     // Create a CAN data buffer with SQL backend

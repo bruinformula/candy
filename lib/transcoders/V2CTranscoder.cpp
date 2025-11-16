@@ -1,8 +1,8 @@
 #include <numeric>
 
-#include "transcoders/V2CTranscoder.hpp"
+#include "Candy/DBC/Transcoders/V2CTranscoder.hpp"
 
-namespace CAN {
+namespace Candy {
 FramePacket V2CTranscoder::transcode(CANTime stamp, CANFrame frame) {
 	using namespace std::chrono;
 

@@ -1,30 +1,55 @@
-include(FetchContent)
+include(ExternalProject)
 
+# Option to control whether we build Boost ourselves
+option(BUILD_BOOST "Build Boost from source instead of using system version" OFF)
 
-set(BOOST_USE_SYSTEM ON CACHE BOOL "Use system-installed Boost libraries if available")
-# Optionally specify a local Boost path
-# Usage: cmake -DBOOST_LOCAL_PATH=/path/to/boost ..
-if(DEFINED BOOST_USE_SYSTEM AND BOOST_USE_SYSTEM)
-    find_package(Boost CONFIG REQUIRED)
-     message(STATUS "Using system-installed Boost: ${Boost_INCLUDE_DIRS}")
-     # You can link to Boost::boost or Boost::filesystem, etc., as needed
+# Allow user to specify a custom Boost root
+set(Boost_ROOT "" CACHE PATH "Path to a custom Boost installation")
+
+if(BUILD_BOOST)
+    message(STATUS "Building Boost from source...")
+
+    set(BOOST_INSTALL_DIR ${CMAKE_BINARY_DIR}/_deps/boost-install)
+    set(BOOST_BINARY_DIR  ${CMAKE_BINARY_DIR}/_deps/boost-build)
+    set(BOOST_SOURCE_DIR  ${CMAKE_BINARY_DIR}/_deps/boost-src)
+
+    # Check if Boost is already built
+    if(EXISTS ${BOOST_INSTALL_DIR})
+        message(STATUS "Boost is already built at ${BOOST_INSTALL_DIR}, skipping build.")
+    else()
+        include(ExternalProject)
+        ExternalProject_Add(
+            boost
+            GIT_REPOSITORY https://github.com/boostorg/boost.git
+            GIT_TAG boost-1.89.0
+            GIT_PROGRESS TRUE
+            PREFIX ${CMAKE_BINARY_DIR}/_deps/boost
+            SOURCE_DIR ${BOOST_SOURCE_DIR}
+            BINARY_DIR ${BOOST_BINARY_DIR}
+            INSTALL_DIR ${BOOST_INSTALL_DIR}
+
+            CMAKE_ARGS
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DCMAKE_INSTALL_PREFIX=${BOOST_INSTALL_DIR}
+        )
+    endif()
+
+    set(Boost_INCLUDE_DIRS "${BOOST_INSTALL_DIR}/include")
+    file(GLOB Boost_LIBS "${BOOST_INSTALL_DIR}/lib/*.a" "${BOOST_INSTALL_DIR}/lib/*.so")
+
+    message(STATUS "Using locally built Boost: ${Boost_INCLUDE_DIRS}")
+
+elseif(Boost_ROOT)
+    message(STATUS "Using custom Boost installation at: ${Boost_ROOT}")
+
+    set(Boost_INCLUDE_DIRS "${Boost_ROOT}/include")
+    file(GLOB Boost_LIBS "${Boost_ROOT}/lib/*.a" "${Boost_ROOT}/lib/*.so")
+
+    message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}")
 else()
+    message(STATUS "Using system-installed Boost")
+    find_package(Boost CONFIG REQUIRED)
 
-     set(BOOST_ENABLE_CMAKE ON)
-
-     FetchContent_Declare(build_boost
-          GIT_REPOSITORY https://github.com/boostorg/boost.git
-          GIT_TAG boost-1.82.0
-     )
-
-     FetchContent_GetProperties(build_boost)
-
-     if(NOT build_boost_POPULATED)
-          FetchContent_Populate(build_boost)
-          add_subdirectory(
-               ${build_boost_SOURCE_DIR}
-               ${build_boost_BINARY_DIR}
-               EXCLUDE_FROM_ALL
-          )
-     endif()
+    set(Boost_LIBS ${Boost_LIBRARIES})
+    message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}")
 endif()

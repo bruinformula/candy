@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <filesystem>
 
-#include "transcoders/CSVTranscoder.hpp"
+#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
 
-namespace CAN {
+namespace Candy {
 
     CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size) : 
         CANTranscoder(false, batch_size, 0, 0),
@@ -264,4 +264,4 @@ namespace CAN {
         return hex_stream.str();
     }
 
-} // namespace CAN
+} // namespace Candy

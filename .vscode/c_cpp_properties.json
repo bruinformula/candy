@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "MacOS",
+            "intelliSenseMode": "clang-x64",
+            "includePath": [
+                "/usr/local/include/**"
+            ]
+        }
+    ],
+    "version": 4
+}

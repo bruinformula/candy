@@ -1,7 +1,7 @@
     
-#include "CAN/signal/NumericValue.hpp"
+#include "Candy/CAN/Signal/NumericValue.hpp"
 
-namespace CAN {
+namespace Candy {
 
     NumericValue::NumericValue(double scale_factor, double offset_value)
         : factor(scale_factor), offset(offset_value) {}

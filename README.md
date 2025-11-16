@@ -11,8 +11,7 @@ Candy is a library containing CAN backend stuff.
 - CMake 3.26+
 - C++20 compiler (GCC, Clang, or MSVC)
 
-The project manages three main dependencies with different installation approaches:
-- **[ggml](https://github.com/ggerganov/ggml)** - High-performance linear algebra library (automatically built by the project)
+The project manages 2 main dependencies:
 - **SQLite** - Lightweight database engine (can use local installation or be automatically built)
 - **Boost Spirit** - Parser framework for DBC file parsing (can use local installation or be automatically built)
 
@@ -56,14 +55,5 @@ ctest
 
 Or run individual test executables:
 - `./test/` - Tests CAN and DBC parsing
-
----
-
-## Notes
-
-- The project uses [ggml](https://github.com/ggerganov/ggml) for linear algebra operations, which is automatically fetched and built by the project
-- Two additional dependencies (SQLite, Boost Spirit) are managed via CMake and can either use system installations or be automatically fetched and built as shared libraries
-
-- DBC file parsing enables interpretation of CAN bus message definitions
 
 ---

@@ -1,9 +1,9 @@
 
-#include "CAN/CANKernelTypes.hpp"
+#include "Candy/CAN/CANKernelTypes.hpp"
 
-#include "transcoders/V2C/TransmissionGroup.hpp"
+#include "Candy/DBC/Transcoders/V2C/TransmissionGroup.hpp"
 
-namespace CAN {
+namespace Candy {
 
 	static int32_t millis_diff(CANTime tp, uint32_t utc) {
 		using namespace std::chrono;
