@@ -32,7 +32,7 @@ namespace Candy {
             message.timestamp.time_since_epoch()).count();
         
         // Use existing transcoder to write the raw frame
-        transcoder->transcode(message.timestamp, message.frame);
+        transcoder->write_raw_message(message.timestamp, message.frame);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -55,7 +55,7 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                transcoder->transcode("decoded_frames", signal_data);
+                transcoder->write_table_message("decoded_frames", signal_data);
             }
         }
     }
@@ -98,26 +98,26 @@ namespace Candy {
         };
         
         // Clear existing metadata and insert new
-        transcoder->transcode("DELETE FROM metadata", {});
-        transcoder->transcode("metadata", meta_data);
+        transcoder->write_table_message("DELETE FROM metadata", {});
+        transcoder->write_table_message("metadata", meta_data);
     }
 
     void SQLBackend::flush() {
-        //transcoder->flush();
+        transcoder->flush();
     }
 
     void SQLBackend::flush_sync() {
-        //transcoder->flush_sync();
+        transcoder->flush_sync();
     }
 
     std::future<void> SQLBackend::flush_async() {
         auto promise = std::make_shared<std::promise<void>>();
         auto future = promise->get_future();
-        /*
+        
         transcoder->flush_async([promise]() {
             promise->set_value();
         });
-        */
+        
         return future;
     }
 
@@ -251,7 +251,7 @@ namespace Candy {
             message.timestamp.time_since_epoch()).count();
         
         // Write raw frame using existing transcoder
-        transcoder->transcode(message.timestamp, message.frame);
+        transcoder->write_raw_message(message.timestamp, message.frame);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -273,7 +273,7 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                transcoder->transcode("decoded_frames.csv", signal_data);
+                transcoder->write_table_message("decoded_frames.csv", signal_data);
             }
         }
     }
@@ -305,25 +305,25 @@ namespace Candy {
             {"message_counts", counts_str.str()}
         };
         
-        transcoder->transcode("metadata.csv", meta_data);
+        transcoder->write_table_message("metadata.csv", meta_data);
     }
 
     void CSVBackend::flush() {
-        //transcoder->flush();
+        transcoder->flush();
     }
 
     void CSVBackend::flush_sync() {
-        //transcoder->flush_sync();
+        transcoder->flush_sync();
     }
 
     std::future<void> CSVBackend::flush_async() {
         auto promise = std::make_shared<std::promise<void>>();
         auto future = promise->get_future();
-        /*
+        
         transcoder->flush_async([promise]() {
             promise->set_value();
         });
-        */
+        
         return future;
     }
 

@@ -45,7 +45,7 @@ namespace Candy {
     }
 
     //methods 
-    void SQLTranscoder::transcode(CANTime timestamp, CANFrame frame) {
+    void SQLTranscoder::write_raw_message(CANTime timestamp, CANFrame frame) {
         enqueue_task([this, timestamp, frame]() {
             batch_frame(timestamp, frame);
 
@@ -59,23 +59,11 @@ namespace Candy {
         });
     }
 
-    void SQLTranscoder::transcode(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
+    void SQLTranscoder::write_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
         std::string sql = build_insert_sql(table, data);
         enqueue_task([this, sql]() {
             execute_sql(sql);
         });
-    }
-
-    std::future<void> SQLTranscoder::transcode_async(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
-        std::string sql = build_insert_sql(table, data);
-        std::promise<void> promise;
-        auto future = promise.get_future();
-
-        enqueue_task_with_promise([this, sql]() {
-            execute_sql(sql);
-        }, std::move(promise));
-
-        return future;
     }
 
     // Private Methods
@@ -286,7 +274,7 @@ namespace Candy {
             message.timestamp.time_since_epoch()).count();
         
         // Use existing transcoder to write the raw frame
-        transcode(message.timestamp, message.frame);
+        write_raw_message(message.timestamp, message.frame);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -309,7 +297,7 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                transcode("decoded_frames", signal_data);
+                write_table_message("decoded_frames", signal_data);
             }
         }
     }
@@ -352,8 +340,8 @@ namespace Candy {
         };
         
         // Clear existing metadata and insert new
-        transcode("DELETE FROM metadata", {});
-        transcode("metadata", meta_data);
+        write_table_message("DELETE FROM metadata", {});
+        write_table_message("metadata", meta_data);
     }
 
     std::vector<CANMessage> SQLTranscoder::read_messages(canid_t can_id) {

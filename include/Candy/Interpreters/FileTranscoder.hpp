@@ -26,7 +26,7 @@ namespace Candy {
     template <typename Derived, typename TaskType>
     class FileTranscoder : public DBCInterpreter<Derived>,
                            public CANReader<Derived>, 
-                           public CANWriter<Derived> {
+                           public CANQueueWriter<Derived> {
 
     public:
         // Constructor to initialize member variables
@@ -36,24 +36,6 @@ namespace Candy {
             frames_batch_count(frames_batch_count),
             decoded_signals_batch_count(decoded_signals_batch_count)
         {}
-
-        //virtual methods 
-        void transcode_vrtl(CANTime timestamp, CANFrame frame) {
-            if constexpr (HasTranscodeCAN<Derived>) {
-                static_cast<Derived&>(*this).transcode(timestamp, frame);
-            }
-        }
-        void transcode_vrtl(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
-            if constexpr (HasTranscodeTable<Derived>) {
-                static_cast<Derived&>(*this).transcode(table, data);
-            }
-        }
-        std::future<void> transcode_async_vrtl(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
-            if constexpr (HasTranscodeAsync<Derived>) {
-                return static_cast<Derived&>(*this).transcode_async(table, data);
-            }
-            return std::future<void>{};
-        }
 
         //CANIO Methods
         void flush_async(std::function<void()> callback);
@@ -109,6 +91,7 @@ namespace Candy {
             }
         }
 
+    public:
         //DBC methods 
         void sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
             unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,

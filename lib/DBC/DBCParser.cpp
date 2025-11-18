@@ -673,8 +673,8 @@ namespace Candy {
         return true;
     }
 
-    template class DBCInterpreter<V2CTranscoder>;
-    template class DBCInterpreter<SQLTranscoder>;
     template class DBCInterpreter<CSVTranscoder>;
+    template class DBCInterpreter<SQLTranscoder>;
+    template class DBCInterpreter<V2CTranscoder>;
 
 }

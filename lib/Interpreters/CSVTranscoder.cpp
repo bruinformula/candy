@@ -41,7 +41,7 @@ namespace Candy {
     }
 
     // public Methods
-    void CSVTranscoder::transcode(CANTime timestamp, CANFrame frame) {
+    void CSVTranscoder::write_raw_message(CANTime timestamp, CANFrame frame) {
         enqueue_task([this, timestamp, frame]() {
             batch_frame(timestamp, frame);
 
@@ -55,7 +55,7 @@ namespace Candy {
         });
     }
 
-    void CSVTranscoder::transcode(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data) {
+    void CSVTranscoder::write_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data) {
         std::string csv_row = build_csv_row(data);
         enqueue_task([this, filename, csv_row, data]() {
             // Extract headers from data for first-time file creation
@@ -66,23 +66,6 @@ namespace Candy {
             ensure_csv_file(filename, headers);
             write_to_csv(filename, csv_row);
         });
-    }
-
-    std::future<void> CSVTranscoder::transcode_async(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data) {
-        std::string csv_row = build_csv_row(data);
-        std::promise<void> promise;
-        auto future = promise.get_future();
-
-        enqueue_task_with_promise([this, filename, csv_row, data]() {
-            std::vector<std::string> headers;
-            for (const auto& [key, value] : data) {
-                headers.push_back(key);
-            }
-            ensure_csv_file(filename, headers);
-            write_to_csv(filename, csv_row);
-        }, std::move(promise));
-
-        return future;
     }
 
     // protected Methods
@@ -270,7 +253,7 @@ namespace Candy {
             message.timestamp.time_since_epoch()).count();
         
         // Write raw frame using existing transcoder
-        transcode(message.timestamp, message.frame);
+        write_raw_message(message.timestamp, message.frame);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -292,7 +275,7 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                transcode("decoded_frames.csv", signal_data);
+                write_table_message("decoded_frames.csv", signal_data);
             }
         }
     }
@@ -324,7 +307,7 @@ namespace Candy {
             {"message_counts", counts_str.str()}
         };
         
-        transcode("metadata.csv", meta_data);
+        write_table_message("metadata.csv", meta_data);
     }
 
     std::vector<CANMessage> CSVTranscoder::read_messages(canid_t can_id) {

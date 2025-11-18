@@ -56,7 +56,7 @@ namespace Candy {
             double sg_factor,
             double sg_offset,
             double sg_min,
-            double /*sg_max*/,
+            double sg_max,
             const std::string& sg_unit,
             const std::vector<size_t>& rec_ords
         ) {

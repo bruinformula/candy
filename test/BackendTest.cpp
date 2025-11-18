@@ -8,16 +8,38 @@ using namespace Candy;
 
 void example_usage() {
     // Create a CAN data buffer with SQL backend
-    auto sql_buffer = CANDataBuffer::create_with_sql("Test", "/tmp/engine_data.db");
+    auto sql_buffer = CANDataBuffer::create_with_sql("Test", "./engine_data.db");
     
     // Set up metadata
-    sql_buffer->update_description("My Holy Balls");
+    sql_buffer->update_description("Uhhh");
     sql_buffer->set_auto_flush(true, 500); // Auto-flush every 500 messages
     
     // Simulate adding CAN messages
     auto now = std::chrono::system_clock::now();
     
     for (int i = 0; i < 1000; ++i) {
+        CANFrame frame;
+        frame.can_id = 0x123; // RPM message
+        frame.len = 8;
+        
+        uint16_t rpm = 800 + (i * 10) % 6000; // RPM from 800 to 6800
+        frame.data[0] = rpm & 0xFF;
+        frame.data[1] = (rpm >> 8) & 0xFF;
+        
+        // Add decoded signals
+        std::unordered_map<std::string, double> signals = {
+            {"RPM", static_cast<double>(rpm)}
+        };
+        
+        std::unordered_map<std::string, std::string> units = {
+            {"Test_RPM", "rpm"},
+        };
+        
+        auto timestamp = now + std::chrono::milliseconds(i * 10); // 10ms intervals
+        sql_buffer->add_frame(timestamp, frame, "Status", signals, units);
+    }
+
+        for (int i = 0; i < 1000; ++i) {
         CANFrame frame;
         frame.can_id = 0x123; // RPM message
         frame.len = 8;
@@ -79,8 +101,8 @@ void backend_comparison_example() {
     auto now = std::chrono::system_clock::now();
     
     // Create same data in both backends
-    auto sql_buffer = CANDataBuffer::create_with_sql("Test_SQL", "/tmp/test_sql.db");
-    auto csv_buffer = CANDataBuffer::create_with_csv("Test_CSV", "/tmp/test_csv");
+    auto sql_buffer = CANDataBuffer::create_with_sql("Test_SQL", "./test_sql.db");
+    auto csv_buffer = CANDataBuffer::create_with_csv("Test_CSV", "./test_csv");
     
     // Add identical data to both
     for (int i = 0; i < 100; ++i) {
@@ -109,7 +131,7 @@ void backend_comparison_example() {
 
 // Example demonstrating advanced querying
 void advanced_query_example() {
-    auto buffer = CANDataBuffer::create_with_sql("Advanced_Test", "/tmp/advanced.db");
+    auto buffer = CANDataBuffer::create_with_sql("Advanced_Test", "./advanced.db");
     auto now = std::chrono::system_clock::now();
     
     // Add mixed CAN messages
@@ -188,7 +210,7 @@ void performance_test() {
     
     auto start_time = std::chrono::high_resolution_clock::now();
     
-    auto buffer = CANDataBuffer::create_with_sql("Performance_Test", "/tmp/perf_test.db");
+    auto buffer = CANDataBuffer::create_with_sql("Performance_Test", "./perf_test.db");
     buffer->set_auto_flush(false); // Disable auto-flush for performance test
     
     auto data_start = std::chrono::system_clock::now();
@@ -256,7 +278,7 @@ void performance_test() {
 
 // Multi-threaded example
 void multithreaded_example() {
-    auto buffer = CANDataBuffer::create_with_csv("MT_Test", "/tmp/mt_test");
+    auto buffer = CANDataBuffer::create_with_csv("MT_Test", "./mt_test");
     buffer->set_auto_flush(false); // Disable auto-flush for multi-threaded test
     
     constexpr size_t NUM_THREADS = 4;
@@ -456,8 +478,8 @@ int main() {
         std::cout << "\n=== Real-world Logger Example ===" << std::endl;
         {
             // Create directory if it doesn't exist
-            std::filesystem::create_directories("/tmp/vehicle_log");
-            CANDataLogger logger("Vehicle_Test_Session", "/tmp/vehicle_log", true);
+            std::filesystem::create_directories("./vehicle_log");
+            CANDataLogger logger("Vehicle_Test_Session", "./vehicle_log", true);
             
             // Simulate logging some CAN frames
             auto now = std::chrono::system_clock::now();

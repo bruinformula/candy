@@ -37,13 +37,10 @@ namespace Candy {
         CSVTranscoder(const std::string& base_path, size_t batch_size = 10000);
         ~CSVTranscoder();
 
-        //transcoder methods 
-        void transcode(CANTime timestamp, CANFrame frame);
-        void transcode(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
-        std::future<void> transcode_async(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
-
         //CANIO methods 
         void write_message(const CANMessage& message);
+        void write_raw_message(CANTime timestamp, CANFrame frame);
+        void write_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
         void write_metadata(const CANDataStreamMetadata& metadata);
 
         std::vector<CANMessage> read_messages(canid_t can_id);

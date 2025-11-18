@@ -56,7 +56,7 @@ int main() {
         
         Candy::CANTime timestamp = std::chrono::system_clock::now();
 
-        transcoder.transcode(timestamp, frame);
+        transcoder.write_raw_message(timestamp, frame);
     }
     
     // Final processing statistics

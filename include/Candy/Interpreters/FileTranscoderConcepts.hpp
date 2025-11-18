@@ -6,20 +6,6 @@
 
 
 namespace Candy {
-    template <typename T>
-    concept HasTranscodeCAN = requires(T t, CANTime timestamp, CANFrame frame) {
-        { t.transcode(timestamp, frame) } -> std::same_as<void>;
-    };
-
-    template <typename T>
-    concept HasTranscodeTable = requires(T t, std::string table, std::vector<std::pair<std::string, std::string>> data) {
-        { t.transcode(table, data) } -> std::same_as<void>;
-    };
-
-    template <typename T>
-    concept HasTranscodeAsync = requires(T t, std::string table, std::vector<std::pair<std::string, std::string>> data) {
-        { t.transcode_async(table, data) } -> std::same_as<std::future<void>>;
-    };
 
     template <typename T>
     concept HasBatchFrame = requires(T t, CANTime timestamp, CANFrame frame) {
@@ -47,10 +33,7 @@ namespace Candy {
     };
 
     template <typename T>
-    concept FileTranscodable = HasTranscodeCAN<T> &&
-                                HasTranscodeTable<T> &&
-                                HasTranscodeAsync<T> &&
-                                HasBatchFrame<T> &&
+    concept FileTranscodable = HasBatchFrame<T> &&
                                 HasBatchDecodedSignals<T> &&
                                 HasFlushFramesBatch<T> &&
                                 HasFlushDecodedSignalsBatch<T> &&
