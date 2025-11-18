@@ -18,7 +18,7 @@
 #include <iomanip>
 
 #include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/IO/IOHelperTypes.hpp"
+#include "Candy/IO/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/FileTranscoder.hpp"
 
 namespace Candy {

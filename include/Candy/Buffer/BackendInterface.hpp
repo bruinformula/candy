@@ -13,7 +13,7 @@
 
 #include "sqlite3.h"
 
-#include "Candy/Buffer/CANDataBuffer.hpp"
+#include "Candy/IO/CANIOHelperTypes.hpp"
 
 namespace Candy {
 

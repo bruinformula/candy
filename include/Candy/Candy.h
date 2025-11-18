@@ -20,7 +20,7 @@
 #include "Candy/Interpreters/V2C/TransmissionGroup.hpp"
 #include "Candy/Interpreters/FileTranscoder.hpp"
 #include "Candy/Interpreters/FileTranscoderConcepts.hpp"
-#include "Candy/IO/IOHelperTypes.hpp"
+#include "Candy/IO/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/SQLTranscoder.hpp"
 #include "Candy/Interpreters/CSVTranscoder.hpp"
 #include "Candy/Interpreters/V2CTranscoder.hpp"

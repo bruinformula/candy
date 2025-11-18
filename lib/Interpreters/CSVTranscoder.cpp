@@ -8,7 +8,7 @@
 namespace Candy {
 
     CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size) : 
-        FileTranscoder(false, batch_size, 0, 0),
+        FileTranscoder<CSVTranscoder, CSVTask>(false, batch_size, 0, 0),
         base_path(base_path)
     {
         // Ensure the base directory exists

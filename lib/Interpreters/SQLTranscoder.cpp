@@ -8,7 +8,7 @@
 namespace Candy {
 
     SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size) : 
-        FileTranscoder(false, batch_size, 0, 0),
+        FileTranscoder<SQLTranscoder, SQLTask>(false, batch_size, 0, 0),
         db_path(db_file_path),
         db(nullptr, sqlite3_close)
     {

@@ -15,14 +15,18 @@
 
 #include <boost/spirit/home/x3.hpp>
 
-#include "Candy/IO/IOHelperTypes.hpp"
+#include "Candy/IO/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/FileTranscoderConcepts.hpp"
 #include "Candy/DBC/DBCInterpreter.hpp"
+
+#include "Candy/IO/CANIO.hpp"
 
 namespace Candy {
 
     template <typename Derived, typename TaskType>
-    class FileTranscoder : public DBCInterpreter<FileTranscoder<Derived, TaskType>> {
+    class FileTranscoder : public DBCInterpreter<FileTranscoder<Derived, TaskType>>,
+                           public CANReadable<FileTranscoder<Derived, TaskType>>, 
+                           public CANWriteable<FileTranscoder<Derived, TaskType>> {
 
     public:
         // Constructor to initialize member variables
@@ -33,12 +37,23 @@ namespace Candy {
             decoded_signals_batch_count(decoded_signals_batch_count)
         {}
 
-        //transcoder methods 
+        //write methods 
+        void write_message(const CANMessage& message);
+        void write_metadata(const CANDataStreamMetadata& metadata);
         void flush_async(std::function<void()> callback);
         void flush_sync();
         void flush();
-
-        
+            
+        std::vector<CANMessage> read_messages(canid_t can_id) {
+            return {};
+        }
+        std::vector<CANMessage> read_messages_in_range(
+        canid_t can_id, CANTime start, CANTime end) {
+            return {};
+        }
+        CANDataStreamMetadata read_metadata() {
+            return {};
+        }
 
         //virtual methods 
         void transcode_vrtl(CANTime timestamp, CANFrame frame) {
