@@ -9,7 +9,6 @@
 #include "Candy/CAN/Signal/SignalCodec.hpp"
 #include "Candy/CAN/Signal/NumericValue.hpp"
 #include "Candy/CAN/Signal/SignalCalculationType.hpp"
-#include "Candy/DBC/DBCInterpreterConcepts.hpp"
 #include "Candy/Interpreters//MotecGenerator.hpp"
 #include "Candy/Interpreters//LoggingTranscoder.hpp"
 #include "Candy/Interpreters/V2C/TranslatedMultiplexer.hpp"
@@ -26,3 +25,4 @@
 #include "Candy/Interpreters/V2CTranscoder.hpp"
 #include "Candy/DBC/DBCInterpreter.hpp"
 #include "Candy/DBC/DBCParser.hpp"
+#include "Candy/DBC/DBCInterpreterConcepts.hpp"

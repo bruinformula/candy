@@ -45,4 +45,14 @@ namespace Candy {
     concept HasFlushAllBatches = requires(T t) {
         { t.flush_all_batches() } -> std::same_as<void>;
     };
+
+    template <typename T>
+    concept FileTranscodable = HasTranscodeCAN<T> &&
+                                HasTranscodeTable<T> &&
+                                HasTranscodeAsync<T> &&
+                                HasBatchFrame<T> &&
+                                HasBatchDecodedSignals<T> &&
+                                HasFlushFramesBatch<T> &&
+                                HasFlushDecodedSignalsBatch<T> &&
+                                HasFlushAllBatches<T>;
 }

@@ -1,4 +1,4 @@
-#DBC Parser Test
+#V2C Parser Test
 add_executable(test_v2c V2CTest.cpp)
 
 target_include_directories(test_v2c PRIVATE "${CMAKE_SOURCE_DIR}/include/")

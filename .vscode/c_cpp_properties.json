@@ -3,6 +3,8 @@
         {
             "name": "MacOS",
             "intelliSenseMode": "clang-x64",
+            "cStandard": "c17",
+            "cppStandard": "c++23", // Set C++ standard here
             "includePath": [
                 "/usr/local/include/**"
             ]

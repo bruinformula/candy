@@ -19,8 +19,13 @@
 #include "Candy/CAN/CANKernelTypes.hpp"
 #include "Candy/Buffer/BackendInterface.hpp"
 #include "Candy/IO/CANIOHelperTypes.hpp"
+#include "Candy/IO/CANIO.hpp"
 
 namespace Candy {
+
+    template <typename T>
+    requires CANWriteable<T> && CANReadable<T>
+    using CANVistor = std::variant<T>;
 
     class CANDataBuffer {
     private:

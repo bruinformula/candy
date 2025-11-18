@@ -278,22 +278,337 @@ namespace Candy {
         return escaped;
     }
     
-    /*
-    template void FileTranscoder<SQLTranscoder, SQLTask>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
-                        unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-                        double factor, double offset, double min_val, double max_val,
-                        std::string unit, std::vector<size_t> receivers);
-    template void FileTranscoder<SQLTranscoder, SQLTask>::sg_mux(canid_t message_id, const std::string& signal_name,
-                            unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-                            std::string unit, std::vector<size_t> receivers);
+    //CANIO Methods
 
-    template void FileTranscoder<SQLTranscoder, SQLTask>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter);
-    template void FileTranscoder<SQLTranscoder, SQLTask>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
-    template void FileTranscoder<SQLTranscoder, SQLTask>::writer_loop();
-    template void FileTranscoder<SQLTranscoder, SQLTask>::enqueue_task(std::function<void()> task);
-    template void FileTranscoder<SQLTranscoder, SQLTask>::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise);
-    template void FileTranscoder<SQLTranscoder, SQLTask>::flush_async(std::function<void()> callback);
-    template void FileTranscoder<SQLTranscoder, SQLTask>::flush_sync();
-    template void FileTranscoder<SQLTranscoder, SQLTask>::flush();
-    */
+    void SQLTranscoder::write_message(const CANMessage& message) {
+        // Convert timestamp to milliseconds
+        auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            message.timestamp.time_since_epoch()).count();
+        
+        // Use existing transcoder to write the raw frame
+        transcode(message.timestamp, message.frame);
+        
+        // Write decoded signals if available
+        if (!message.decoded_signals.empty()) {
+            for (const auto& [signal_name, signal_value] : message.decoded_signals) {
+                std::string unit = "";
+                auto unit_it = message.signal_units.find(signal_name);
+                if (unit_it != message.signal_units.end()) {
+                    unit = unit_it->second;
+                }
+                
+                // Build data for decoded signals
+                std::vector<std::pair<std::string, std::string>> signal_data = {
+                    {"timestamp", std::to_string(timestamp_ms)},
+                    {"can_id", std::to_string(message.frame.can_id)},
+                    {"message_name", message.message_name},
+                    {"signal_name", signal_name},
+                    {"signal_value", std::to_string(signal_value)},
+                    {"raw_value", "0"}, // We don't have raw value in this context
+                    {"unit", unit},
+                    {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
+                };
+                
+                transcode("decoded_frames", signal_data);
+            }
+        }
+    }
+
+    void SQLTranscoder::write_metadata(const CANDataStreamMetadata& metadata) {
+        auto creation_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            metadata.creation_time.time_since_epoch()).count();
+        auto update_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            metadata.last_update.time_since_epoch()).count();
+        
+        // Serialize message names and counts as JSON-like strings
+        std::ostringstream names_json, counts_json;
+        
+        names_json << "{";
+        bool first = true;
+        for (const auto& [can_id, name] : metadata.message_names) {
+            if (!first) names_json << ",";
+            names_json << "\"" << can_id << "\":\"" << name << "\"";
+            first = false;
+        }
+        names_json << "}";
+        
+        counts_json << "{";
+        first = true;
+        for (const auto& [can_id, count] : metadata.message_counts) {
+            if (!first) counts_json << ",";
+            counts_json << "\"" << can_id << "\":" << count;
+            first = false;
+        }
+        counts_json << "}";
+        
+        std::vector<std::pair<std::string, std::string>> meta_data = {
+            {"stream_name", metadata.stream_name},
+            {"description", metadata.description},
+            {"creation_time", std::to_string(creation_ms)},
+            {"last_update", std::to_string(update_ms)},
+            {"total_messages", std::to_string(metadata.total_messages)},
+            {"message_names", names_json.str()},
+            {"message_counts", counts_json.str()}
+        };
+        
+        // Clear existing metadata and insert new
+        transcode("DELETE FROM metadata", {});
+        transcode("metadata", meta_data);
+    }
+
+    std::vector<CANMessage> SQLTranscoder::read_messages(canid_t can_id) {
+        return read_messages_in_range(can_id, 
+            std::chrono::system_clock::time_point::min(),
+            std::chrono::system_clock::time_point::max());
+    }
+
+    std::vector<CANMessage> SQLTranscoder::read_messages_in_range(
+        canid_t can_id, CANTime start, CANTime end) {
+        
+        std::vector<CANMessage> messages;
+        
+        // Open database connection for reading
+        sqlite3* db;
+        if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
+            throw std::runtime_error("Failed to open database for reading");
+        }
+        
+        auto start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            start.time_since_epoch()).count();
+        auto end_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            end.time_since_epoch()).count();
+        
+        // Query frames
+        std::string frames_sql = 
+            "SELECT timestamp, can_id, dlc, data, message_name FROM frames "
+            "WHERE can_id = ? AND timestamp >= ? AND timestamp <= ? "
+            "ORDER BY timestamp";
+        
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, frames_sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, can_id);
+            sqlite3_bind_int64(stmt, 2, start_ms);
+            sqlite3_bind_int64(stmt, 3, end_ms);
+            
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                CANMessage message;
+                
+                // Parse timestamp
+                auto timestamp_ms = sqlite3_column_int64(stmt, 0);
+                message.timestamp = std::chrono::system_clock::time_point(
+                    std::chrono::milliseconds(timestamp_ms));
+                
+                // Parse frame data
+                message.frame.can_id = sqlite3_column_int(stmt, 1);
+                message.frame.len = sqlite3_column_int(stmt, 2);
+                
+                // Parse hex data
+                const char* hex_data = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+                if (hex_data) {
+                    parse_hex_data(hex_data, message.frame.data, message.frame.len);
+                }
+                
+                // Get message name
+                const char* msg_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+                if (msg_name) {
+                    message.message_name = msg_name;
+                }
+                
+                messages.push_back(std::move(message));
+            }
+            
+            sqlite3_finalize(stmt);
+        }
+        
+        // Query decoded signals for these messages
+        load_decoded_signals_for_messages(db, messages);
+        
+        sqlite3_close(db);
+        return messages;
+    }
+
+    CANDataStreamMetadata SQLTranscoder::read_metadata() {
+        CANDataStreamMetadata metadata;
+        
+        sqlite3* db;
+        if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
+            throw std::runtime_error("Failed to open database for reading metadata");
+        }
+        
+        const char* meta_sql = "SELECT * FROM metadata LIMIT 1";
+        sqlite3_stmt* stmt;
+        
+        if (sqlite3_prepare_v2(db, meta_sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                // Parse metadata fields
+                const char* stream_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                const char* description = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                
+                if (stream_name) metadata.stream_name = stream_name;
+                if (description) metadata.description = description;
+                
+                auto creation_ms = sqlite3_column_int64(stmt, 3);
+                auto update_ms = sqlite3_column_int64(stmt, 4);
+                
+                metadata.creation_time = std::chrono::system_clock::time_point(
+                    std::chrono::milliseconds(creation_ms));
+                metadata.last_update = std::chrono::system_clock::time_point(
+                    std::chrono::milliseconds(update_ms));
+                
+                metadata.total_messages = sqlite3_column_int64(stmt, 5);
+                
+                // Parse JSON-like strings for message names and counts
+                const char* names_json = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
+                const char* counts_json = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7));
+                
+                if (names_json) parse_message_names_json(names_json, metadata.message_names);
+                if (counts_json) parse_message_counts_json(counts_json, metadata.message_counts);
+            }
+            sqlite3_finalize(stmt);
+        }
+        
+        sqlite3_close(db);
+        return metadata;
+    }
+
+    //CANIO Helpers
+    void SQLTranscoder::create_metadata_table() {
+        const char* create_metadata_sql = R"(
+            CREATE TABLE IF NOT EXISTS metadata (
+                id INTEGER PRIMARY KEY,
+                stream_name TEXT,
+                description TEXT,
+                creation_time INTEGER,
+                last_update INTEGER,
+                total_messages INTEGER,
+                message_names TEXT,
+                message_counts TEXT
+            );
+        )";
+        
+        // Access the underlying database connection from transcoder
+        // This would require exposing a method in SQLTranscoder to execute custom SQL
+        // For now, we'll assume such a method exists or can be added
+    }
+
+    void SQLTranscoder::load_decoded_signals_for_messages(sqlite3* db, std::vector<CANMessage>& messages) {
+        if (messages.empty()) return;
+        
+        // Build a map for quick lookup
+        std::unordered_map<std::string, size_t> message_lookup;
+        for (size_t i = 0; i < messages.size(); ++i) {
+            auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                messages[i].timestamp.time_since_epoch()).count();
+            std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(messages[i].frame.can_id);
+            message_lookup[key] = i;
+        }
+        
+        // Query decoded signals
+        const char* signals_sql = 
+            "SELECT timestamp, can_id, signal_name, signal_value, unit, mux_value "
+            "FROM decoded_frames WHERE can_id = ? "
+            "ORDER BY timestamp";
+        
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, signals_sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, messages[0].frame.can_id);
+            
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                auto timestamp_ms = sqlite3_column_int64(stmt, 0);
+                auto can_id = sqlite3_column_int(stmt, 1);
+                
+                std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(can_id);
+                auto it = message_lookup.find(key);
+                if (it != message_lookup.end()) {
+                    size_t msg_idx = it->second;
+                    
+                    const char* signal_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                    double signal_value = sqlite3_column_double(stmt, 3);
+                    const char* unit = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+                    
+                    if (signal_name) {
+                        messages[msg_idx].decoded_signals[signal_name] = signal_value;
+                    }
+                    if (unit) {
+                        messages[msg_idx].signal_units[signal_name] = unit;
+                    }
+                    
+                    if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) {
+                        messages[msg_idx].mux_value = sqlite3_column_int64(stmt, 5);
+                    }
+                }
+            }
+            
+            sqlite3_finalize(stmt);
+        }
+    }
+
+    void SQLTranscoder::parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len) {
+        std::istringstream hex_stream(hex_str);
+        std::string byte_str;
+        size_t i = 0;
+        
+        while (std::getline(hex_stream, byte_str, ' ') && i < len && i < 8) {
+            try {
+                data[i] = static_cast<uint8_t>(std::stoul(byte_str, nullptr, 16));
+                ++i;
+            } catch (const std::exception&) {
+                break;
+            }
+        }
+    }
+
+    void SQLTranscoder::parse_message_names_json(const std::string& json_str, 
+                                            std::unordered_map<canid_t, std::string>& names) {
+        // Simple JSON-like parsing for "can_id":"name" pairs
+        // This is a simplified parser - in production you'd want a proper JSON library
+        std::string content = json_str;
+        if (content.front() == '{') content = content.substr(1);
+        if (content.back() == '}') content = content.substr(0, content.length()-1);
+        
+        std::istringstream stream(content);
+        std::string pair;
+        
+        while (std::getline(stream, pair, ',')) {
+            auto colon_pos = pair.find(':');
+            if (colon_pos != std::string::npos) {
+                try {
+                    std::string id_str = pair.substr(1, colon_pos-2); // Remove quotes
+                    std::string name_str = pair.substr(colon_pos+2, pair.length()-colon_pos-3); // Remove quotes
+                    canid_t can_id = std::stoul(id_str);
+                    names[can_id] = name_str;
+                } catch (const std::exception&) {
+                    continue;
+                }
+            }
+        }
+    }
+
+    void SQLTranscoder::parse_message_counts_json(const std::string& json_str,
+                                            std::unordered_map<canid_t, size_t>& counts) {
+        // Simple JSON-like parsing for "can_id":count pairs
+        std::string content = json_str;
+        if (content.front() == '{') content = content.substr(1);
+        if (content.back() == '}') content = content.substr(0, content.length()-1);
+        
+        std::istringstream stream(content);
+        std::string pair;
+        
+        while (std::getline(stream, pair, ',')) {
+            auto colon_pos = pair.find(':');
+            if (colon_pos != std::string::npos) {
+                try {
+                    std::string id_str = pair.substr(1, colon_pos-2); // Remove quotes
+                    std::string count_str = pair.substr(colon_pos+1);
+                    canid_t can_id = std::stoul(id_str);
+                    size_t count = std::stoull(count_str);
+                    counts[can_id] = count;
+                } catch (const std::exception&) {
+                    continue;
+                }
+            }
+        }
+    }
+
+
 }

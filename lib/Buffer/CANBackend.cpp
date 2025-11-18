@@ -103,21 +103,21 @@ namespace Candy {
     }
 
     void SQLBackend::flush() {
-        transcoder->flush();
+        //transcoder->flush();
     }
 
     void SQLBackend::flush_sync() {
-        transcoder->flush_sync();
+        //transcoder->flush_sync();
     }
 
     std::future<void> SQLBackend::flush_async() {
         auto promise = std::make_shared<std::promise<void>>();
         auto future = promise->get_future();
-        
+        /*
         transcoder->flush_async([promise]() {
             promise->set_value();
         });
-        
+        */
         return future;
     }
 
@@ -309,21 +309,21 @@ namespace Candy {
     }
 
     void CSVBackend::flush() {
-        transcoder->flush();
+        //transcoder->flush();
     }
 
     void CSVBackend::flush_sync() {
-        transcoder->flush_sync();
+        //transcoder->flush_sync();
     }
 
     std::future<void> CSVBackend::flush_async() {
         auto promise = std::make_shared<std::promise<void>>();
         auto future = promise->get_future();
-        
+        /*
         transcoder->flush_async([promise]() {
             promise->set_value();
         });
-        
+        */
         return future;
     }
 

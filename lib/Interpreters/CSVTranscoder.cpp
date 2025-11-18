@@ -264,4 +264,329 @@ namespace Candy {
         return hex_stream.str();
     }
 
-} // namespace Candy
+    //CANIO
+    void CSVTranscoder::write_message(const CANMessage& message) {
+        auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            message.timestamp.time_since_epoch()).count();
+        
+        // Write raw frame using existing transcoder
+        transcode(message.timestamp, message.frame);
+        
+        // Write decoded signals if available
+        if (!message.decoded_signals.empty()) {
+            for (const auto& [signal_name, signal_value] : message.decoded_signals) {
+                std::string unit = "";
+                auto unit_it = message.signal_units.find(signal_name);
+                if (unit_it != message.signal_units.end()) {
+                    unit = unit_it->second;
+                }
+                
+                std::vector<std::pair<std::string, std::string>> signal_data = {
+                    {"timestamp", std::to_string(timestamp_ms)},
+                    {"can_id", std::to_string(message.frame.can_id)},
+                    {"message_name", message.message_name},
+                    {"signal_name", signal_name},
+                    {"signal_value", std::to_string(signal_value)},
+                    {"raw_value", "0"},
+                    {"unit", unit},
+                    {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
+                };
+                
+                transcode("decoded_frames.csv", signal_data);
+            }
+        }
+    }
+
+    void CSVTranscoder::write_metadata(const CANDataStreamMetadata& metadata) {
+        auto creation_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            metadata.creation_time.time_since_epoch()).count();
+        auto update_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            metadata.last_update.time_since_epoch()).count();
+        
+        // Serialize message names and counts
+        std::ostringstream names_str, counts_str;
+        
+        for (const auto& [can_id, name] : metadata.message_names) {
+            names_str << can_id << ":" << name << ";";
+        }
+        
+        for (const auto& [can_id, count] : metadata.message_counts) {
+            counts_str << can_id << ":" << count << ";";
+        }
+        
+        std::vector<std::pair<std::string, std::string>> meta_data = {
+            {"stream_name", metadata.stream_name},
+            {"description", metadata.description},
+            {"creation_time", std::to_string(creation_ms)},
+            {"last_update", std::to_string(update_ms)},
+            {"total_messages", std::to_string(metadata.total_messages)},
+            {"message_names", names_str.str()},
+            {"message_counts", counts_str.str()}
+        };
+        
+        transcode("metadata.csv", meta_data);
+    }
+
+    std::vector<CANMessage> CSVTranscoder::read_messages(canid_t can_id) {
+        return read_messages_in_range(can_id,
+            std::chrono::system_clock::time_point::min(),
+            std::chrono::system_clock::time_point::max());
+    }
+
+    std::vector<CANMessage> CSVTranscoder::read_messages_in_range(
+        canid_t can_id, CANTime start, CANTime end) {
+        
+        std::vector<CANMessage> messages;
+        
+        auto start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            start.time_since_epoch()).count();
+        auto end_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            end.time_since_epoch()).count();
+        
+        // Read frames from CSV
+        std::string frames_path = base_path + "/frames.csv";
+        if (!std::filesystem::exists(frames_path)) {
+            return messages; // Return empty if file doesn't exist
+        }
+        
+        std::ifstream frames_file(frames_path);
+        std::string line;
+        
+        // Skip header line
+        if (!std::getline(frames_file, line)) {
+            return messages;
+        }
+        
+        // Parse frames
+        std::unordered_map<std::string, CANMessage> message_map; // timestamp+can_id -> message
+        
+        while (std::getline(frames_file, line)) {
+            auto fields = parse_csv_line(line);
+            if (fields.size() < 5) continue;
+            
+            try {
+                auto timestamp_ms = std::stoll(fields[0]);
+                auto frame_can_id = static_cast<canid_t>(std::stoul(fields[1]));
+                
+                if (frame_can_id != can_id) continue;
+                if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
+                
+                CANMessage message;
+                message.timestamp = std::chrono::system_clock::time_point(
+                    std::chrono::milliseconds(timestamp_ms));
+                message.frame.can_id = frame_can_id;
+                message.frame.len = static_cast<uint8_t>(std::stoi(fields[2]));
+                
+                // Parse hex data
+                parse_hex_data(fields[3], message.frame.data, message.frame.len);
+                
+                // Get message name
+                message.message_name = fields[4];
+                
+                std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(frame_can_id);
+                message_map[key] = std::move(message);
+                
+            } catch (const std::exception&) {
+                continue; // Skip malformed lines
+            }
+        }
+        frames_file.close();
+        
+        // Read decoded signals
+        std::string decoded_path = base_path + "/decoded_frames.csv";
+        if (std::filesystem::exists(decoded_path)) {
+            std::ifstream decoded_file(decoded_path);
+            
+            // Skip header
+            if (std::getline(decoded_file, line)) {
+                while (std::getline(decoded_file, line)) {
+                    auto fields = parse_csv_line(line);
+                    if (fields.size() < 8) continue;
+                    
+                    try {
+                        auto timestamp_ms = std::stoll(fields[0]);
+                        auto frame_can_id = static_cast<canid_t>(std::stoul(fields[1]));
+                        
+                        if (frame_can_id != can_id) continue;
+                        if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
+                        
+                        std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(frame_can_id);
+                        auto it = message_map.find(key);
+                        if (it != message_map.end()) {
+                            std::string signal_name = fields[3];
+                            double signal_value = std::stod(fields[4]);
+                            std::string unit = fields[6];
+                            
+                            it->second.decoded_signals[signal_name] = signal_value;
+                            it->second.signal_units[signal_name] = unit;
+                            
+                            if (!fields[7].empty()) {
+                                it->second.mux_value = std::stoull(fields[7]);
+                            }
+                        }
+                    } catch (const std::exception&) {
+                        continue; // Skip malformed lines
+                    }
+                }
+            }
+            decoded_file.close();
+        }
+        
+        // Convert map to vector and sort by timestamp
+        messages.reserve(message_map.size());
+        for (auto& [_, message] : message_map) {
+            messages.push_back(std::move(message));
+        }
+        
+        std::ranges::sort(messages, [](const CANMessage& a, const CANMessage& b) {
+            return a.timestamp < b.timestamp;
+        });
+        
+        return messages;
+    }
+
+    CANDataStreamMetadata CSVTranscoder::read_metadata() {
+        CANDataStreamMetadata metadata;
+        
+        std::string meta_path = base_path + "/metadata.csv";
+        if (!std::filesystem::exists(meta_path)) {
+            // Set defaults if metadata file doesn't exist
+            metadata.stream_name = "Unknown";
+            metadata.creation_time = std::chrono::system_clock::now();
+            metadata.last_update = metadata.creation_time;
+            return metadata;
+        }
+        
+        std::ifstream meta_file(meta_path);
+        std::string line;
+        
+        // Skip header
+        if (!std::getline(meta_file, line)) {
+            return metadata;
+        }
+        
+        // Read metadata line
+        if (std::getline(meta_file, line)) {
+            auto fields = parse_csv_line(line);
+            if (fields.size() >= 7) {
+                try {
+                    metadata.stream_name = fields[0];
+                    metadata.description = fields[1];
+                    
+                    auto creation_ms = std::stoll(fields[2]);
+                    auto update_ms = std::stoll(fields[3]);
+                    
+                    metadata.creation_time = std::chrono::system_clock::time_point(
+                        std::chrono::milliseconds(creation_ms));
+                    metadata.last_update = std::chrono::system_clock::time_point(
+                        std::chrono::milliseconds(update_ms));
+                    
+                    metadata.total_messages = std::stoull(fields[4]);
+                    
+                    // Parse serialized message names and counts
+                    parse_serialized_data(fields[5], metadata.message_names);
+                    parse_serialized_counts(fields[6], metadata.message_counts);
+                    
+                } catch (const std::exception&) {
+                    // Use defaults on parse error
+                }
+            }
+        }
+        
+        meta_file.close();
+        return metadata;
+    }
+
+
+    //CANIO Helpers
+    void CSVTranscoder::ensure_metadata_file() {
+        std::string meta_path = base_path + "/metadata.csv";
+        if (!std::filesystem::exists(meta_path)) {
+            std::ofstream meta_file(meta_path);
+            meta_file << "stream_name,description,creation_time,last_update,total_messages,message_names,message_counts\n";
+            meta_file.close();
+        }
+    }
+
+    std::vector<std::string> CSVTranscoder::parse_csv_line(const std::string& line) {
+        std::vector<std::string> fields;
+        std::istringstream stream(line);
+        std::string field;
+        bool in_quotes = false;
+        std::string current_field;
+        
+        for (char c : line) {
+            if (c == '"') {
+                in_quotes = !in_quotes;
+            } else if (c == ',' && !in_quotes) {
+                fields.push_back(current_field);
+                current_field.clear();
+            } else {
+                current_field += c;
+            }
+        }
+        fields.push_back(current_field); // Add last field
+        
+        return fields;
+    }
+
+    void CSVTranscoder::parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len) {
+        std::istringstream hex_stream(hex_str);
+        std::string byte_str;
+        size_t i = 0;
+        
+        while (std::getline(hex_stream, byte_str, ' ') && i < len && i < 8) {
+            try {
+                data[i] = static_cast<uint8_t>(std::stoul(byte_str, nullptr, 16));
+                ++i;
+            } catch (const std::exception&) {
+                break;
+            }
+        }
+    }
+
+    void CSVTranscoder::parse_serialized_data(const std::string& data_str,
+                                        std::unordered_map<canid_t, std::string>& names) {
+        // Parse "can_id:name;" format
+        std::istringstream stream(data_str);
+        std::string pair;
+        
+        while (std::getline(stream, pair, ';')) {
+            if (pair.empty()) continue;
+            
+            auto colon_pos = pair.find(':');
+            if (colon_pos != std::string::npos) {
+                try {
+                    canid_t can_id = std::stoul(pair.substr(0, colon_pos));
+                    std::string name = pair.substr(colon_pos + 1);
+                    names[can_id] = name;
+                } catch (const std::exception&) {
+                    continue;
+                }
+            }
+        }
+    }
+
+    void CSVTranscoder::parse_serialized_counts(const std::string& counts_str,
+                                            std::unordered_map<canid_t, size_t>& counts) {
+        // Parse "can_id:count;" format
+        std::istringstream stream(counts_str);
+        std::string pair;
+        
+        while (std::getline(stream, pair, ';')) {
+            if (pair.empty()) continue;
+            
+            auto colon_pos = pair.find(':');
+            if (colon_pos != std::string::npos) {
+                try {
+                    canid_t can_id = std::stoul(pair.substr(0, colon_pos));
+                    size_t count = std::stoull(pair.substr(colon_pos + 1));
+                    counts[can_id] = count;
+                } catch (const std::exception&) {
+                    continue;
+                }
+            }
+        }
+    }
+
+}

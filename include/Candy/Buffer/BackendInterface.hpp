@@ -14,6 +14,8 @@
 #include "sqlite3.h"
 
 #include "Candy/IO/CANIOHelperTypes.hpp"
+#include "Candy/Interpreters/SQLTranscoder.hpp"
+#include "Candy/Interpreters/CSVTranscoder.hpp"
 
 namespace Candy {
 

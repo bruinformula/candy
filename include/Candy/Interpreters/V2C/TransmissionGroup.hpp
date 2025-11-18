@@ -4,6 +4,7 @@
 #include <string_view>
 #include <vector>
 #include <chrono>
+#include <algorithm>
 
 #include "Candy/CAN/CANKernelTypes.hpp"
 #include "Candy/CAN/Frame/FramePacket.hpp"

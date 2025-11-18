@@ -42,6 +42,15 @@ namespace Candy {
         void transcode(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
         std::future<void> transcode_async(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
 
+        //CANIO methods 
+        void write_message(const CANMessage& message);
+        void write_metadata(const CANDataStreamMetadata& metadata);
+
+        std::vector<CANMessage> read_messages(canid_t can_id);
+        std::vector<CANMessage> read_messages_in_range(
+            canid_t can_id, CANTime start, CANTime end);
+        CANDataStreamMetadata read_metadata();
+
     private:
         std::string base_path;
         std::unordered_map<std::string, std::unique_ptr<std::ofstream>> csv_files;
@@ -62,5 +71,15 @@ namespace Candy {
         void write_to_csv(const std::string& filename, const std::string& row);
         std::string escape_csv(const std::string& input);
         std::string format_hex_data(const uint8_t* data, size_t len);
+
+        //CANIO methods
+
+        void ensure_metadata_file();
+        std::vector<std::string> parse_csv_line(const std::string& line);
+        void parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len);
+        void parse_serialized_data(const std::string& data_str,
+                                std::unordered_map<canid_t, std::string>& names);
+        void parse_serialized_counts(const std::string& counts_str,
+                                    std::unordered_map<canid_t, size_t>& counts);
     };
 }

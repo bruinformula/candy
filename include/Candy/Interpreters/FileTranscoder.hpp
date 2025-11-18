@@ -24,9 +24,9 @@
 namespace Candy {
 
     template <typename Derived, typename TaskType>
-    class FileTranscoder : public DBCInterpreter<FileTranscoder<Derived, TaskType>>,
-                           public CANReadable<FileTranscoder<Derived, TaskType>>, 
-                           public CANWriteable<FileTranscoder<Derived, TaskType>> {
+    class FileTranscoder : public DBCInterpreter<Derived>,
+                           public CANReader<Derived>, 
+                           public CANWriter<Derived> {
 
     public:
         // Constructor to initialize member variables
@@ -36,24 +36,6 @@ namespace Candy {
             frames_batch_count(frames_batch_count),
             decoded_signals_batch_count(decoded_signals_batch_count)
         {}
-
-        //write methods 
-        void write_message(const CANMessage& message);
-        void write_metadata(const CANDataStreamMetadata& metadata);
-        void flush_async(std::function<void()> callback);
-        void flush_sync();
-        void flush();
-            
-        std::vector<CANMessage> read_messages(canid_t can_id) {
-            return {};
-        }
-        std::vector<CANMessage> read_messages_in_range(
-        canid_t can_id, CANTime start, CANTime end) {
-            return {};
-        }
-        CANDataStreamMetadata read_metadata() {
-            return {};
-        }
 
         //virtual methods 
         void transcode_vrtl(CANTime timestamp, CANFrame frame) {
@@ -73,8 +55,12 @@ namespace Candy {
             return std::future<void>{};
         }
 
-    protected:
+        //CANIO Methods
+        void flush_async(std::function<void()> callback);
+        void flush_sync();
+        void flush();
 
+    protected:
         std::unordered_map<canid_t, MessageDefinition> messages;
         size_t batch_size;
         size_t frames_batch_count;
@@ -136,7 +122,6 @@ namespace Candy {
         void bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter);
 
         void sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
-
     };
 }
 

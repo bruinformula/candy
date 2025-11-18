@@ -5,8 +5,17 @@
 
 namespace Candy {
 
+    template<typename T>
+    concept CANWriteable = requires(T t, const CANMessage& msg, const CANDataStreamMetadata& md) {
+        { t.write_message(msg) } -> std::same_as<void>;
+        { t.write_metadata(md) } -> std::same_as<void>;
+        { t.flush() } -> std::same_as<void>;
+        { t.flush_sync() } -> std::same_as<void>;
+        { t.flush_async([]{} ) } -> std::same_as<void>;
+    };
+
     template<typename Derived>
-    struct CANWriteable { // Impliticly Queued
+    struct CANWriter { // Impliticly Queued
         
         void write_message_vtrl(const CANMessage& message) {
             static_assert(HasWriteMessage<Derived>, "Derived must implement write_message_vrtl");
@@ -35,8 +44,15 @@ namespace Candy {
         
     };
 
+    template<typename T>
+    concept CANReadable = requires(T t, canid_t id, CANTime start, CANTime end) {
+        { t.read_messages(id) } -> std::same_as<std::vector<CANMessage>>;
+        { t.read_messages_in_range(id, start, end) } -> std::same_as<std::vector<CANMessage>>;
+        { t.read_metadata() } -> std::same_as<CANDataStreamMetadata>;
+    };
+
     template<typename Derived>
-    struct CANReadable { //should maybe be async
+    struct CANReader { //should maybe be async
         std::vector<CANMessage> read_messages_vrtl(canid_t can_id) {
             static_assert(HasReadMessages<Derived>, "Derived must implement read_messages_vrtl");
             return static_cast<Derived&>(*this).read_messages(can_id);
