@@ -5,8 +5,8 @@
 #include <concepts>
 #include <iostream>
 
-#include "Candy/DBC/Transcoders/V2C/TranslatedSignal.hpp"
-#include "Candy/DBC/Transcoders/V2C/TranslatedMultiplexer.hpp"
+#include "Candy/Interpreters/V2C/TranslatedSignal.hpp"
+#include "Candy/Interpreters/V2C/TranslatedMultiplexer.hpp"
 #include "Candy/CAN/Signal/SignalCalculationType.hpp"
 #include "Candy/CAN/Signal/NumericValue.hpp"
 

@@ -18,8 +18,8 @@
 #include <iomanip>
 
 #include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/DBC/Transcoders/CANTranscoderHelperTypes.hpp"
-#include "Candy/DBC/Transcoders/CANTranscoder.hpp"
+#include "Candy/IO/IOHelperTypes.hpp"
+#include "Candy/Interpreters/FileTranscoder.hpp"
 
 namespace Candy {
 
@@ -32,7 +32,7 @@ namespace Candy {
             : operation(std::move(op)), promise(std::make_unique<std::promise<void>>(std::move(p))) {}
     };
 
-    class CSVTranscoder final : public CANTranscoder<CSVTranscoder, CSVTask> {
+    class CSVTranscoder final : public FileTranscoder<CSVTranscoder, CSVTask> {
     public:
         CSVTranscoder(const std::string& base_path, size_t batch_size = 10000);
         ~CSVTranscoder();

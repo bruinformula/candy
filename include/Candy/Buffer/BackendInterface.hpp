@@ -16,14 +16,6 @@
 #include "Candy/Buffer/CANDataBuffer.hpp"
 
 namespace Candy {
-template<typename T>
-concept CANBackend = requires(T backend, const CANMessage& msg, const CANDataStreamMetadata& meta) {
-    { backend.write_message(msg) } -> std::same_as<void>;
-    { backend.write_metadata(meta) } -> std::same_as<void>;
-    { backend.flush() } -> std::same_as<void>;
-    { backend.flush_sync() } -> std::same_as<void>;
-    { backend.read_messages(std::declval<canid_t>()) } -> std::same_as<std::vector<CANMessage>>;
-};
 
 // Abstract backend interface
 class BackendInterface {

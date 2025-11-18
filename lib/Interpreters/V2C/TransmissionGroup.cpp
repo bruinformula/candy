@@ -1,7 +1,7 @@
 
 #include "Candy/CAN/CANKernelTypes.hpp"
 
-#include "Candy/DBC/Transcoders/V2C/TransmissionGroup.hpp"
+#include "Candy/Interpreters/V2C/TransmissionGroup.hpp"
 
 namespace Candy {
 

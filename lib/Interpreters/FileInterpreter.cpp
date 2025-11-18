@@ -1,11 +1,11 @@
-#include "Candy/DBC/Transcoders/CANTranscoder.hpp"
-#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
-#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
+#include "Candy/Interpreters/FileTranscoder.hpp"
+#include "Candy/Interpreters/CSVTranscoder.hpp"
+#include "Candy/Interpreters/SQLTranscoder.hpp"
 
 namespace Candy {
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
+    void FileTranscoder<T, TaskType>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
                         unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
                         double factor, double offset, double min_val, double max_val,
                         std::string unit, std::vector<size_t> receivers)
@@ -23,7 +23,7 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::sg_mux(canid_t message_id, const std::string& signal_name,
+    void FileTranscoder<T, TaskType>::sg_mux(canid_t message_id, const std::string& signal_name,
                             unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
                             std::string unit, std::vector<size_t> receivers)
     {
@@ -38,7 +38,7 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter) {
+    void FileTranscoder<T, TaskType>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter) {
         messages[message_id].name = message_name;
         messages[message_id].size = message_size;
         messages[message_id].transmitter = transmitter;
@@ -51,7 +51,7 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type) {
+    void FileTranscoder<T, TaskType>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type) {
         auto& msg = messages[message_id];
         for (auto& sig : msg.signals) {
             if (sig.name == signal_name) {
@@ -62,7 +62,7 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::writer_loop() {
+    void FileTranscoder<T, TaskType>::writer_loop() {
         while (true) {
             std::unique_lock<std::mutex> lock(queue_mutex);
             queue_cv.wait(lock, [this] {
@@ -96,21 +96,21 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::enqueue_task(std::function<void()> task) {
+    void FileTranscoder<T, TaskType>::enqueue_task(std::function<void()> task) {
         std::lock_guard<std::mutex> lock(queue_mutex);
         task_queue.emplace(std::move(task));
         queue_cv.notify_one();
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise) {
+    void FileTranscoder<T, TaskType>::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise) {
         std::lock_guard<std::mutex> lock(queue_mutex);
         task_queue.emplace(std::move(task), std::move(promise));
         queue_cv.notify_one();
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::flush_async(std::function<void()> callback) {
+    void FileTranscoder<T, TaskType>::flush_async(std::function<void()> callback) {
         enqueue_task([this, callback]() {
             flush_all_batches_vrtl();
             callback();
@@ -118,7 +118,7 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::flush_sync() {
+    void FileTranscoder<T, TaskType>::flush_sync() {
         std::promise<void> promise;
         auto future = promise.get_future();
         enqueue_task_with_promise([this]() {
@@ -128,13 +128,13 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void CANTranscoder<T, TaskType>::flush() {
+    void FileTranscoder<T, TaskType>::flush() {
         enqueue_task([this]() {
             flush_all_batches_vrtl();
         });
     }
 
-    template class CANTranscoder<CSVTranscoder, CSVTask>;
-    template class CANTranscoder<SQLTranscoder, SQLTask>;
+    template class FileTranscoder<CSVTranscoder, CSVTask>;
+    template class FileTranscoder<SQLTranscoder, SQLTask>;
 
 }

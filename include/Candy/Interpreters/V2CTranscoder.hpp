@@ -9,10 +9,10 @@
 
 #include "Candy/CAN/CANKernelTypes.hpp"
 
-#include "Candy/DBC/Transcoders/V2C/TransmissionGroup.hpp"
-#include "Candy/DBC/Transcoders/V2C/TranslatedMessage.hpp"
-#include "Candy/DBC/Transcoders/V2C/TranslatedSignal.hpp"
-#include "Candy/DBC/Transcoders/V2C/TranslatedMultiplexer.hpp"
+#include "Candy/Interpreters/V2C/TransmissionGroup.hpp"
+#include "Candy/Interpreters/V2C/TranslatedMessage.hpp"
+#include "Candy/Interpreters/V2C/TranslatedSignal.hpp"
+#include "Candy/Interpreters/V2C/TranslatedMultiplexer.hpp"
 
 #include "Candy/DBC/DBCInterpreter.hpp"
 

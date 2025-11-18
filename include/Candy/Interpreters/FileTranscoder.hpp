@@ -15,43 +15,30 @@
 
 #include <boost/spirit/home/x3.hpp>
 
-#include "Candy/DBC/Transcoders/CANTranscoderHelperTypes.hpp"
-#include "Candy/DBC/Transcoders/CANTranscoderConcepts.hpp"
+#include "Candy/IO/IOHelperTypes.hpp"
+#include "Candy/Interpreters/FileTranscoderConcepts.hpp"
 #include "Candy/DBC/DBCInterpreter.hpp"
-
 
 namespace Candy {
 
     template <typename Derived, typename TaskType>
-    class CANTranscoder : public DBCInterpreter<CANTranscoder<Derived, TaskType>> {
+    class FileTranscoder : public DBCInterpreter<FileTranscoder<Derived, TaskType>> {
 
     public:
         // Constructor to initialize member variables
-        CANTranscoder(bool shutdown_requested, size_t batch_size, size_t frames_batch_count, size_t decoded_signals_batch_count) :
+        FileTranscoder(bool shutdown_requested, size_t batch_size, size_t frames_batch_count, size_t decoded_signals_batch_count) :
             shutdown_requested(shutdown_requested),
             batch_size(batch_size),
             frames_batch_count(frames_batch_count),
             decoded_signals_batch_count(decoded_signals_batch_count)
         {}
 
-        //DBC methods 
-        void sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
-            unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-            double factor, double offset, double min_val, double max_val,
-            std::string unit, std::vector<size_t> receivers);
-
-        void sg_mux(canid_t message_id, const std::string& signal_name,
-                    unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
-                    std::string unit, std::vector<size_t> receivers);
-
-        void bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter);
-
-        void sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
-
         //transcoder methods 
         void flush_async(std::function<void()> callback);
         void flush_sync();
         void flush();
+
+        
 
         //virtual methods 
         void transcode_vrtl(CANTime timestamp, CANFrame frame) {
@@ -70,6 +57,7 @@ namespace Candy {
             }
             return std::future<void>{};
         }
+
     protected:
 
         std::unordered_map<canid_t, MessageDefinition> messages;
@@ -119,6 +107,20 @@ namespace Candy {
                 static_cast<Derived&>(*this).flush_all_batches();
             }
         }
+
+        //DBC methods 
+        void sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
+            unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
+            double factor, double offset, double min_val, double max_val,
+            std::string unit, std::vector<size_t> receivers);
+
+        void sg_mux(canid_t message_id, const std::string& signal_name,
+                    unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
+                    std::string unit, std::vector<size_t> receivers);
+
+        void bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter);
+
+        void sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
 
     };
 }

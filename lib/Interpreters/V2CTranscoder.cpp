@@ -1,6 +1,6 @@
 #include <numeric>
 
-#include "Candy/DBC/Transcoders/V2CTranscoder.hpp"
+#include "Candy/Interpreters/V2CTranscoder.hpp"
 
 namespace Candy {
 FramePacket V2CTranscoder::transcode(CANTime stamp, CANFrame frame) {

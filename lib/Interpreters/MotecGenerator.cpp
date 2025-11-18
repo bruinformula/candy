@@ -1,4 +1,4 @@
-#include "Candy/DBC/Interpreters/MotecGenerator.hpp"
+#include "Candy/Interpreters/MotecGenerator.hpp"
 
 #include <fstream>
 #include <sstream>

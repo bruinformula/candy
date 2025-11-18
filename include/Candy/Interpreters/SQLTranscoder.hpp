@@ -20,8 +20,8 @@
 #include "sqlite3.h"
 
 #include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/DBC/Transcoders/CANTranscoderHelperTypes.hpp"
-#include "Candy/DBC/Transcoders/CANTranscoder.hpp"
+#include "Candy/IO/IOHelperTypes.hpp"
+#include "Candy/Interpreters/FileTranscoder.hpp"
 
 namespace Candy {
 
@@ -42,7 +42,7 @@ namespace Candy {
         {}
     };
 
-    class SQLTranscoder final : public CANTranscoder<SQLTranscoder, SQLTask> {
+    class SQLTranscoder final : public FileTranscoder<SQLTranscoder, SQLTask> {
     public:
         SQLTranscoder(const std::string& db_file_path, size_t batch_size = 10000);
         ~SQLTranscoder();

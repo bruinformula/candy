@@ -3,9 +3,9 @@
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_pair.hpp>
 
-#include "Candy/DBC/Transcoders/V2CTranscoder.hpp"
-#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
-#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
+#include "Candy/Interpreters/V2CTranscoder.hpp"
+#include "Candy/Interpreters/SQLTranscoder.hpp"
+#include "Candy/Interpreters/CSVTranscoder.hpp"
 
 #include "Candy/DBC/DBCParser.hpp"
 #include "Candy/DBC/DBCInterpreter.hpp"
@@ -674,7 +674,7 @@ namespace Candy {
     }
 
     template class DBCInterpreter<V2CTranscoder>;
-    template class DBCInterpreter<CANTranscoder<SQLTranscoder, SQLTask>>;
-    template class DBCInterpreter<CANTranscoder<CSVTranscoder, CSVTask>>;
+    template class DBCInterpreter<FileTranscoder<SQLTranscoder, SQLTask>>;
+    template class DBCInterpreter<FileTranscoder<CSVTranscoder, CSVTask>>;
 
 }

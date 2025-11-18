@@ -6,7 +6,7 @@
 
 #include "Candy/DBC/DBCInterpreter.hpp"
 #include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/DBC/Transcoders/CANTranscoderHelperTypes.hpp"
+#include "Candy/IO/IOHelperTypes.hpp"
 
 namespace Candy {
 

@@ -3,12 +3,12 @@
 #include <stdexcept>
 #include <filesystem>
 
-#include "Candy/DBC/Transcoders/CSVTranscoder.hpp"
+#include "Candy/Interpreters/CSVTranscoder.hpp"
 
 namespace Candy {
 
     CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size) : 
-        CANTranscoder(false, batch_size, 0, 0),
+        FileTranscoder(false, batch_size, 0, 0),
         base_path(base_path)
     {
         // Ensure the base directory exists

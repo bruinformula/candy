@@ -2,13 +2,13 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "Candy/DBC/Transcoders/SQLTranscoder.hpp"
+#include "Candy/Interpreters/SQLTranscoder.hpp"
 
 
 namespace Candy {
 
     SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size) : 
-        CANTranscoder(false, batch_size, 0, 0),
+        FileTranscoder(false, batch_size, 0, 0),
         db_path(db_file_path),
         db(nullptr, sqlite3_close)
     {
@@ -279,21 +279,21 @@ namespace Candy {
     }
     
     /*
-    template void CANTranscoder<SQLTranscoder, SQLTask>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
+    template void FileTranscoder<SQLTranscoder, SQLTask>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
                         unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
                         double factor, double offset, double min_val, double max_val,
                         std::string unit, std::vector<size_t> receivers);
-    template void CANTranscoder<SQLTranscoder, SQLTask>::sg_mux(canid_t message_id, const std::string& signal_name,
+    template void FileTranscoder<SQLTranscoder, SQLTask>::sg_mux(canid_t message_id, const std::string& signal_name,
                             unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
                             std::string unit, std::vector<size_t> receivers);
 
-    template void CANTranscoder<SQLTranscoder, SQLTask>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter);
-    template void CANTranscoder<SQLTranscoder, SQLTask>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
-    template void CANTranscoder<SQLTranscoder, SQLTask>::writer_loop();
-    template void CANTranscoder<SQLTranscoder, SQLTask>::enqueue_task(std::function<void()> task);
-    template void CANTranscoder<SQLTranscoder, SQLTask>::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise);
-    template void CANTranscoder<SQLTranscoder, SQLTask>::flush_async(std::function<void()> callback);
-    template void CANTranscoder<SQLTranscoder, SQLTask>::flush_sync();
-    template void CANTranscoder<SQLTranscoder, SQLTask>::flush();
+    template void FileTranscoder<SQLTranscoder, SQLTask>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter);
+    template void FileTranscoder<SQLTranscoder, SQLTask>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
+    template void FileTranscoder<SQLTranscoder, SQLTask>::writer_loop();
+    template void FileTranscoder<SQLTranscoder, SQLTask>::enqueue_task(std::function<void()> task);
+    template void FileTranscoder<SQLTranscoder, SQLTask>::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise);
+    template void FileTranscoder<SQLTranscoder, SQLTask>::flush_async(std::function<void()> callback);
+    template void FileTranscoder<SQLTranscoder, SQLTask>::flush_sync();
+    template void FileTranscoder<SQLTranscoder, SQLTask>::flush();
     */
 }
