@@ -3,7 +3,7 @@
 #include <random>
 #include <fstream>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
 
 namespace Candy {
 

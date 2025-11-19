@@ -1,0 +1,13 @@
+module Candy {
+    requires cplusplus23
+    umbrella header "Candy/Candy.h"
+
+    module Core {
+        umbrella "Candy/Core"
+    }
+
+    module Interpreters {
+        umbrella "Candy/Interpreters"
+        export Core
+    }
+}

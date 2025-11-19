@@ -1,6 +1,6 @@
 #include <cstring>
 
-#include "Candy/CAN/Frame/FramePacket.hpp"
+#include "Candy/Core/Frame/FramePacket.hpp"
 
 namespace Candy {
 

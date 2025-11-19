@@ -1,9 +1,10 @@
 #pragma once
 
 #include <optional>
+#include <concepts>
+#include <cstdint>
 
 namespace Candy {
-
 
     enum class NumericValueType {
         i64 = 0,

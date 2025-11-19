@@ -8,8 +8,8 @@
 #include <unordered_map>
 #include "sqlite3.h"
 
-#include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/IO/CANIOHelperTypes.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
+#include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/FileTranscoder.hpp"
 
 namespace Candy {

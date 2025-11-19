@@ -5,11 +5,11 @@ file(GLOB_RECURSE candy_CXX_FILES CONFIGURE_DEPENDS *.cpp)
 
 add_library(candy STATIC ${candy_CXX_FILES})
 
-#target_compile_options(candy PRIVATE
-    #-fmodules
-    #-fimplicit-modules
-    #-fimplicit-module-maps
-#)
+target_compile_options(candy PRIVATE
+    "-fmodules"
+    "-fimplicit-modules"
+    "-fimplicit-module-maps"
+    )
 
 target_include_directories(candy PUBLIC "${CMAKE_SOURCE_DIR}/include")
 

@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <random>
 
-#include "Candy/Candy.h"
+#include <Candy/Candy.h>
 
 int main() {
     // Clean up any existing test database

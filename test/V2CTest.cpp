@@ -2,7 +2,7 @@
 #include <chrono>
 #include <bit>
 
-#include "Candy/Candy.h"
+#include <Candy/Candy.h>
 
 void print_frames(const Candy::FramePacket& fp, Candy::V2CTranscoder& transcoder, int32_t frame_counter) {
 	using namespace std::chrono;

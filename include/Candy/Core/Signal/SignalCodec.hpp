@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <boost/endian.hpp>
 
 namespace Candy {

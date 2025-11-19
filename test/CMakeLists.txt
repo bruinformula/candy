@@ -18,8 +18,8 @@ target_link_libraries(test_sql PRIVATE candy)
 #CSV Test
 
 add_executable(test_csv CSVTest.cpp)
-
-target_include_directories(test_csv PRIVATE "${CMAKE_SOURCE_DIR}/include/")
+target_compile_options(test_csv PRIVATE -fmodules -fmodule-map-file=${CMAKE_SOURCE_DIR}/include/module.modulemap)
+target_include_directories(test_csv PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
 target_link_libraries(test_csv PRIVATE candy)
 

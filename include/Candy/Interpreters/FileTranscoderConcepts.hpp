@@ -2,8 +2,8 @@
 
 #include <concepts>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/IO/CANIOHelperTypes.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
+#include "Candy/Core/CANIOHelperTypes.hpp"
 
 namespace Candy {
 

@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include "Candy/DBC/DBCInterpreter.hpp"
+#include "Candy/Core/DBC/DBCInterpreter.hpp"
 
 namespace Candy {
 

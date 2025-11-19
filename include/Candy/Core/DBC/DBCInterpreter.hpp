@@ -4,8 +4,8 @@
 
 #include <boost/spirit/home/x3.hpp>
 
-#include "Candy/DBC/DBCParser.hpp"
-#include "Candy/DBC/DBCInterpreterConcepts.hpp"
+#include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
 
 namespace Candy {
 

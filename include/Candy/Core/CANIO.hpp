@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Candy/IO/CANIOHelperTypes.hpp"
+#include "Candy/Core/CANIOHelperTypes.hpp"
 
 namespace Candy {
 

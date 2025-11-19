@@ -1,5 +1,7 @@
 #pragma once
+
 #include <string_view>
+#include <variant>
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_pair.hpp>

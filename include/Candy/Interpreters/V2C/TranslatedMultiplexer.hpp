@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "Candy/CAN/Signal/SignalCodec.hpp"
+#include "Candy/Core/Signal/SignalCodec.hpp"
 
 namespace Candy {
 

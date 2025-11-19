@@ -5,9 +5,9 @@
 #include <memory>
 #include <unordered_map>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/CAN/Signal/SignalCodec.hpp"
-#include "Candy/CAN/Signal/NumericValue.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
+#include "Candy/Core/Signal/SignalCodec.hpp"
+#include "Candy/Core/Signal/NumericValue.hpp"
 
 namespace Candy {
 

@@ -1,7 +1,7 @@
 
 #include <algorithm>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Interpreters/V2C/TransmissionGroup.hpp"
 
 namespace Candy {

@@ -7,14 +7,14 @@
 #include <chrono>
 #include <string_view>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
 
 #include "Candy/Interpreters/V2C/TransmissionGroup.hpp"
 #include "Candy/Interpreters/V2C/TranslatedMessage.hpp"
 #include "Candy/Interpreters/V2C/TranslatedSignal.hpp"
 #include "Candy/Interpreters/V2C/TranslatedMultiplexer.hpp"
 
-#include "Candy/DBC/DBCInterpreter.hpp"
+#include "Candy/Core/DBC/DBCInterpreter.hpp"
 
 namespace Candy {
     class V2CTranscoder : public DBCInterpreter<V2CTranscoder> {

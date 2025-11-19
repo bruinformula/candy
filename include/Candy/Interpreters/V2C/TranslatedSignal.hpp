@@ -4,8 +4,8 @@
 #include <optional>
 #include <cstdint>
 
-#include "Candy/CAN/Signal/NumericValue.hpp"
-#include "Candy/CAN/Signal/SignalCodec.hpp"
+#include "Candy/Core/Signal/NumericValue.hpp"
+#include "Candy/Core/Signal/SignalCodec.hpp"
 
 namespace Candy {
 

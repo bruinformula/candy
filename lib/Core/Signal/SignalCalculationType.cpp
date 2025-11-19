@@ -1,7 +1,7 @@
 #include <vector>
 #include <cstring>
 
-#include "Candy/CAN/Signal/SignalCalculationType.hpp"
+#include "Candy/Core/Signal/SignalCalculationType.hpp"
 
 namespace Candy {
 

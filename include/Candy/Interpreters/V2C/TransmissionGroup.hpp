@@ -5,8 +5,8 @@
 #include <vector>
 #include <chrono>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/CAN/Frame/FramePacket.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
+#include "Candy/Core/Frame/FramePacket.hpp"
 
 namespace Candy {
 

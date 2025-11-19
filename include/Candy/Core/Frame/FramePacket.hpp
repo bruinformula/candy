@@ -4,7 +4,7 @@
 #include <span>
 #include <cstring>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
 
 namespace Candy {
     //CANFrame nonmutex helper function

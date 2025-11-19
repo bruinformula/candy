@@ -7,9 +7,9 @@
 #include <optional>
 #include <future>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Buffer/BackendInterface.hpp"
-#include "Candy/IO/CANIOHelperTypes.hpp"
+#include "Candy/Core/CANIOHelperTypes.hpp"
 
 namespace Candy {
     

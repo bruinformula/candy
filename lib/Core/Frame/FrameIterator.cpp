@@ -1,7 +1,7 @@
 #include <cstring>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
-#include "Candy/CAN/Frame/FrameIterator.hpp"
+#include "Candy/Core/CANKernelTypes.hpp"
+#include "Candy/Core/Frame/FrameIterator.hpp"
 
 namespace Candy {
     FrameIterator::FrameIterator(const FramePacket& fp)

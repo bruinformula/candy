@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "Candy/Candy.h"
+#include <Candy/Candy.h>
 
 int main() {
     // Clean up any existing test database

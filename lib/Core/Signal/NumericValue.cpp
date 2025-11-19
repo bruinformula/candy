@@ -1,5 +1,5 @@
     
-#include "Candy/CAN/Signal/NumericValue.hpp"
+#include "Candy/Core/Signal/NumericValue.hpp"
 
 namespace Candy {
 

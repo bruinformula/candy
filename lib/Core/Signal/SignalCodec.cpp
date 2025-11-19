@@ -1,4 +1,4 @@
-#include "Candy/CAN/Signal/SignalCodec.hpp"
+#include "Candy/Core/Signal/SignalCodec.hpp"
 
 using boost::endian::order;
 using boost::endian::load_little_u64;

@@ -13,11 +13,11 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/spirit/home/x3.hpp>
 
-#include "Candy/IO/CANIOHelperTypes.hpp"
+#include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/FileTranscoderConcepts.hpp"
-#include "Candy/DBC/DBCInterpreter.hpp"
+#include "Candy/Core/DBC/DBCInterpreter.hpp"
 
-#include "Candy/IO/CANIO.hpp"
+#include "Candy/Core/CANIO.hpp"
 
 namespace Candy {
 
@@ -90,7 +90,7 @@ namespace Candy {
         }
 
     public:
-        //DBC methods 
+        //DBC/Core methods 
         void sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
             unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
             double factor, double offset, double min_val, double max_val,

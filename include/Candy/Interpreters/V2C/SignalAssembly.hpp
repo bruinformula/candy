@@ -5,7 +5,7 @@
 #include <variant>
 
 #include "Candy/Interpreters/V2C/TranslatedSignal.hpp"
-#include "Candy/CAN/Signal/SignalCalculationType.hpp"
+#include "Candy/Core/Signal/SignalCalculationType.hpp"
 
 namespace Candy {
     

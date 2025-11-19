@@ -8,8 +8,8 @@
 #include "Candy/Interpreters/SQLTranscoder.hpp"
 #include "Candy/Interpreters/CSVTranscoder.hpp"
 
-#include "Candy/DBC/DBCParser.hpp"
-#include "Candy/DBC/DBCInterpreter.hpp"
+#include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/Core/DBC/DBCInterpreter.hpp"
 
 namespace x3 = boost::spirit::x3;
 
