@@ -38,6 +38,21 @@ if(BUILD_BOOST)
 
     message(STATUS "Using locally built Boost: ${Boost_INCLUDE_DIRS}")
 
+    file(GLOB _boost_lib_files "${BOOST_INSTALL_DIR}/lib/*.a" "${BOOST_INSTALL_DIR}/lib/*.so")
+    if(_boost_lib_files)
+        list(GET _boost_lib_files 0 _boost_first_lib)
+        if(NOT TARGET boost_static)
+            add_library(boost_static UNKNOWN IMPORTED)
+        endif()
+        set_target_properties(boost_static PROPERTIES IMPORTED_LOCATION "${_boost_first_lib}")
+
+        if(NOT TARGET "Boost::Boost")
+            add_library("Boost::Boost" ALIAS boost_static)
+        endif()
+
+        set(Boost_LIBS "Boost::Boost")
+    endif()
+
 elseif(Boost_ROOT)
     message(STATUS "Using custom Boost installation at: ${Boost_ROOT}")
 

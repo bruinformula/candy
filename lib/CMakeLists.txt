@@ -9,18 +9,30 @@ target_compile_options(candy PRIVATE
     "-fmodules"
     "-fimplicit-modules"
     "-fimplicit-module-maps"
-    )
+)
 
 target_include_directories(candy PUBLIC "${CMAKE_SOURCE_DIR}/include")
 
-#add_dependencies(candy boost)
+if (${BUILD_BOOST})
+    if(TARGET boost)
+        add_dependencies(candy boost)
+    else()
+        message(STATUS "ExternalProject target 'boost' not present; assuming boost already installed at ${BOOST_INSTALL_DIR}")
+    endif()
+endif()
+
+if (${BUILD_SQLITE3})
+    # Ensure the ExternalProject that builds sqlite3 runs before candy links.
+    if(TARGET sqlite3)
+        add_dependencies(candy sqlite3)
+    else()
+        message(STATUS "ExternalProject target 'sqlite3' not present; assuming sqlite already installed at ${SQLITE3_INSTALL_DIR}")
+    endif()
+endif()
+
+
+target_link_libraries(candy PUBLIC ${SQLite3_LIBS})
+target_include_directories(candy PUBLIC ${SQLite3_INCLUDE_DIRS})
+
 target_link_libraries(candy PUBLIC ${Boost_LIBS})
 target_include_directories(candy PUBLIC ${Boost_INCLUDE_DIRS})
-
-
-if (NOT SQL_USE_SYSTEM)
-    target_include_directories(candy PUBLIC ${sqlite3_ext_SOURCE_DIR} )
-    target_link_libraries(candy PRIVATE SQLite3)
-else()
-    target_link_libraries(candy PRIVATE SQLite::SQLite3)
-endif()

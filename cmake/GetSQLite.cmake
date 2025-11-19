@@ -21,7 +21,7 @@ if(BUILD_SQLITE3)
         file(MAKE_DIRECTORY ${SQLITE3_BINARY_DIR})
 
         set(_sqlite_cmakelists "
-        cmake_minimum_required(VERSION 3.0)
+        cmake_minimum_required(VERSION 3.3)
         project(sqlite3 C)
         add_library(sqlite3 STATIC \"${SQLITE3_SOURCE_DIR}/sqlite3.c\")
         set_target_properties(sqlite3 PROPERTIES OUTPUT_NAME sqlite3 ARCHIVE_OUTPUT_DIRECTORY \"${SQLITE3_INSTALL_DIR}/lib\" LIBRARY_OUTPUT_DIRECTORY \"${SQLITE3_INSTALL_DIR}/lib\")
@@ -47,9 +47,26 @@ if(BUILD_SQLITE3)
     endif()
 
     set(SQLite3_INCLUDE_DIRS "${SQLITE3_INSTALL_DIR}/include")
-    file(GLOB SQLite3_LIBS "${SQLITE3_INSTALL_DIR}/lib/*.a")
+
+    if(TARGET "SQLite3::SQLite3")
+        set(SQLite3_LIBS "SQLite3::SQLite3")
+    else()
+        file(GLOB SQLite3_LIBS "${SQLITE3_INSTALL_DIR}/lib/libsqlite3.a")
+    endif()
 
     message(STATUS "Using locally built SQLite3: ${SQLite3_INCLUDE_DIRS}")
+
+    if(NOT TARGET sqlite3_static)
+        add_library(sqlite3_static UNKNOWN IMPORTED)
+    endif()
+    set_target_properties(sqlite3_static PROPERTIES
+        IMPORTED_LOCATION "${SQLITE3_INSTALL_DIR}/lib/libsqlite3.a"
+    )
+    if(NOT TARGET "SQLite3::SQLite3")
+        add_library("SQLite3::SQLite3" ALIAS sqlite3_static)
+    endif()
+
+    set(SQLite3_LIBS "SQLite3::SQLite3")
 
 elseif(SQLite3_ROOT)
     message(STATUS "Using custom SQLite3 installation at: ${SQLite3_ROOT}")
@@ -60,7 +77,7 @@ elseif(SQLite3_ROOT)
     message(STATUS "Found SQLite3: ${SQLite3_INCLUDE_DIRS}")
 else()
     message(STATUS "Using system-installed SQLite3")
-    find_package(SQLite3 CONFIG REQUIRED)
+    find_package(SQLite3 REQUIRED)
 
     set(SQLite3_LIBS ${SQLite3_LIBRARIES})
     message(STATUS "Found SQLite3: ${SQLite3_INCLUDE_DIRS}")
