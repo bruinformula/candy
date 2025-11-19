@@ -1,18 +1,16 @@
 #pragma once 
-#include <iostream>
-#include <limits>
-#include <type_traits>
-#include <optional>
 
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <stdexcept>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
+#include <optional>
 #include <vector>
 #include <future>
+
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/trim.hpp>
-
 #include <boost/spirit/home/x3.hpp>
 
 #include "Candy/IO/CANIOHelperTypes.hpp"

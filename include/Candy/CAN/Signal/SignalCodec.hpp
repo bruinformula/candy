@@ -3,8 +3,6 @@
 
 #include <boost/endian.hpp>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
-
 namespace Candy {
 
   class SignalCodec {

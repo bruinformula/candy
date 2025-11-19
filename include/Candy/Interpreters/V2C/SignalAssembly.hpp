@@ -1,14 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <memory>
 #include <concepts>
-#include <iostream>
+#include <variant>
 
 #include "Candy/Interpreters/V2C/TranslatedSignal.hpp"
-#include "Candy/Interpreters/V2C/TranslatedMultiplexer.hpp"
 #include "Candy/CAN/Signal/SignalCalculationType.hpp"
-#include "Candy/CAN/Signal/NumericValue.hpp"
 
 namespace Candy {
     

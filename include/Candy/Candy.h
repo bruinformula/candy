@@ -14,7 +14,6 @@
 #include "Candy/Interpreters/V2C/TranslatedMultiplexer.hpp"
 #include "Candy/Interpreters/V2C/TranslatedMessage.hpp"
 #include "Candy/Interpreters/V2C/TranslatedSignal.hpp"
-#include "Candy/Interpreters/V2C/RawMessageTranscoder.hpp"
 #include "Candy/Interpreters/V2C/SignalAssembly.hpp"
 #include "Candy/Interpreters/V2C/TransmissionGroup.hpp"
 #include "Candy/Interpreters/FileTranscoder.hpp"

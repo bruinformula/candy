@@ -1,7 +1,7 @@
+#include <ranges>
+
 #include "Candy/Buffer/CANDataBuffer.hpp"
 #include "Candy/Buffer/BackendInterface.hpp"
-#include "Candy/Interpreters/SQLTranscoder.hpp"
-#include "Candy/Interpreters/CSVTranscoder.hpp"
 
 namespace Candy {
 

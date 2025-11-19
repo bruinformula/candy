@@ -1,6 +1,7 @@
 
-#include "Candy/CAN/CANKernelTypes.hpp"
+#include <algorithm>
 
+#include "Candy/CAN/CANKernelTypes.hpp"
 #include "Candy/Interpreters/V2C/TransmissionGroup.hpp"
 
 namespace Candy {

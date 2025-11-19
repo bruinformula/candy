@@ -3,7 +3,7 @@
 #include <concepts>
 
 #include "Candy/CAN/CANKernelTypes.hpp"
-
+#include "Candy/IO/CANIOHelperTypes.hpp"
 
 namespace Candy {
 

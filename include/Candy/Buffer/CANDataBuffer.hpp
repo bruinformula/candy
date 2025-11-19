@@ -1,32 +1,18 @@
 #pragma once
 
-#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <optional>
-#include <concepts>
-#include <ranges>
-#include <functional>
 #include <future>
-#include <queue>
-#include <mutex>
-#include <atomic>
-#include <thread>
-#include <condition_variable>
 
 #include "Candy/CAN/CANKernelTypes.hpp"
 #include "Candy/Buffer/BackendInterface.hpp"
 #include "Candy/IO/CANIOHelperTypes.hpp"
-#include "Candy/IO/CANIO.hpp"
 
 namespace Candy {
-
-    template <typename T>
-    requires CANWriteable<T> && CANReadable<T>
-    using CANVistor = std::variant<T>;
-
+    
     class CANDataBuffer {
     private:
         std::unordered_map<canid_t, std::vector<CANMessage>> message_buffers;

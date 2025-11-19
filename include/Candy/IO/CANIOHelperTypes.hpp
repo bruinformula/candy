@@ -3,8 +3,9 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <future>
+#include <unordered_map>
 
+#include "Candy/CAN/CANKernelTypes.hpp"
 #include "Candy/CAN/Signal/SignalCodec.hpp"
 #include "Candy/CAN/Signal/NumericValue.hpp"
 

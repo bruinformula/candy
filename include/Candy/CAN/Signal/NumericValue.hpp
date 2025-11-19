@@ -2,8 +2,6 @@
 
 #include <optional>
 
-#include "Candy/CAN/CANKernelTypes.hpp"
-
 namespace Candy {
 
 

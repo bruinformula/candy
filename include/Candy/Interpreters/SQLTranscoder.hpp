@@ -1,22 +1,11 @@
 #pragma once
 
-#include <fstream>
 #include <string>
 #include <vector>
-#include <queue>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <atomic>
 #include <future>
 #include <functional>
-#include <chrono>
 #include <memory>
 #include <unordered_map>
-#include <optional>
-#include <sstream>
-#include <iomanip>
-
 #include "sqlite3.h"
 
 #include "Candy/CAN/CANKernelTypes.hpp"

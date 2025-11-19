@@ -1,8 +1,6 @@
 #pragma once    
 
-#include <bit>
-
-#include "Candy/CAN/CANKernelTypes.hpp"
+#include <type_traits>
 
 namespace Candy {
     template<typename T>

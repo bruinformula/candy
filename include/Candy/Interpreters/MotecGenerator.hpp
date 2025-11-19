@@ -1,8 +1,6 @@
 #pragma once
 
-#include <iostream>
 #include <string>
-#include <future>
 
 #include "Candy/DBC/DBCInterpreter.hpp"
 #include "Candy/CAN/CANKernelTypes.hpp"
