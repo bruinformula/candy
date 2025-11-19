@@ -13,7 +13,6 @@ if(BUILD_BOOST)
     set(BOOST_BINARY_DIR  ${CMAKE_BINARY_DIR}/_deps/boost-build)
     set(BOOST_SOURCE_DIR  ${CMAKE_BINARY_DIR}/_deps/boost-src)
 
-    # Check if Boost is already built
     if(EXISTS ${BOOST_INSTALL_DIR})
         message(STATUS "Boost is already built at ${BOOST_INSTALL_DIR}, skipping build.")
     else()
