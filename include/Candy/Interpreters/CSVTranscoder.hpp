@@ -39,13 +39,6 @@ namespace Candy {
             canid_t can_id, CANTime start, CANTime end);
         CANDataStreamMetadata read_metadata();
 
-    private:
-        std::string base_path;
-        std::unordered_map<std::string, std::unique_ptr<std::ofstream>> csv_files;
-        std::unordered_map<std::string, bool> headers_written;
-        std::vector<std::string> frames_batch;
-        std::vector<std::string> decoded_signals_batch;
-
         //transcoder methods 
         void batch_frame(CANTime timestamp, CANFrame frame);
         void batch_decoded_signals(CANTime timestamp, CANFrame frame, const MessageDefinition& msg_def);
@@ -53,6 +46,13 @@ namespace Candy {
         void flush_decoded_signals_batch();
         void flush_all_batches();
         
+    private:
+        std::string base_path;
+        std::unordered_map<std::string, std::unique_ptr<std::ofstream>> csv_files;
+        std::unordered_map<std::string, bool> headers_written;
+        std::vector<std::string> frames_batch;
+        std::vector<std::string> decoded_signals_batch;
+
         //csv methods
         std::string build_csv_row(const std::vector<std::pair<std::string, std::string>>& data);
         void ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers);
@@ -70,4 +70,5 @@ namespace Candy {
         void parse_serialized_counts(const std::string& counts_str,
                                     std::unordered_map<canid_t, size_t>& counts);
     };
+    
 }

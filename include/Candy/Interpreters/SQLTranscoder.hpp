@@ -31,6 +31,7 @@ namespace Candy {
         {}
     };
 
+
     class SQLTranscoder final : public FileTranscoder<SQLTranscoder, SQLTask> {
     public:
         SQLTranscoder(const std::string& db_file_path, size_t batch_size = 10000);
@@ -47,19 +48,20 @@ namespace Candy {
             canid_t can_id, CANTime start, CANTime end);
         CANDataStreamMetadata read_metadata();
 
-    private:
-        std::unique_ptr<sqlite3, decltype(&sqlite3_close)> db;
-        std::string db_path;
-        sqlite3_stmt* decoded_signals_insert_stmt;
-        sqlite3_stmt* frames_insert_stmt;
-
         //transcoder methods 
         void batch_frame(CANTime timestamp, CANFrame frame);
         void batch_decoded_signals(CANTime timestamp, CANFrame frame, const MessageDefinition& msg_def);
         void flush_frames_batch();
         void flush_decoded_signals_batch();
         void flush_all_batches();
-        
+
+    private:
+
+        std::unique_ptr<sqlite3, decltype(&sqlite3_close)> db;
+        std::string db_path;
+        sqlite3_stmt* decoded_signals_insert_stmt;
+        sqlite3_stmt* frames_insert_stmt;
+
         //sql methods 
         void prepare_statements();
         void finalize_statements();
@@ -76,6 +78,5 @@ namespace Candy {
                                     std::unordered_map<canid_t, std::string>& names);
         void parse_message_counts_json(const std::string& json_str,
                                     std::unordered_map<canid_t, size_t>& counts);
-
     };
 }

@@ -2,6 +2,7 @@
 
 #include <concepts>
 
+#include "Candy/Core/CANIO.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
 
@@ -33,9 +34,12 @@ namespace Candy {
     };
 
     template <typename T>
-    concept FileTranscodable = HasBatchFrame<T> &&
+    concept FileTranscodable =  HasBatchFrame<T> &&
                                 HasBatchDecodedSignals<T> &&
                                 HasFlushFramesBatch<T> &&
                                 HasFlushDecodedSignalsBatch<T> &&
-                                HasFlushAllBatches<T>;
+                                HasFlushAllBatches<T> &&
+                                CANReadable<T> && 
+                                CANWriteable<T> &&
+                                CANQueueWriteable<T>;
 }

@@ -16,6 +16,7 @@
 #include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/FileTranscoderConcepts.hpp"
 #include "Candy/Core/DBC/DBCInterpreter.hpp"
+#include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
 
 #include "Candy/Core/CANIO.hpp"
 
@@ -24,8 +25,8 @@ namespace Candy {
     template <typename Derived, typename TaskType>
     class FileTranscoder : public DBCInterpreter<Derived>,
                            public CANReader<Derived>, 
+                           public CANWriter<Derived>,
                            public CANQueueWriter<Derived> {
-
     public:
         // Constructor to initialize member variables
         FileTranscoder(bool shutdown_requested, size_t batch_size, size_t frames_batch_count, size_t decoded_signals_batch_count) :
@@ -33,7 +34,13 @@ namespace Candy {
             batch_size(batch_size),
             frames_batch_count(frames_batch_count),
             decoded_signals_batch_count(decoded_signals_batch_count)
-        {}
+        {
+            static_assert(FileTranscodable<Derived>, "Derived must satisfy FileTranscodable concept");
+            static_assert(HasSg<Derived>, "Derived must satisfy HasSg concept");
+            static_assert(HasSgMux<Derived>, "Derived must satisfy HasSgMux concept");
+            static_assert(HasBo<Derived>, "Derived must satisfy HasBo concept");
+            static_assert(HasSigValType<Derived>, "Derived must satisfy HasSigValType concept");
+        }
 
         //CANIO Methods
         void flush_async(std::function<void()> callback);
@@ -60,37 +67,27 @@ namespace Candy {
 
         //virtual methods
         void batch_frame_vrtl(CANTime timestamp, CANFrame frame) {
-            if constexpr (HasBatchFrame<Derived>) {
-                static_cast<Derived&>(*this).batch_frame(timestamp, frame);
-            }
+            static_cast<Derived&>(*this).batch_frame(timestamp, frame);
         }
 
         void batch_decoded_signals_vrtl(CANTime timestamp, CANFrame frame, const MessageDefinition& msg_def) {
-            if constexpr (HasBatchDecodedSignals<Derived>) {
-                static_cast<Derived&>(*this).batch_decoded_signals(timestamp, frame, msg_def);
-            }
+            static_cast<Derived&>(*this).batch_decoded_signals(timestamp, frame, msg_def);
         }
 
         void flush_frames_batch_vrtl() {
-            if constexpr (HasFlushFramesBatch<Derived>) {
-                static_cast<Derived&>(*this).flush_frames_batch();
-            }
+            static_cast<Derived&>(*this).flush_frames_batch();
         }
 
         void flush_decoded_signals_batch_vrtl() {
-            if constexpr (HasFlushDecodedSignalsBatch<Derived>) {
-                static_cast<Derived&>(*this).flush_decoded_signals_batch();
-            }
+            static_cast<Derived&>(*this).flush_decoded_signals_batch();
         }
 
         void flush_all_batches_vrtl() {
-            if constexpr (HasFlushAllBatches<Derived>) {
-                static_cast<Derived&>(*this).flush_all_batches();
-            }
+            static_cast<Derived&>(*this).flush_all_batches();
         }
 
     public:
-        //DBC/Core methods 
+        //DBC methods 
         void sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
             unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
             double factor, double offset, double min_val, double max_val,
@@ -104,5 +101,7 @@ namespace Candy {
 
         void sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
     };
+
+
 }
 

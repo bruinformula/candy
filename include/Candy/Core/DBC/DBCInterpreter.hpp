@@ -4,13 +4,16 @@
 
 #include <boost/spirit/home/x3.hpp>
 
-#include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/Core/DBC/DBCParserUtils.hpp"
 #include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
+#include "Candy/Core/DBC/DBCParser.hpp"
 
 namespace Candy {
 
+
     template <typename Derived>
-    struct DBCInterpreter {
+    class DBCInterpreter : public DBCParser<Derived> {
+    protected:
         void version_vrtl(const std::string& v) {
             if constexpr (HasVersion<Derived>) {
                 static_cast<Derived&>(*this).version(v);
@@ -187,6 +190,8 @@ namespace Candy {
     
     public:
 
+        //there are no static assertions to impliment a DBC Interpreter. It is up to the Derived classes
+
         ParseResult parse_version(std::string_view rng);
         ParseResult parse_ns_(std::string_view rng);
         ParseResult parse_bs_(std::string_view rng);
@@ -206,11 +211,9 @@ namespace Candy {
         ParseResult parse_sig_valtype_(std::string_view rng);
         ParseResult parse_bo_tx_bu(std::string_view rng);
         ParseResult parse_sg_mul_val_(std::string_view rng);
-    
+
         bool parse_dbc(std::string_view dbc_src);
-
     };
-
     
 }
 

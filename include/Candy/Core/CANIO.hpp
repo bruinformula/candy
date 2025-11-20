@@ -13,11 +13,11 @@ namespace Candy {
         { t.write_message(msg) } -> std::same_as<void>;
         { t.write_metadata(md) } -> std::same_as<void>;
         { t.write_raw_message(timestamp, frame) } -> std::same_as<void>;
-        { t.write_table(table, data) } -> std::same_as<void>;
+        { t.write_table_message(table, data) } -> std::same_as<void>;
     };
 
     template<typename T>
-    concept CANQueueWriteable = CANWriteable<T> && requires(T t, const CANMessage& msg, const CANDataStreamMetadata& md) {
+    concept CANQueueWriteable = requires(T t, const CANMessage& msg, const CANDataStreamMetadata& md) {
         { t.flush() } -> std::same_as<void>;
         { t.flush_sync() } -> std::same_as<void>;
         { t.flush_async([]{} ) } -> std::same_as<void>;
@@ -40,11 +40,15 @@ namespace Candy {
         void write_table_message_vrtl(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
             static_cast<Derived&>(*this).write_table_message(table, data);
         }
+
+        CANWriter() {
+            static_assert(CANWriteable<Derived>, "Derived must satisfy CANWriteable concept");
+        }
         
     };
 
     template<typename Derived>
-    struct CANQueueWriter : public CANWriter<Derived> {
+    struct CANQueueWriter {
 
         void flush_vtrl() {
             static_cast<Derived&>(*this).flush();
@@ -56,6 +60,9 @@ namespace Candy {
         
         void flush_sync_vtrl() {
             static_cast<Derived&>(*this).flush_sync();
+        }
+        CANQueueWriter() {
+            static_assert(CANQueueWriteable<Derived>, "Derived must satisfy CANQueueWriteable concept");
         }
     };
 

@@ -7,8 +7,9 @@
 #include "Candy/Interpreters/V2CTranscoder.hpp"
 #include "Candy/Interpreters/SQLTranscoder.hpp"
 #include "Candy/Interpreters/CSVTranscoder.hpp"
+#include "Candy/Interpreters/LoggingTranscoder.hpp"
 
-#include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/Core/DBC/DBCParserUtils.hpp"
 #include "Candy/Core/DBC/DBCInterpreter.hpp"
 
 namespace x3 = boost::spirit::x3;
@@ -677,5 +678,6 @@ namespace Candy {
     template class DBCInterpreter<CSVTranscoder>;
     template class DBCInterpreter<SQLTranscoder>;
     template class DBCInterpreter<V2CTranscoder>;
+    template class DBCInterpreter<LoggingTranscoder>;
 
 }

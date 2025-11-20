@@ -2,7 +2,7 @@
 #include <thread>
 #include <filesystem>
 
-#include "Candy/Candy.h"
+#include <Candy/Candy.h>
 
 using namespace Candy;
 
