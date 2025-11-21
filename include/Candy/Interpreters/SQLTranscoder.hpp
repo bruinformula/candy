@@ -10,7 +10,7 @@
 
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
-#include "Candy/Interpreters/FileTranscoder.hpp"
+#include "Candy/Interpreters/File/FileTranscoder.hpp"
 
 namespace Candy {
 

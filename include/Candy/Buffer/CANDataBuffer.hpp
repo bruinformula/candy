@@ -8,6 +8,7 @@
 #include "Candy/Core/CANIO.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
+#include "Candy/Core/CANBundle.hpp"
 
 namespace Candy {
 

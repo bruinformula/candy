@@ -8,7 +8,6 @@ namespace Candy {
 
     class LoggingTranscoder : public DBCInterpreter<LoggingTranscoder> {
     public:
-        // Constructor
         LoggingTranscoder(std::ostream& output = std::cout) : log_stream(output) {}
 
         // Log signal definitions
@@ -37,7 +36,7 @@ namespace Candy {
         }
 
     private:
-        std::ostream& log_stream; // Stream to log output (default is std::cout)
+        std::ostream& log_stream;
     };
     
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <compare>
 #include <string>
 #include <vector>
 #include <memory>
@@ -19,8 +20,7 @@ namespace Candy {
         std::unordered_map<std::string, std::string> signal_units;
         std::optional<uint64_t> mux_value;
 
-        // C++20 spaceship operator for comparison
-        auto operator<=>(const CANMessage& other) const {
+        std::strong_ordering operator<=>(const CANMessage& other) const {
             return timestamp <=> other.timestamp;
         }
 

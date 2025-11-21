@@ -4,15 +4,16 @@
 
 #include "Candy/Buffer/BackendInterface.hpp"
 #include "Candy/Core/CANIO.hpp"
-#include "Candy/Core/CANVisitor.hpp"
+#include "Candy/Core/CANBundle.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
 
 namespace Candy {
+    /*
     template <typename... Vs>
-    class CANDBufferVisitor : public CANQueueWriter<CANDBufferVisitor<Vs&...>>, 
+    class CANDBufferVisitor : public CANBatchWriter<CANDBufferVisitor<Vs&...>>, 
                               public CANWriter<CANDBufferVisitor<Vs&...>>,
-                              public CANVisitor<CANDBufferVisitor<Vs&...>> {
+                              public CANBundle<CANDBufferVisitor<Vs&...>> {
     private:
         std::unordered_map<canid_t, std::vector<CANMessage>> message_buffers;
         CANDataStreamMetadata metadata;
@@ -24,4 +25,5 @@ namespace Candy {
         void update_metadata_for_message(const CANMessage& message);
         void check_auto_flush();
     };
+    */
 }

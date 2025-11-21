@@ -39,7 +39,7 @@ namespace Candy {
                                 HasFlushFramesBatch<T> &&
                                 HasFlushDecodedSignalsBatch<T> &&
                                 HasFlushAllBatches<T> &&
-                                CANReadable<T> && 
                                 CANWriteable<T> &&
-                                CANQueueWriteable<T>;
+                                CANStoreReadable<T> && 
+                                CANStoreWriteable<T>;
 }

@@ -5,12 +5,16 @@
 
 namespace Candy {
 
+    template<typename Derived>
+    struct DBCParser;
+
     template <typename... Visitors>
-    class CANVisitor {
+    class CANBundle : public DBCParser<CANBundle<Visitors&...>>, 
+                      public CANWriter<CANBundle<Visitors&...>> {
     public:
         std::tuple<Visitors&...> items;
 
-        explicit CANVisitor(Visitors&... xs)
+        CANBundle(Visitors&... xs)
             : items(xs...)
         {}
 
@@ -18,13 +22,8 @@ namespace Candy {
         inline void for_each_item(Func f) {
             std::apply([&](Visitors&... args) { (f(args), ...); }, items);
         }
-    };
-    
-    
-    template <typename... Visitors>
-    class DBCVisitor : public DBCParser<DBCVisitor<Visitors&...>>, 
-                       public CANVisitor<DBCVisitor<Visitors&...>> {
-    public:
+
+        //DBC 
         bool parse_dbc(std::string_view dbc_src) { 
             constexpr int num_dbc_interpreters = (0 + ... + (HasParseDBC<Visitors> ? 1 : 0));
             int num_successful_parsed = 0; 
@@ -37,11 +36,7 @@ namespace Candy {
             });
             return num_successful_parsed == num_dbc_interpreters;
         }
-    };
-
-    template <typename... Visitors>
-    class CANWriterVisitor : public CANWriter<CANVisitor<Visitors&...>> {
-
+        //Writeable
         void write_message(const CANMessage& message) {
             for_each_item([&](auto& item) {
                 if constexpr (CANWriteable<decltype(item)>) {
@@ -73,23 +68,8 @@ namespace Candy {
                 }
             });
         }
+
     };
-
-    template <typename... Visitors>
-    class CANQueueWriterVisitor : public CANWriter<CANVisitor<Visitors&...>> {
-
-        void flush_vtrl() {
-            
-        }
-
-        void flush_async_vtrl(std::function<void()> callback) {
-
-        }
-        
-        void flush_sync_vtrl() {
-            
-        }
-    };
-
 
 }
+

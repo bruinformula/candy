@@ -14,7 +14,7 @@
 #include <boost/spirit/home/x3.hpp>
 
 #include "Candy/Core/CANIOHelperTypes.hpp"
-#include "Candy/Interpreters/FileTranscoderConcepts.hpp"
+#include "Candy/Interpreters/File/FileTranscoderConcepts.hpp"
 #include "Candy/Core/DBC/DBCInterpreter.hpp"
 #include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
 
@@ -24,9 +24,11 @@ namespace Candy {
 
     template <typename Derived, typename TaskType>
     class FileTranscoder : public DBCInterpreter<Derived>,
-                           public CANReader<Derived>, 
+                           public CANStoreReader<Derived>,
+                           //public CANBatchReader<Derived>, 
                            public CANWriter<Derived>,
-                           public CANQueueWriter<Derived> {
+                           public CANStoreWriter<Derived>
+    {
     public:
         // Constructor to initialize member variables
         FileTranscoder(bool shutdown_requested, size_t batch_size, size_t frames_batch_count, size_t decoded_signals_batch_count) :
