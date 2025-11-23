@@ -41,13 +41,13 @@ namespace Candy {
     }
 
     // public Methods
-    void CSVTranscoder::write_raw_message(CANTime timestamp, CANFrame frame) {
-        enqueue_task([this, timestamp, frame]() {
-            batch_frame(timestamp, frame);
+    void CSVTranscoder::write_raw_message(std::pair<CANTime, CANFrame> sample) {
+        enqueue_task([this, sample]() {
+            batch_frame(sample);
 
-            auto msg_it = messages.find(frame.can_id);
+            auto msg_it = messages.find(sample.second.can_id);
             if (msg_it != messages.end()) {
-                batch_decoded_signals(timestamp, frame, msg_it->second);
+                batch_decoded_signals(sample, msg_it->second);
             }
 
             if (frames_batch_count >= batch_size) flush_frames_batch();
@@ -69,17 +69,17 @@ namespace Candy {
     }
 
     // protected Methods
-    void CSVTranscoder::batch_frame(CANTime timestamp, CANFrame frame) {
-        auto msg_it = messages.find(frame.can_id);
+    void CSVTranscoder::batch_frame(std::pair<CANTime, CANFrame> sample) {
+        auto msg_it = messages.find(sample.second.can_id);
         std::string message_name = (msg_it != messages.end()) ? msg_it->second.name : "";
 
-        std::string hex_data = format_hex_data(frame.data, frame.len);
-        auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp.time_since_epoch()).count();
+        std::string hex_data = format_hex_data(sample.second.data, sample.second.len);
+        auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sample.first.time_since_epoch()).count();
 
         std::ostringstream row;
         row << timestamp_ms << ","
-            << frame.can_id << ","
-            << static_cast<int>(frame.len) << ","
+            << sample.second.can_id << ","
+            << static_cast<int>(sample.second.len) << ","
             << "\"" << hex_data << "\","
             << "\"" << escape_csv(message_name) << "\"";
 
@@ -87,12 +87,12 @@ namespace Candy {
         frames_batch_count++;
     }
 
-    void CSVTranscoder::batch_decoded_signals(CANTime timestamp, CANFrame frame, const MessageDefinition& msg_def) {
-        auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp.time_since_epoch()).count();
+    void CSVTranscoder::batch_decoded_signals(std::pair<CANTime, CANFrame> sample, const MessageDefinition& msg_def) {
+        auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sample.first.time_since_epoch()).count();
 
         std::optional<uint64_t> mux_value;
         if (msg_def.multiplexer.has_value()) {
-            uint64_t raw_mux = (*msg_def.multiplexer->codec)(frame.data);
+            uint64_t raw_mux = (*msg_def.multiplexer->codec)(sample.second.data);
             mux_value = raw_mux;
         }
 
@@ -102,13 +102,13 @@ namespace Candy {
             }
 
             try {
-                uint64_t raw_value = (*signal.codec)(frame.data);
+                uint64_t raw_value = (*signal.codec)(sample.second.data);
                 auto converted_value = signal.numeric_value->convert(raw_value, signal.value_type);
                 if (!converted_value.has_value()) continue;
 
                 std::ostringstream row;
                 row << timestamp_ms << ","
-                    << frame.can_id << ","
+                    << sample.second.can_id << ","
                     << "\"" << escape_csv(msg_def.name) << "\","
                     << "\"" << escape_csv(signal.name) << "\","
                     << std::fixed << std::setprecision(6) << converted_value.value() << ","
@@ -250,10 +250,10 @@ namespace Candy {
     //CANIO
     void CSVTranscoder::write_message(const CANMessage& message) {
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            message.timestamp.time_since_epoch()).count();
+            message.sample.first.time_since_epoch()).count();
         
         // Write raw frame using existing transcoder
-        write_raw_message(message.timestamp, message.frame);
+        write_raw_message(message.sample);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -266,7 +266,7 @@ namespace Candy {
                 
                 std::vector<std::pair<std::string, std::string>> signal_data = {
                     {"timestamp", std::to_string(timestamp_ms)},
-                    {"can_id", std::to_string(message.frame.can_id)},
+                    {"can_id", std::to_string(message.sample.second.can_id)},
                     {"message_name", message.message_name},
                     {"signal_name", signal_name},
                     {"signal_value", std::to_string(signal_value)},
@@ -355,13 +355,13 @@ namespace Candy {
                 if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
                 
                 CANMessage message;
-                message.timestamp = std::chrono::system_clock::time_point(
+                message.sample.first = std::chrono::system_clock::time_point(
                     std::chrono::milliseconds(timestamp_ms));
-                message.frame.can_id = frame_can_id;
-                message.frame.len = static_cast<uint8_t>(std::stoi(fields[2]));
+                message.sample.second.can_id = frame_can_id;
+                message.sample.second.len = static_cast<uint8_t>(std::stoi(fields[2]));
                 
                 // Parse hex data
-                parse_hex_data(fields[3], message.frame.data, message.frame.len);
+                parse_hex_data(fields[3], message.sample.second.data, message.sample.second.len);
                 
                 // Get message name
                 message.message_name = fields[4];
@@ -422,14 +422,13 @@ namespace Candy {
         }
         
         std::ranges::sort(messages, [](const CANMessage& a, const CANMessage& b) {
-            return a.timestamp < b.timestamp;
+            return a.sample.first < b.sample.first;
         });
         
         return messages;
     }
 
-    CANDataStreamMetadata CSVTranscoder::read_metadata() {
-        CANDataStreamMetadata metadata;
+    const CANDataStreamMetadata& CSVTranscoder::read_metadata() {
         
         std::string meta_path = base_path + "/metadata.csv";
         if (!std::filesystem::exists(meta_path)) {

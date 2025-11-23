@@ -2,7 +2,6 @@
 #include "Candy/Core/CANBundle.hpp"
 #include "Candy/Interpreters/LoggingTranscoder.hpp"
 
-#include "Candy/Core/CANDataBufferVisitor.hpp"
 #include <Candy/Candy.h>
 
 using namespace Candy;
@@ -14,7 +13,17 @@ int main() {
     CSVTranscoder csv_transcoder("./test_csv_output_run");  // batch size of 1000
     LoggingTranscoder logger;
 
-    CANBundle node(sql_transcoder, csv_transcoder, logger);
+    DBCBundle node(sql_transcoder, csv_transcoder, logger);
+
+    bool parsed = node.parse_dbc(Candy::read_file("test/network.dbc"));
+
+    NullReader null = {};
+    
+    if (!parsed) {
+		return 1;
+    }
+
+
 /*
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
@@ -42,18 +51,18 @@ int main() {
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < num_frames; ++i) {
         // Generate realistic CAN frame
-        CANFrame frame;
-        frame.can_id = can_id_dist(gen);
-        frame.len = 8;
+        std::pair<CANTime, CANFrame> sample;
+        sample.second.can_id = can_id_dist(gen);
+        sample.second.len = 8;
         
         // Fill with random data
         for (int j = 0; j < 8; ++j) {
-            frame.data[j] = data_dist(gen);
+            sample.second.data[j] = data_dist(gen);
         }
         
         Candy::CANTime timestamp = std::chrono::system_clock::now();
 
-        node.write_raw_message(timestamp, frame);
+        node.write_raw_message(sample);
     }
     
     // Final processing statistics

@@ -40,10 +40,13 @@ int main() {
 
 	while (true) {
 		// Simulate receiving a frame from CAN bus
-		CANFrame frame = Candy::generate_frame();
+		std::pair<CANTime, CANFrame> sample;
+		sample.first = std::chrono::system_clock::now();
+		sample.second = Candy::generate_frame();
+
 		frame_counter++;
 
-		auto fp = transcoder.transcode(std::chrono::system_clock::now(), frame);
+		auto fp = transcoder.transcode(sample);
 		
 		if (fp.is_empty())
 			continue;

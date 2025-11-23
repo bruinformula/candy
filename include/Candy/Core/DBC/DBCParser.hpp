@@ -5,7 +5,7 @@
 namespace Candy {
 
     template<typename T>
-    concept HasParseDBC = requires(T t, std::string_view dbc_src) {
+    concept IsDBCParsable = requires(T t, std::string_view dbc_src) {
         { t.parse_dbc(dbc_src) } -> std::same_as<bool>;
     };
 
@@ -16,7 +16,7 @@ namespace Candy {
         }
 
         DBCParser() {
-            static_assert(HasParseDBC<Derived>, "Derived must satisfy HasParseDBC concept");
+            static_assert(IsDBCParsable<Derived>, "Derived must satisfy HasParseDBC concept");
         }
     };
     

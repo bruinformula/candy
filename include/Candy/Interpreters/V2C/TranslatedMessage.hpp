@@ -26,7 +26,7 @@ namespace Candy {
 
     public:
         void assign_group(TransmissionGroup* txg, uint32_t message_id);
-        void assemble(CANTime stamp, CANFrame frame);
+        void assemble(std::pair<CANTime, CANFrame> sample);
 
         void sig_agg_type(const std::string& sig_name, const std::string& agg_type);
         void sig_val_type(const std::string& sig_name, unsigned sig_ext_val_type);

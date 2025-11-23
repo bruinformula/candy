@@ -9,7 +9,7 @@ namespace Candy {
     namespace utils {
         inline auto time_range_filter(CANTime start, CANTime end) {
             return [start, end](const CANMessage& msg) {
-                return msg.timestamp >= start && msg.timestamp <= end;
+                return msg.sample.first >= start && msg.sample.first <= end;
             };
         }
 
@@ -33,7 +33,7 @@ namespace Candy {
         // Helper for CAN ID filtering across multiple IDs
         inline auto can_id_filter(const std::vector<canid_t>& ids) {
             return [ids](const CANMessage& msg) {
-                return std::ranges::find(ids, msg.frame.can_id) != ids.end();
+                return std::ranges::find(ids, msg.sample.second.can_id) != ids.end();
             };
         }
 

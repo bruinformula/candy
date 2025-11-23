@@ -19,8 +19,10 @@ namespace Candy {
         std::unique_ptr<std::promise<void>> promise;
 
         CSVTask(std::function<void()> op) : operation(std::move(op)), promise(nullptr) {}
-        CSVTask(std::function<void()> op, std::promise<void> p) 
-            : operation(std::move(op)), promise(std::make_unique<std::promise<void>>(std::move(p))) {}
+        CSVTask(std::function<void()> op, std::promise<void> p) : 
+            operation(std::move(op)), 
+            promise(std::make_unique<std::promise<void>>(std::move(p))) 
+        {}
     };
 
     class CSVTranscoder final : public FileTranscoder<CSVTranscoder, CSVTask> {
@@ -28,19 +30,19 @@ namespace Candy {
         CSVTranscoder(const std::string& base_path, size_t batch_size = 10000);
         ~CSVTranscoder();
 
-        //CANWriter methods 
+        //CANWritable methods 
         void write_message(const CANMessage& message);
-        void write_raw_message(CANTime timestamp, CANFrame frame);
+        void write_raw_message(std::pair<CANTime, CANFrame> sample);
         void write_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
         void write_metadata(const CANDataStreamMetadata& metadata);
 
         std::vector<CANMessage> read_messages(canid_t can_id);
         std::vector<CANMessage> read_messages_in_range(canid_t can_id, CANTime start, CANTime end);
-        CANDataStreamMetadata read_metadata();
+        const CANDataStreamMetadata& read_metadata();
 
         //transcoder methods 
-        void batch_frame(CANTime timestamp, CANFrame frame);
-        void batch_decoded_signals(CANTime timestamp, CANFrame frame, const MessageDefinition& msg_def);
+        void batch_frame(std::pair<CANTime, CANFrame> sample);
+        void batch_decoded_signals(std::pair<CANTime, CANFrame> sample, const MessageDefinition& msg_def);
         void flush_frames_batch();
         void flush_decoded_signals_batch();
         void flush_all_batches();

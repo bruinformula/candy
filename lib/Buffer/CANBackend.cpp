@@ -29,10 +29,10 @@ namespace Candy {
     void SQLBackend::write_message(const CANMessage& message) {
         // Convert timestamp to milliseconds
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            message.timestamp.time_since_epoch()).count();
+            message.sample.first.time_since_epoch()).count();
         
         // Use existing transcoder to write the raw frame
-        transcoder->write_raw_message(message.timestamp, message.frame);
+        transcoder->write_raw_message(message.sample);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -46,7 +46,7 @@ namespace Candy {
                 // Build data for decoded signals
                 std::vector<std::pair<std::string, std::string>> signal_data = {
                     {"timestamp", std::to_string(timestamp_ms)},
-                    {"can_id", std::to_string(message.frame.can_id)},
+                    {"can_id", std::to_string(message.sample.second.can_id)},
                     {"message_name", message.message_name},
                     {"signal_name", signal_name},
                     {"signal_value", std::to_string(signal_value)},
@@ -160,17 +160,17 @@ namespace Candy {
                 
                 // Parse timestamp
                 auto timestamp_ms = sqlite3_column_int64(stmt, 0);
-                message.timestamp = std::chrono::system_clock::time_point(
+                message.sample.first = std::chrono::system_clock::time_point(
                     std::chrono::milliseconds(timestamp_ms));
                 
                 // Parse frame data
-                message.frame.can_id = sqlite3_column_int(stmt, 1);
-                message.frame.len = sqlite3_column_int(stmt, 2);
+                message.sample.second.can_id = sqlite3_column_int(stmt, 1);
+                message.sample.second.len = sqlite3_column_int(stmt, 2);
                 
                 // Parse hex data
                 const char* hex_data = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
                 if (hex_data) {
-                    parse_hex_data(hex_data, message.frame.data, message.frame.len);
+                    parse_hex_data(hex_data, message.sample.second.data, message.sample.second.len);
                 }
                 
                 // Get message name
@@ -192,7 +192,7 @@ namespace Candy {
         return messages;
     }
 
-    CANDataStreamMetadata SQLBackend::read_metadata() {
+    const CANDataStreamMetadata& SQLBackend::read_metadata() {
         CANDataStreamMetadata metadata;
         
         sqlite3* db;
@@ -248,10 +248,10 @@ namespace Candy {
 
     void CSVBackend::write_message(const CANMessage& message) {
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            message.timestamp.time_since_epoch()).count();
+            message.sample.first.time_since_epoch()).count();
         
         // Write raw frame using existing transcoder
-        transcoder->write_raw_message(message.timestamp, message.frame);
+        transcoder->write_raw_message(message.sample);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -264,7 +264,7 @@ namespace Candy {
                 
                 std::vector<std::pair<std::string, std::string>> signal_data = {
                     {"timestamp", std::to_string(timestamp_ms)},
-                    {"can_id", std::to_string(message.frame.can_id)},
+                    {"can_id", std::to_string(message.sample.second.can_id)},
                     {"message_name", message.message_name},
                     {"signal_name", signal_name},
                     {"signal_value", std::to_string(signal_value)},
@@ -372,13 +372,13 @@ namespace Candy {
                 if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
                 
                 CANMessage message;
-                message.timestamp = std::chrono::system_clock::time_point(
+                message.sample.first = std::chrono::system_clock::time_point(
                     std::chrono::milliseconds(timestamp_ms));
-                message.frame.can_id = frame_can_id;
-                message.frame.len = static_cast<uint8_t>(std::stoi(fields[2]));
+                message.sample.second.can_id = frame_can_id;
+                message.sample.second.len = static_cast<uint8_t>(std::stoi(fields[2]));
                 
                 // Parse hex data
-                parse_hex_data(fields[3], message.frame.data, message.frame.len);
+                parse_hex_data(fields[3], message.sample.second.data, message.sample.second.len);
                 
                 // Get message name
                 message.message_name = fields[4];
@@ -439,13 +439,13 @@ namespace Candy {
         }
         
         std::ranges::sort(messages, [](const CANMessage& a, const CANMessage& b) {
-            return a.timestamp < b.timestamp;
+            return a.sample.first < b.sample.first;
         });
         
         return messages;
     }
 
-    CANDataStreamMetadata CSVBackend::read_metadata() {
+    const CANDataStreamMetadata& CSVBackend::read_metadata() {
         CANDataStreamMetadata metadata;
         
         std::string meta_path = base_path + "/metadata.csv";
@@ -525,8 +525,8 @@ namespace Candy {
         std::unordered_map<std::string, size_t> message_lookup;
         for (size_t i = 0; i < messages.size(); ++i) {
             auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                messages[i].timestamp.time_since_epoch()).count();
-            std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(messages[i].frame.can_id);
+                messages[i].sample.first.time_since_epoch()).count();
+            std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(messages[i].sample.second.can_id);
             message_lookup[key] = i;
         }
         
@@ -538,7 +538,7 @@ namespace Candy {
         
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, signals_sql, -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_int(stmt, 1, messages[0].frame.can_id);
+            sqlite3_bind_int(stmt, 1, messages[0].sample.second.can_id);
             
             while (sqlite3_step(stmt) == SQLITE_ROW) {
                 auto timestamp_ms = sqlite3_column_int64(stmt, 0);

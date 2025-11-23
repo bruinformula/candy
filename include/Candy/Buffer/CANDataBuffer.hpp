@@ -41,7 +41,7 @@ namespace Candy {
 
         //data operations
         void add_message(CANMessage message);
-        void add_frame(CANTime timestamp, CANFrame frame, 
+        void add_frame(std::pair<CANTime, CANFrame> sample, 
                     const std::string& message_name = "",
                     const std::unordered_map<std::string, double>& can_signals = {},
                     const std::unordered_map<std::string, std::string>& units = {});

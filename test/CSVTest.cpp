@@ -39,18 +39,18 @@ int main() {
     start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < num_frames; ++i) {
         // Generate realistic CAN frame
-        CANFrame frame;
-        frame.can_id = can_id_dist(gen);
-        frame.len = 8;
+        std::pair<CANTime, CANFrame> sample;
+        sample.second.can_id = can_id_dist(gen);
+        sample.second.len = 8;
         
         // Fill with random data
         for (int j = 0; j < 8; ++j) {
-            frame.data[j] = data_dist(gen);
+            sample.second.data[j] = data_dist(gen);
         }
         
         Candy::CANTime timestamp = std::chrono::system_clock::now();
 
-        transcoder.write_raw_message(timestamp, frame);
+        transcoder.write_raw_message(sample);
     }
     
     // Final processing statistics

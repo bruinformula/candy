@@ -37,17 +37,16 @@ namespace Candy {
     // Core operations
     void CANDataBuffer::add_message(CANMessage message) {
         update_metadata_for_message(message);
-        message_buffers[message.frame.can_id].push_back(std::move(message));
+        message_buffers[message.sample.second.can_id].push_back(std::move(message));
         check_auto_flush();
     }
 
-    void CANDataBuffer::add_frame(CANTime timestamp, CANFrame frame, 
+    void CANDataBuffer::add_frame(std::pair<CANTime, CANFrame> sample, 
                                         const std::string& message_name,
                                         const std::unordered_map<std::string, double>& signals,
                                         const std::unordered_map<std::string, std::string>& units) {
         CANMessage message;
-        message.timestamp = timestamp;
-        message.frame = frame;
+        message.sample = sample;
         message.message_name = message_name;
         message.decoded_signals = signals;
         message.signal_units = units;
@@ -68,7 +67,7 @@ namespace Candy {
         const auto& messages = get_messages(can_id);
         std::vector<CANMessage> result;
         for (const auto& msg : messages | std::views::filter([start, end](const CANMessage& msg) {
-            return msg.timestamp >= start && msg.timestamp <= end;
+            return msg.sample.first >= start && msg.sample.first <= end;
         })) {
             result.push_back(msg);
         }
@@ -174,10 +173,10 @@ namespace Candy {
     void CANDataBuffer::update_metadata_for_message(const CANMessage& message) {
         metadata.total_messages++;
         metadata.last_update = std::chrono::system_clock::now();
-        metadata.message_counts[message.frame.can_id]++;
+        metadata.message_counts[message.sample.second.can_id]++;
         
         if (!message.message_name.empty()) {
-            metadata.message_names[message.frame.can_id] = message.message_name;
+            metadata.message_names[message.sample.second.can_id] = message.message_name;
         }
     }
 

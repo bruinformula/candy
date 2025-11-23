@@ -48,14 +48,14 @@ namespace Candy {
             transmission_group->assign(message_id, -1);
     }
 
-    void TranslatedMessage::assemble(CANTime stamp, CANFrame frame) {
+    void TranslatedMessage::assemble(std::pair<CANTime, CANFrame> sample) {
         if (!transmission_group) return;
 
         if (!transmission_group->within_interval(_last_stamp))
             reset_sig_asms();
 
         uint64_t clumped_val = 0;
-        uint64_t fd = std::bit_cast<uint64_t>(frame.data);
+        uint64_t fd = std::bit_cast<uint64_t>(sample.second.data);
         int64_t mux_val = _mux.has_value() ? _mux->decode(fd) : -1;
 
         for (auto& sc : _sig_asms)
@@ -64,9 +64,9 @@ namespace Candy {
         if (_mux.has_value())
             clumped_val |= _mux->encode(fd);
 
-        transmission_group->add_clumped(stamp, frame.can_id, mux_val, clumped_val);
+        transmission_group->add_clumped(sample.first, sample.second.can_id, mux_val, clumped_val);
 
-        _last_stamp = stamp;
+        _last_stamp = sample.first;
     }
 
     void TranslatedMessage::make_sig_assemblers() {

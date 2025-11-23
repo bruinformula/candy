@@ -3,14 +3,14 @@
 #include "Candy/Interpreters/V2CTranscoder.hpp"
 
 namespace Candy {
-FramePacket V2CTranscoder::transcode(CANTime stamp, CANFrame frame) {
+FramePacket V2CTranscoder::transcode(std::pair<CANTime, CANFrame> sample) {
 	using namespace std::chrono;
 
-	setup_timers(stamp);
+	setup_timers(sample.first);
 	
-	if (_last_update_tp + update_frequency <= stamp) {
+	if (_last_update_tp + update_frequency <= sample.first) {
 		store_assembled(_last_update_tp + update_frequency);
-		while (_last_update_tp + update_frequency <= stamp)
+		while (_last_update_tp + update_frequency <= sample.first)
 			_last_update_tp += update_frequency;
 	}
 
@@ -19,28 +19,28 @@ FramePacket V2CTranscoder::transcode(CANTime stamp, CANFrame frame) {
 
 	FramePacket rv {};
 
-	if (stamp < frame_begin || stamp >= frame_end) {
+	if (sample.first < frame_begin || sample.first >= frame_end) {
 		if (!frame_packet.is_empty())
 			rv = std::move(frame_packet);
-		frame_packet.prepare(duration_cast<seconds>(stamp.time_since_epoch()).count());
+		frame_packet.prepare(duration_cast<seconds>(sample.first.time_since_epoch()).count());
 	}
 
-	auto mi = _msgs.find(frame.can_id);
+	auto mi = _msgs.find(sample.second.can_id);
 	if (mi != _msgs.end()) {
-		mi->second.assemble(stamp, frame);
+		mi->second.assemble(sample);
 	}
 
 	return rv;
 }
 
-void V2CTranscoder::setup_timers(CANTime first_stamp) {
+void V2CTranscoder::setup_timers(CANTime stamp) {
 	using namespace std::chrono;
 
 	if (_last_update_tp != CANTime{})
 		return;
 
-	frame_packet.prepare(duration_cast<seconds>(first_stamp.time_since_epoch()).count());
-	_last_update_tp = first_stamp;
+	frame_packet.prepare(duration_cast<seconds>(stamp.time_since_epoch()).count());
+	_last_update_tp = stamp;
 
 	for (auto& txg : transmission_groups)
 		txg->time_begin(_last_update_tp);

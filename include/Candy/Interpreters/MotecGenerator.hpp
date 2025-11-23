@@ -43,11 +43,11 @@ namespace Candy {
 
         bool parse_csv();
 
-        const std::tuple<CANTime, CANFrame>* get_frame() const;
+        const std::pair<CANTime, CANFrame>* get_frame() const;
 
     private:
         std::string path;
-        std::vector<std::tuple<CANTime, CANFrame>> frames;
+        std::vector<std::pair<CANTime, CANFrame>> frames;
 
         int current;
 

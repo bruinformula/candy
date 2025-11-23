@@ -28,7 +28,7 @@ public:
     virtual std::vector<CANMessage> read_messages(canid_t can_id) = 0;
     virtual std::vector<CANMessage> read_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) = 0;
-    virtual CANDataStreamMetadata read_metadata() = 0;
+    virtual const CANDataStreamMetadata& read_metadata() = 0;
 };
 
 // SQL Backend implementation
@@ -58,7 +58,7 @@ public:
     std::vector<CANMessage> read_messages(canid_t can_id) override;
     std::vector<CANMessage> read_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) override;
-    CANDataStreamMetadata read_metadata() override;
+    const CANDataStreamMetadata& read_metadata() override;
 };
 
 // CSV Backend implementation  
@@ -88,6 +88,6 @@ public:
     std::vector<CANMessage> read_messages(canid_t can_id) override;
     std::vector<CANMessage> read_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) override;
-    CANDataStreamMetadata read_metadata() override;
+    const CANDataStreamMetadata& read_metadata() override;
 };
 }

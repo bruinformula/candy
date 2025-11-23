@@ -9,13 +9,13 @@
 namespace Candy {
 
     template <typename T>
-    concept HasBatchFrame = requires(T t, CANTime timestamp, CANFrame frame) {
-        { t.batch_frame(timestamp, frame) } -> std::same_as<void>;
+    concept HasBatchFrame = requires(T t, std::pair<CANTime, CANFrame> sample) {
+        { t.batch_frame(sample) } -> std::same_as<void>;
     };
 
     template <typename T>
-    concept HasBatchDecodedSignals = requires(T t, CANTime timestamp, CANFrame frame, const MessageDefinition& msg_def) {
-        { t.batch_decoded_signals(timestamp, frame, msg_def) } -> std::same_as<void>;
+    concept HasBatchDecodedSignals = requires(T t, std::pair<CANTime, CANFrame> sample, const MessageDefinition& msg_def) {
+        { t.batch_decoded_signals(sample, msg_def) } -> std::same_as<void>;
     };
 
     template <typename T>
@@ -39,7 +39,7 @@ namespace Candy {
                                 HasFlushFramesBatch<T> &&
                                 HasFlushDecodedSignalsBatch<T> &&
                                 HasFlushAllBatches<T> &&
-                                CANWriteable<T> &&
+                                IsCANWritable<T> &&
                                 CANStoreReadable<T> && 
                                 CANStoreWriteable<T>;
 }

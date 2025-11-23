@@ -13,19 +13,18 @@
 namespace Candy {
 
     struct CANMessage {
-        CANTime timestamp;
-        CANFrame frame;
+        std::pair<CANTime,CANFrame> sample;
         std::string message_name;
         std::unordered_map<std::string, double> decoded_signals;
         std::unordered_map<std::string, std::string> signal_units;
         std::optional<uint64_t> mux_value;
 
         std::strong_ordering operator<=>(const CANMessage& other) const {
-            return timestamp <=> other.timestamp;
+            return sample.first <=> other.sample.first;
         }
 
         bool operator==(const CANMessage& other) const {
-            return timestamp == other.timestamp && frame.can_id == other.frame.can_id;
+            return sample.first == other.sample.first && sample.second.can_id == other.sample.second.can_id;
         }
     };
 

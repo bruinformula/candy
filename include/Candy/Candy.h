@@ -8,7 +8,6 @@
 #include "Candy/Core/Frame/FramePacket.hpp"
 #include "Candy/Core/CANBundle.hpp"
 #include "Candy/Core/CANHelpers.hpp"
-#include "Candy/Core/CANDataBufferVisitor.hpp"
 #include "Candy/Core/Signal/SignalCodec.hpp"
 #include "Candy/Core/Signal/NumericValue.hpp"
 #include "Candy/Core/Signal/SignalCalculationType.hpp"

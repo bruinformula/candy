@@ -140,7 +140,7 @@ struct CANFrame {
 };
 
 /*
- * defined bits for CANFlexibleFrame.flags
+ * defined bits for CANFlexiblesample.second.flags
  *
  * The use of struct CANFlexibleFrame implies the FD Frame (FDF) bit to
  * be set in the CAN frame bitstream on the wire. The FDF bit switch turns

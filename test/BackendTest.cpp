@@ -18,13 +18,13 @@ void example_usage() {
     auto now = std::chrono::system_clock::now();
     
     for (int i = 0; i < 1000; ++i) {
-        CANFrame frame;
-        frame.can_id = 0x123; // RPM message
-        frame.len = 8;
+		std::pair<CANTime, CANFrame> sample;
+        sample.second.can_id = 0x123; // RPM message
+        sample.second.len = 8;
         
         uint16_t rpm = 800 + (i * 10) % 6000; // RPM from 800 to 6800
-        frame.data[0] = rpm & 0xFF;
-        frame.data[1] = (rpm >> 8) & 0xFF;
+        sample.second.data[0] = rpm & 0xFF;
+        sample.second.data[1] = (rpm >> 8) & 0xFF;
         
         // Add decoded signals
         std::unordered_map<std::string, double> signals = {
@@ -36,17 +36,17 @@ void example_usage() {
         };
         
         auto timestamp = now + std::chrono::milliseconds(i * 10); // 10ms intervals
-        sql_buffer->add_frame(timestamp, frame, "Status", signals, units);
+        sql_buffer->add_frame(sample, "Status", signals, units);
     }
 
-        for (int i = 0; i < 1000; ++i) {
-        CANFrame frame;
-        frame.can_id = 0x123; // RPM message
-        frame.len = 8;
+    for (int i = 0; i < 1000; ++i) {
+		std::pair<CANTime, CANFrame> sample;
+        sample.second.can_id = 0x123; // RPM message
+        sample.second.len = 8;
         
         uint16_t rpm = 800 + (i * 10) % 6000; // RPM from 800 to 6800
-        frame.data[0] = rpm & 0xFF;
-        frame.data[1] = (rpm >> 8) & 0xFF;
+        sample.second.data[0] = rpm & 0xFF;
+        sample.second.data[1] = (rpm >> 8) & 0xFF;
         
         // Add decoded signals
         std::unordered_map<std::string, double> signals = {
@@ -58,7 +58,7 @@ void example_usage() {
         };
         
         auto timestamp = now + std::chrono::milliseconds(i * 10); // 10ms intervals
-        sql_buffer->add_frame(timestamp, frame, "Status", signals, units);
+        sql_buffer->add_frame(sample, "Status", signals, units);
     }
     
     std::cout << "Total messages: " << sql_buffer->get_total_messages() << std::endl;
@@ -107,11 +107,11 @@ void backend_comparison_example() {
     // Add identical data to both
     for (int i = 0; i < 100; ++i) {
         CANMessage message;
-        message.timestamp = now + std::chrono::milliseconds(i);
-        message.frame.can_id = 0x456;
-        message.frame.len = 4;
-        message.frame.data[0] = i & 0xFF;
-        message.frame.data[1] = (i >> 8) & 0xFF;
+        message.sample.first = now + std::chrono::milliseconds(i);
+        message.sample.second.can_id = 0x456;
+        message.sample.second.len = 4;
+        message.sample.second.data[0] = i & 0xFF;
+        message.sample.second.data[1] = (i >> 8) & 0xFF;
         message.message_name = "Test_Message";
         message.decoded_signals["Counter"] = static_cast<double>(i);
         message.signal_units["Counter"] = "count";
@@ -140,9 +140,9 @@ void advanced_query_example() {
     for (int i = 0; i < 300; ++i) {
         for (auto can_id : message_ids) {
             CANMessage message;
-            message.timestamp = now + std::chrono::milliseconds(i * 5);
-            message.frame.can_id = can_id;
-            message.frame.len = 8;
+            message.sample.first = now + std::chrono::milliseconds(i * 5);
+            message.sample.second.can_id = can_id;
+            message.sample.second.len = 8;
             
             // Different signal patterns for each message ID
             switch (can_id) {
@@ -219,10 +219,10 @@ void performance_test() {
     for (size_t i = 0; i < NUM_MESSAGES; ++i) {
         canid_t can_id = 0x100 + (i % NUM_CAN_IDS);
         
-        CANFrame frame;
-        frame.can_id = can_id;
-        frame.len = 8;
-        std::fill_n(frame.data, 8, static_cast<uint8_t>(i & 0xFF));
+		std::pair<CANTime, CANFrame> sample;
+        sample.second.can_id = can_id;
+        sample.second.len = 8;
+        std::fill_n(sample.second.data, 8, static_cast<uint8_t>(i & 0xFF));
         
         auto timestamp = data_start + std::chrono::microseconds(i * 100); // 100μs intervals
         
@@ -236,7 +236,7 @@ void performance_test() {
             {"Signal_B", "A"}
         };
         
-        buffer->add_frame(timestamp, frame, "Test_Message_" + std::to_string(can_id), signals, units);
+        buffer->add_frame(sample, "Test_Message_" + std::to_string(can_id), signals, units);
     }
     
     auto add_time = std::chrono::high_resolution_clock::now();
@@ -292,13 +292,13 @@ void multithreaded_example() {
     for (size_t thread_id = 0; thread_id < NUM_THREADS; ++thread_id) {
         producers.emplace_back([&buffer, &buffer_mutex, thread_id, start_time]() {
             for (size_t i = 0; i < MESSAGES_PER_THREAD; ++i) {
-                CANFrame frame;
-                frame.can_id = 0x500 + thread_id; // Different CAN ID per thread
-                frame.len = 8;
+		        std::pair<CANTime, CANFrame> sample;
+                sample.second.can_id = 0x500 + thread_id; // Different CAN ID per thread
+                sample.second.len = 8;
                 
                 // Thread-specific data pattern
                 uint32_t value = (thread_id << 16) | (i & 0xFFFF);
-                std::memcpy(frame.data, &value, sizeof(value));
+                std::memcpy(sample.second.data, &value, sizeof(value));
                 
                 auto timestamp = start_time + std::chrono::microseconds(
                     (thread_id * MESSAGES_PER_THREAD + i) * 50);
@@ -318,7 +318,7 @@ void multithreaded_example() {
                 // Protect buffer access with mutex
                 {
                     std::lock_guard<std::mutex> lock(buffer_mutex);
-                    buffer->add_frame(timestamp, frame, 
+                    buffer->add_frame(sample, 
                                     "Thread_Message_" + std::to_string(thread_id), 
                                     signals, units);
                 }
@@ -381,12 +381,11 @@ public:
         stop();
     }
     
-    void log_frame(CANTime timestamp, CANFrame frame, 
+    void log_frame(std::pair<CANTime, CANFrame> sample, 
                    const std::string& message_name = "",
                    const std::unordered_map<std::string, double>& signals = {}) {
         CANMessage message;
-        message.timestamp = timestamp;
-        message.frame = frame;
+        message.sample = sample;
         message.message_name = message_name;
         message.decoded_signals = signals;
         
@@ -484,24 +483,24 @@ int main() {
             // Simulate logging some CAN frames
             auto now = std::chrono::system_clock::now();
             for (int i = 0; i < 100; ++i) {
-                CANFrame frame;
-                frame.can_id = 0x7E0;
-                frame.len = 8;
-                frame.data[0] = 0x02;
-                frame.data[1] = 0x01;
-                frame.data[2] = 0x0C;
-                frame.data[3] = 0x00;
-                frame.data[4] = 0x00;
-                frame.data[5] = 0x00;
-                frame.data[6] = 0x00;
-                frame.data[7] = 0x00;
+                std::pair<CANTime, CANFrame> sample;
+                sample.second.can_id = 0x7E0;
+                sample.second.len = 8;
+                sample.second.data[0] = 0x02;
+                sample.second.data[1] = 0x01;
+                sample.second.data[2] = 0x0C;
+                sample.second.data[3] = 0x00;
+                sample.second.data[4] = 0x00;
+                sample.second.data[5] = 0x00;
+                sample.second.data[6] = 0x00;
+                sample.second.data[7] = 0x00;
                 
                 std::unordered_map<std::string, double> signals = {
                     {"Engine_RPM", 1500.0 + i * 10},
                     {"Vehicle_Speed", 50.0 + i * 0.5}
                 };
                 
-                logger.log_frame(now + std::chrono::milliseconds(i * 10), frame, "OBD_Request", signals);
+                logger.log_frame(sample, "OBD_Request", signals);
                 
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }

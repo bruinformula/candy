@@ -28,7 +28,7 @@ namespace Candy {
         CANTime _last_update_tp;
 
     public:
-        FramePacket transcode(CANTime stamp, CANFrame frame);
+        FramePacket transcode(std::pair<CANTime, CANFrame> sample);
 
         void assign_tx_group(const std::string& object_type, unsigned message_id, const std::string& tx_group);
         void add_signal(canid_t message_id, TranslatedSignal sig);
