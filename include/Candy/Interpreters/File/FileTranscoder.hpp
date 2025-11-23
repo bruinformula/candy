@@ -9,10 +9,6 @@
 #include <vector>
 #include <future>
 
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/spirit/home/x3.hpp>
-
 #include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/File/FileTranscoderConcepts.hpp"
 #include "Candy/Core/DBC/DBCInterpreter.hpp"
@@ -24,10 +20,10 @@ namespace Candy {
 
     template <typename Derived, typename TaskType>
     class FileTranscoder : public DBCInterpreter<Derived>,
-                           public CANStoreReader<Derived>,
-                           //public CANBatchReadable<Derived>, 
-                           public CANWritable<Derived>,
-                           public CANStoreWriter<Derived>
+                           public CANStoreTransmitter<Derived>,
+                           //public CANBatchTransmittable<Derived>, 
+                           public CANReceivable<Derived>,
+                           public CANStoreReceiver<Derived>
     {
     public:
         // Constructor to initialize member variables
@@ -60,12 +56,12 @@ namespace Candy {
         mutable std::mutex queue_mutex;
         std::condition_variable queue_cv;
         std::queue<TaskType> task_queue;
-        std::thread writer_thread;
+        std::thread receiver_thread;
         std::atomic<bool> shutdown_requested;
         std::atomic<size_t> tasks_processed{0};
         std::atomic<bool> is_processing{false};
 
-        void writer_loop();
+        void receiver_loop();
         void enqueue_task(std::function<void()> task);
         void enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise);
 
@@ -109,7 +105,7 @@ namespace Candy {
     template <size_t BatchSize, typename Derived>
     class FileTranscoderNew : 
         public DBCInterpreter<Derived>,
-        public CANBatchWritable<BatchSize, Derived>
+        public CANBatchReceivable<BatchSize, Derived>
     {
     public:
         // Constructor to initialize member variables

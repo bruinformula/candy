@@ -51,7 +51,7 @@ namespace Candy {
         
         // Type-safe data access
         template <typename T>
-        T read_at(size_t offset) const;
+        T transmit_at(size_t offset) const;
 
         std::vector<uint8_t> release();
     };

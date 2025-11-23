@@ -1,11 +1,12 @@
 #pragma once
 
-#include <boost/endian.hpp>
+#include <bit>
+#include <cstdint>
 
 namespace Candy {
 
   class SignalCodec {
-    using order = boost::endian::order;
+    using order = std::endian;
 
     unsigned _start_bit, _bit_size;
     order _byte_order;

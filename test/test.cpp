@@ -6,6 +6,41 @@
 
 using namespace Candy;
 
+struct Transmitter : public CANTransmittable<Transmitter> {
+    const CANMessage& transmit_message() {
+        return {};
+    }
+
+    const std::pair<CANTime, CANFrame>& transmit_raw_message() {
+        return {};
+    }
+
+    const std::tuple<std::string, TableType>& transmit_table_message() {
+        return {};
+    }
+    const CANDataStreamMetadata& transmit_metadata() {
+        return {};
+    }
+};
+
+struct Receiver : public CANReceivable<Receiver> {
+        void receive_message(const CANMessage& message) {
+        }
+        
+        void receive_metadata(const CANDataStreamMetadata& metadata) {
+        }
+
+        void receive_raw_message(const std::pair<CANTime, CANFrame>& sample) {
+        }
+
+        void receive_table_message(const std::string& table, const TableType& data) {
+        }
+};
+
+struct Transceiver : public Receiver, public Transmitter {
+
+};
+
 int main() {
 
     SQLTranscoder sql_transcoder("./test.db");
@@ -13,22 +48,41 @@ int main() {
     CSVTranscoder csv_transcoder("./test_csv_output_run");  // batch size of 1000
     LoggingTranscoder logger;
 
-    DBCBundle node(sql_transcoder, csv_transcoder, logger);
+    DBCBundle dbc_bundle(sql_transcoder, csv_transcoder, logger);
 
-    bool parsed = node.parse_dbc(Candy::read_file("test/network.dbc"));
+    bool parsed = dbc_bundle.parse_dbc(Candy::transmit_file("test/network.dbc"));
 
-    NullReader null = {};
-    
     if (!parsed) {
 		return 1;
     }
+
+    Transmitter sensor_1;
+    Transmitter sensor_2;
+
+    Transceiver bms;
+    Transceiver vcu;
+
+    Receiver motor_output;
+    Receiver steer_output;
+
+    auto bundle1 = sensor_1.transmit_to(bms, vcu);
+    auto bundle2 = sensor_2.transmit_to(bms, vcu);
+    CANMessage input; 
+
+    input.message_name = "testing";
+
+    bundle1.receive_message(input);
+    bundle2.receive_message(input);
+
+    
+
 
 
 /*
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed = node.parse_dbc(Candy::read_file("test/network.dbc"));
+    bool parsed = node.parse_dbc(Candy::transmit_file("test/network.dbc"));
 
     if (!parsed) {
         std::cerr << "Failed to parse DBC file." << std::endl;
@@ -62,7 +116,7 @@ int main() {
         
         Candy::CANTime timestamp = std::chrono::system_clock::now();
 
-        node.write_raw_message(sample);
+        node.receive_raw_message(sample);
     }
     
     // Final processing statistics

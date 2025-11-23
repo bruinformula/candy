@@ -156,7 +156,7 @@ struct CANFrame {
  * sense for virtual CAN interfaces to test applications with echoed frames.
  *
  * The struct CANFrame and struct CANFlexibleFrame intentionally share the same
- * layout to be able to write CAN frame content into a CAN FD frame structure.
+ * layout to be able to receive CAN frame content into a CAN FD frame structure.
  * When this is done the former differentiation via CAN_MTU / CANFD_MTU gets
  * lost. CANFD_FDF allows programmers to mark CAN FD frames in the case of
  * using struct CANFlexibleFrame for mixed CAN / CAN FD content (dual use).

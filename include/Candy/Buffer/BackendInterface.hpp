@@ -19,16 +19,16 @@ class BackendInterface {
 public:
     virtual ~BackendInterface() = default;
     
-    virtual void write_message(const CANMessage& message) = 0;
-    virtual void write_metadata(const CANDataStreamMetadata& metadata) = 0;
+    virtual void receive_message(const CANMessage& message) = 0;
+    virtual void receive_metadata(const CANDataStreamMetadata& metadata) = 0;
     virtual void flush() = 0;
     virtual void flush_sync() = 0;
     virtual std::future<void> flush_async() = 0;
     
-    virtual std::vector<CANMessage> read_messages(canid_t can_id) = 0;
-    virtual std::vector<CANMessage> read_messages_in_range(
+    virtual std::vector<CANMessage> transmit_messages(canid_t can_id) = 0;
+    virtual std::vector<CANMessage> transmit_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) = 0;
-    virtual const CANDataStreamMetadata& read_metadata() = 0;
+    virtual const CANDataStreamMetadata& transmit_metadata() = 0;
 };
 
 // SQL Backend implementation
@@ -49,16 +49,16 @@ public:
     explicit SQLBackend(const std::string& database_path, size_t batch_size = 1000);
     ~SQLBackend() override = default;
 
-    void write_message(const CANMessage& message) override;
-    void write_metadata(const CANDataStreamMetadata& metadata) override;
+    void receive_message(const CANMessage& message) override;
+    void receive_metadata(const CANDataStreamMetadata& metadata) override;
     void flush() override;
     void flush_sync() override;
     std::future<void> flush_async() override;
     
-    std::vector<CANMessage> read_messages(canid_t can_id) override;
-    std::vector<CANMessage> read_messages_in_range(
+    std::vector<CANMessage> transmit_messages(canid_t can_id) override;
+    std::vector<CANMessage> transmit_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) override;
-    const CANDataStreamMetadata& read_metadata() override;
+    const CANDataStreamMetadata& transmit_metadata() override;
 };
 
 // CSV Backend implementation  
@@ -79,15 +79,15 @@ public:
     explicit CSVBackend(const std::string& csv_base_path, size_t batch_size = 1000);
     ~CSVBackend() override = default;
 
-    void write_message(const CANMessage& message) override;
-    void write_metadata(const CANDataStreamMetadata& metadata) override;
+    void receive_message(const CANMessage& message) override;
+    void receive_metadata(const CANDataStreamMetadata& metadata) override;
     void flush() override;
     void flush_sync() override;
     std::future<void> flush_async() override;
     
-    std::vector<CANMessage> read_messages(canid_t can_id) override;
-    std::vector<CANMessage> read_messages_in_range(
+    std::vector<CANMessage> transmit_messages(canid_t can_id) override;
+    std::vector<CANMessage> transmit_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) override;
-    const CANDataStreamMetadata& read_metadata() override;
+    const CANDataStreamMetadata& transmit_metadata() override;
 };
 }

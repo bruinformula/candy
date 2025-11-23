@@ -4,7 +4,6 @@
 #include <variant>
 
 #include <boost/spirit/home/x3.hpp>
-#include <boost/fusion/adapted/std_pair.hpp>
 
 namespace x3 = boost::spirit::x3;
 

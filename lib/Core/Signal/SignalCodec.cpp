@@ -1,35 +1,54 @@
 #include "Candy/Core/Signal/SignalCodec.hpp"
+#include <cstring>
 
-using boost::endian::order;
-using boost::endian::load_little_u64;
-using boost::endian::load_big_u64;
+namespace {
+    inline uint64_t load_little_u64(const uint8_t* data) {
+        uint64_t value;
+        std::memcpy(&value, data, sizeof(uint64_t));
+        if constexpr (std::endian::native == std::endian::big) {
+            return __builtin_bswap64(value);
+        }
+        return value;
+    }
+
+    inline uint64_t load_big_u64(const uint8_t* data) {
+        uint64_t value;
+        std::memcpy(&value, data, sizeof(uint64_t));
+        if constexpr (std::endian::native == std::endian::little) {
+            return __builtin_bswap64(value);
+        }
+        return value;
+    }
+}
+
+using order = std::endian;
 
 namespace Candy {
 
     SignalCodec::SignalCodec(unsigned sb, unsigned bs, char bo, char st)
     : _start_bit(sb), _bit_size(bs),
-        _byte_order(bo == '0' ? order::big : order::little),
+        _byte_order(bo == '0' ? std::endian::big : std::endian::little),
         _sign_type(st)
     {
     _byte_pos = _start_bit / 8;
-    _bit_pos = _byte_order == order::little ?
+    _bit_pos = _byte_order == std::endian::little ?
         _start_bit % 8 : _start_bit - _byte_pos * 8;
 
-    _last_bit_pos = _byte_order == order::little ?
+    _last_bit_pos = _byte_order == std::endian::little ?
         (_start_bit + _bit_size - 1) % 8 : (7 - _start_bit % 8) + _bit_size - 64;
 
-    _nbytes = _byte_order == order::little ?
+    _nbytes = _byte_order == std::endian::little ?
         (_bit_size + _bit_pos + 7) / 8 : (_bit_size + (7 - _start_bit % 8) + 7) / 8;
     }
 
     uint64_t SignalCodec::operator()(const uint8_t* data) const {
-    uint64_t val = _byte_order == order::little ?
-        boost::endian::load_little_u64(data + _byte_pos) :
-        boost::endian::load_big_u64(data + _byte_pos);
+    uint64_t val = _byte_order == std::endian::little ?
+        load_little_u64(data + _byte_pos) :
+        load_big_u64(data + _byte_pos);
 
     if (_nbytes > 8) {
         uint64_t ninth_byte = data[_byte_pos + 8];
-        if (_byte_order == order::little) {
+        if (_byte_order == std::endian::little) {
         val >>= _bit_pos;
         ninth_byte &= (1ull << (_last_bit_pos + 1)) - 1;
         ninth_byte <<= 8 - _bit_pos + 7 * 8;
@@ -43,7 +62,7 @@ namespace Candy {
     }
     else {
         uint64_t last_bit_pos = (8 * (7 - (_bit_pos / 8))) + (_start_bit % 8) - (_bit_size - 1);
-        val = _byte_order == order::little ? val >> _bit_pos : val >> last_bit_pos;
+        val = _byte_order == std::endian::little ? val >> _bit_pos : val >> last_bit_pos;
         val &= (1ull << (_bit_size - 1) << 1ull) - 1;
     }
 
@@ -59,7 +78,7 @@ namespace Candy {
     void SignalCodec::operator()(uint64_t raw, void* buffer) const {
     char* b = reinterpret_cast<char*>(buffer);
 
-    if (_byte_order == order::big) {
+    if (_byte_order == std::endian::big) {
         uint64_t src = _start_bit;
         uint64_t dst = _bit_size - 1;
         for (uint64_t i = 0; i < _bit_size; i++) {

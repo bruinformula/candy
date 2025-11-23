@@ -16,7 +16,7 @@ int main() {
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed_dbc = transcoder.parse_dbc(Candy::read_file("test/network.dbc"));
+    bool parsed_dbc = transcoder.parse_dbc(Candy::transmit_file("test/network.dbc"));
     if (!parsed_dbc) {
         std::cerr << "Failed to parse DBC file." << std::endl;
         return 1;

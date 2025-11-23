@@ -5,124 +5,113 @@
 #include <vector>
 
 #include "Candy/Core/CANIOHelperTypes.hpp"
+#include "Candy/Core/CANIOConcepts.hpp"
+#include "Candy/Core/CANBundle.hpp"
 
 namespace Candy {
 
-    using TableType = std::vector<std::pair<std::string, std::string>>;
-
-    template<typename T>
-    concept IsCANWritable = requires(T t, const CANMessage& msg, const CANDataStreamMetadata& md, const std::pair<CANTime, CANFrame>& sample, const std::string& table, const TableType& data) {
-        { t.write_message(msg) } -> std::same_as<void>;
-        { t.write_raw_message(sample) } -> std::same_as<void>;
-        { t.write_table_message(table, data) } -> std::same_as<void>;
-        { t.write_metadata(md) } -> std::same_as<void>;
-    };
-
-    template<size_t BatchSize, typename T>
-    concept IsCANBatchWritable = requires(T t, const std::array<CANMessage, BatchSize>& msg, const std::array<std::tuple<CANTime,CANFrame>, BatchSize>& samples, const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
-        { t.write_message_batch(msg) } -> std::same_as<void>;
-        { t.write_raw_message_batch(samples) } -> std::same_as<void>;
-        { t.write_table_message_batch(table, data) } -> std::same_as<void>;
-    };
-
-    template<typename T>
-    concept IsCANReadable = requires(T t) {
-        { t.read_message() } -> std::same_as<CANMessage>;
-        { t.read_raw_message() } -> std::same_as<std::pair<CANTime, CANFrame>>;
-        { t.read_table_message() } -> std::same_as<std::tuple<std::string, TableType>>;
-        { t.read_metadata() } -> std::same_as<CANDataStreamMetadata>;
-    };
-
-    template< size_t BatchSize, typename T>
-    concept IsCANBatchReadable = requires(T t) {
-        { t.read_messages_batch() } -> std::same_as<std::array<CANMessage, BatchSize>>;
-        { t.read_raw_message_batch() } -> std::same_as<std::array<std::pair<CANTime, CANFrame>, BatchSize>>;
-        { t.read_table_message_batch() } -> std::same_as<std::array<std::tuple<std::string, TableType>, BatchSize>>;
-    };
-
     template<typename Derived>
-    struct CANWritable {
-        void write_message_vrtl(const CANMessage& message) {
-            static_cast<Derived&>(*this).write_message(message);
+    struct CANReceivable {
+        void receive_message_vrtl(const CANMessage& message) {
+            static_cast<Derived&>(*this).receive_message(message);
         }
         
-        void write_metadata_vrtl(const CANDataStreamMetadata& metadata) {
-            static_cast<Derived&>(*this).write_metadata(metadata);
+        void receive_metadata_vrtl(const CANDataStreamMetadata& metadata) {
+            static_cast<Derived&>(*this).receive_metadata(metadata);
         }
 
-        void write_raw_message_vrtl(const std::pair<CANTime, CANFrame>& sample) {
-            static_cast<Derived&>(*this).write_raw_message(sample);
+        void receive_raw_message_vrtl(const std::pair<CANTime, CANFrame>& sample) {
+            static_cast<Derived&>(*this).receive_raw_message(sample);
         }
 
-        void write_table_message_vrtl(const std::string& table, const TableType& data) {
-            static_cast<Derived&>(*this).write_table_message(table, data);
+        void receive_table_message_vrtl(const std::string& table, const TableType& data) {
+            static_cast<Derived&>(*this).receive_table_message(table, data);
         }
 
-        CANWritable() {
-            static_assert(IsCANWritable<Derived>, "Derived must satisfy IsCANWritable concept");
+        CANReceivable() {
+            static_assert(IsCANReceivable<Derived>, "Derived must satisfy IsCANReceivable concept");
         }
-        
+
     };
 
     template<size_t BatchSize, typename Derived>
-    struct CANBatchWritable {
+    struct CANBatchReceivable {
 
-        void write_message_batch_vrtl(const std::array<CANMessage, BatchSize>& message) {
-            static_cast<Derived&>(*this).write_message_batch(message);
+        void receive_message_batch_vrtl(const std::array<CANMessage, BatchSize>& message) {
+            static_cast<Derived&>(*this).receive_message_batch(message);
         }
 
-        void write_raw_message_batch_vrtl(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
-            static_cast<Derived&>(*this).write_raw_message_batch(samples);
+        void receive_raw_message_batch_vrtl(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
+            static_cast<Derived&>(*this).receive_raw_message_batch(samples);
         }
 
-        void write_table_message_batch_vrtl(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
-            static_cast<Derived&>(*this).write_table_message_batch(table, data);
+        void receive_table_message_batch_vrtl(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
+            static_cast<Derived&>(*this).receive_table_message_batch(table, data);
         }
 
-        CANBatchWritable() {
-            static_assert(IsCANBatchWritable<BatchSize, Derived>, "Derived must satisfy IsCANBatchWriteable concept");
+        CANBatchReceivable() {
+            static_assert(IsCANBatchReceivable<BatchSize, Derived>, "Derived must satisfy IsCANBatchWriteable concept");
         }
     };
 
     template<typename Derived>
-    struct CANReadable { 
-        const CANMessage& read_message_vrtl() {
-            return static_cast<Derived&>(*this).read_message();
+    struct CANTransmittable { 
+        const CANMessage& transmit_message_vrtl() {
+            return static_cast<Derived&>(*this).transmit_message();
         }
 
-        const std::pair<CANTime, CANFrame>& read_raw_message_vrtl() {
-            return static_cast<Derived&>(*this).read_raw_message();
+        const std::pair<CANTime, CANFrame>& transmit_raw_message_vrtl() {
+            return static_cast<Derived&>(*this).transmit_raw_message();
         }
 
-        const std::tuple<std::string, TableType>& read_table_message_vrtl() {
-            return static_cast<Derived&>(*this).read_table_message();
+        const std::tuple<std::string, TableType>& transmit_table_message_vrtl() {
+            return static_cast<Derived&>(*this).transmit_table_message();
         }
-        const CANDataStreamMetadata& read_metadata_vrtl() {
-            return static_cast<Derived&>(*this).read_metadata();
+        const CANDataStreamMetadata& transmit_metadata_vrtl() {
+            return static_cast<Derived&>(*this).transmit_metadata();
         }
 
-        CANReadable() {
-            static_assert(IsCANReadable<Derived>, "Derived must satisfy IsCANReadable concept");
+        CANTransmittable() {
+            static_assert(IsCANTransmittable<Derived>, "Derived must satisfy IsCANTransmittable concept");
         }
+
+        template <typename... Receivers>
+        requires IsCANTransmittable<Derived> && (IsCANReceivable<Receivers> && ...)
+        CANManyReceiverBundle<Derived, Receivers...> transmit_to(Receivers&... receivers) {
+            return CANManyReceiverBundle<Derived, Receivers...>(static_cast<Derived&>(*this), receivers...);
+        }
+        template <typename Receiver>
+        requires IsCANTransmittable<Derived> && IsCANReceivable<Receiver>
+        CANManyReceiverBundle<Derived, Receiver> transmit_to(Receiver& receiver) {
+            return CANManyReceiverBundle<Derived, Receiver>(static_cast<Derived&>(*this), receiver);
+        }
+
     };
 
     template<size_t BatchSize, typename Derived>
-    struct CANBatchReadable { 
-        const std::array<CANMessage, BatchSize>& read_message_batch_vrtl() {
-            return static_cast<Derived&>(*this).read_message_batch();
+    struct CANBatchTransmittable { 
+        const std::array<CANMessage, BatchSize>& transmit_message_batch_vrtl() {
+            return static_cast<Derived&>(*this).transmit_message_batch();
         }
 
-        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& read_raw_message_batch_vrtl() {
-            return static_cast<Derived&>(*this).read_raw_message_batch();
+        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& transmit_raw_message_batch_vrtl() {
+            return static_cast<Derived&>(*this).transmit_raw_message_batch();
         }
 
-        const std::array<std::tuple<std::string, TableType>, BatchSize>& read_table_message_batch_vrtl() {
-            return static_cast<Derived&>(*this).read_table_message_batch();
+        const std::array<std::tuple<std::string, TableType>, BatchSize>& transmit_table_message_batch_vrtl() {
+            return static_cast<Derived&>(*this).transmit_table_message_batch();
         }
-        CANBatchReadable() {
-            static_assert(IsCANBatchReadable<BatchSize, Derived>, "Derived must satisfy IsCANBatchReadable concept");
+        CANBatchTransmittable() {
+            static_assert(IsCANBatchTransmittable<BatchSize, Derived>, "Derived must satisfy IsCANBatchTransmittable concept");
         }
     };
+
+
+
+
+
+
+
 
 
     //To Be Slimed...
@@ -134,14 +123,14 @@ namespace Candy {
     };
 
     template<typename T>
-    concept CANStoreReadable = requires(T t, canid_t id, CANTime start, CANTime end) {
-        { t.read_messages(id) } -> std::same_as<std::vector<CANMessage>>;
-        { t.read_messages_in_range(id, start, end) } -> std::same_as<std::vector<CANMessage>>;
-        { t.read_metadata() } -> std::same_as<const CANDataStreamMetadata&>;
+    concept CANStoreTransmittable = requires(T t, canid_t id, CANTime start, CANTime end) {
+        { t.transmit_messages(id) } -> std::same_as<std::vector<CANMessage>>;
+        { t.transmit_messages_in_range(id, start, end) } -> std::same_as<std::vector<CANMessage>>;
+        { t.transmit_metadata() } -> std::same_as<const CANDataStreamMetadata&>;
     };
 
     template<typename Derived>
-    struct CANStoreWriter {
+    struct CANStoreReceiver {
 
         void flush_vrtl() {
             static_cast<Derived&>(*this).flush();
@@ -154,28 +143,31 @@ namespace Candy {
         void flush_sync_vrtl() {
             static_cast<Derived&>(*this).flush_sync();
         }
-        CANStoreWriter() {
+        CANStoreReceiver() {
             static_assert(CANStoreWriteable<Derived>, "Derived must satisfy CANStoreWriteable concept");
         }
     };
 
     template<typename Derived>
-    struct CANStoreReader {
-        std::vector<CANMessage> read_messages_vrtl(canid_t can_id) {
-            return static_cast<Derived&>(*this).read_messages(can_id);
+    struct CANStoreTransmitter {
+        std::vector<CANMessage> transmit_messages_vrtl(canid_t can_id) {
+            return static_cast<Derived&>(*this).transmit_messages(can_id);
         }
         
-        std::vector<CANMessage> read_messages_in_range_vrtl(canid_t can_id, CANTime start, CANTime end) {
-            return static_cast<Derived&>(*this).read_messages_in_range(can_id, start, end);
+        std::vector<CANMessage> transmit_messages_in_range_vrtl(canid_t can_id, CANTime start, CANTime end) {
+            return static_cast<Derived&>(*this).transmit_messages_in_range(can_id, start, end);
         }
 
-        const CANDataStreamMetadata& read_metadata_vrtl() {
-            return static_cast<Derived&>(*this).read_metadata();
+        const CANDataStreamMetadata& transmit_metadata_vrtl() {
+            return static_cast<Derived&>(*this).transmit_metadata();
         }
 
-        CANStoreReader() {
-            static_assert(CANStoreReadable<Derived>, "Derived must satisfy CANStoreReadable concept");
+        CANStoreTransmitter() {
+            static_assert(CANStoreTransmittable<Derived>, "Derived must satisfy CANStoreTransmittable concept");
         }
     };
 
+
+
+    
 }

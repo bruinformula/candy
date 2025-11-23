@@ -60,7 +60,7 @@ namespace Candy {
     }
 
     template <typename IntType>
-    IntType FramePacket::read_at(size_t offset) const {
+    IntType FramePacket::transmit_at(size_t offset) const {
         if (offset + sizeof(IntType) > _buff.size()) {
             throw std::out_of_range("Read beyond buffer bounds");
         }
@@ -78,9 +78,9 @@ namespace Candy {
     template void FramePacket::append(int32_t val);
     template void FramePacket::append(int64_t val);
 
-    template int16_t FramePacket::read_at(size_t offset) const;
-    template int32_t FramePacket::read_at(size_t offset) const;
-    template int64_t FramePacket::read_at(size_t offset) const;
+    template int16_t FramePacket::transmit_at(size_t offset) const;
+    template int32_t FramePacket::transmit_at(size_t offset) const;
+    template int64_t FramePacket::transmit_at(size_t offset) const;
 
 }
 

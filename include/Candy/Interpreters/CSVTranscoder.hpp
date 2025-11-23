@@ -30,15 +30,15 @@ namespace Candy {
         CSVTranscoder(const std::string& base_path, size_t batch_size = 10000);
         ~CSVTranscoder();
 
-        //CANWritable methods 
-        void write_message(const CANMessage& message);
-        void write_raw_message(std::pair<CANTime, CANFrame> sample);
-        void write_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
-        void write_metadata(const CANDataStreamMetadata& metadata);
+        //CANReceivable methods 
+        void receive_message(const CANMessage& message);
+        void receive_raw_message(std::pair<CANTime, CANFrame> sample);
+        void receive_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
+        void receive_metadata(const CANDataStreamMetadata& metadata);
 
-        std::vector<CANMessage> read_messages(canid_t can_id);
-        std::vector<CANMessage> read_messages_in_range(canid_t can_id, CANTime start, CANTime end);
-        const CANDataStreamMetadata& read_metadata();
+        std::vector<CANMessage> transmit_messages(canid_t can_id);
+        std::vector<CANMessage> transmit_messages_in_range(canid_t can_id, CANTime start, CANTime end);
+        const CANDataStreamMetadata& transmit_metadata();
 
         //transcoder methods 
         void batch_frame(std::pair<CANTime, CANFrame> sample);
@@ -57,7 +57,7 @@ namespace Candy {
         //csv methods
         std::string build_csv_row(const std::vector<std::pair<std::string, std::string>>& data);
         void ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers);
-        void write_to_csv(const std::string& filename, const std::string& row);
+        void receive_to_csv(const std::string& filename, const std::string& row);
         std::string escape_csv(const std::string& input);
         std::string format_hex_data(const uint8_t* data, size_t len);
 

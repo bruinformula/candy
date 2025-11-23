@@ -28,7 +28,7 @@ int main() {
 
 	auto start = std::chrono::system_clock::now();
 
-	bool parsed = transcoder.parse_dbc(Candy::read_file("test/candy/network.dbc"));
+	bool parsed = transcoder.parse_dbc(Candy::transmit_file("test/candy/network.dbc"));
 	if (!parsed)
 		return 1;
 

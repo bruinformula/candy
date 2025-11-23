@@ -17,7 +17,7 @@ int main() {
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed = transcoder.parse_dbc(Candy::read_file("test/network.dbc"));
+    bool parsed = transcoder.parse_dbc(Candy::transmit_file("test/network.dbc"));
     if (!parsed) {
         std::cerr << "Failed to parse DBC file." << std::endl;
         return 1;
@@ -50,7 +50,7 @@ int main() {
         
         Candy::CANTime timestamp = std::chrono::system_clock::now();
 
-        transcoder.write_raw_message(sample);
+        transcoder.receive_raw_message(sample);
     }
     
     // Final processing statistics

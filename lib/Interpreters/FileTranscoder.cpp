@@ -42,7 +42,7 @@ namespace Candy {
         messages[message_id].name = message_name;
         messages[message_id].size = message_size;
         messages[message_id].transmitter = transmitter;
-        this->write_table_message_vrtl("messages", {
+        this->receive_table_message_vrtl("messages", {
             {"message_id", std::to_string(message_id)},
             {"message_name", message_name},
             {"message_size", std::to_string(message_size)}
@@ -61,7 +61,7 @@ namespace Candy {
     }
 
     template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::writer_loop() {
+    void FileTranscoder<T, TaskType>::receiver_loop() {
         while (true) {
             std::unique_lock<std::mutex> lock(queue_mutex);
             queue_cv.wait(lock, [this] {

@@ -276,10 +276,10 @@ void performance_test() {
     std::cout << "Query time for " << NUM_CAN_IDS << " CAN IDs: " << query_duration.count() << "ms" << std::endl;
 }
 
-// Multi-threaded example
-void multithreaded_example() {
+// Multi-threadted example
+void multithreadted_example() {
     auto buffer = CANDataBuffer::create_with_csv("MT_Test", "./mt_test");
-    buffer->set_auto_flush(false); // Disable auto-flush for multi-threaded test
+    buffer->set_auto_flush(false); // Disable auto-flush for multi-threadted test
     
     constexpr size_t NUM_THREADS = 4;
     constexpr size_t MESSAGES_PER_THREAD = 1000;
@@ -296,7 +296,7 @@ void multithreaded_example() {
                 sample.second.can_id = 0x500 + thread_id; // Different CAN ID per thread
                 sample.second.len = 8;
                 
-                // Thread-specific data pattern
+                // Thtransmit-specific data pattern
                 uint32_t value = (thread_id << 16) | (i & 0xFFFF);
                 std::memcpy(sample.second.data, &value, sizeof(value));
                 
@@ -304,13 +304,13 @@ void multithreaded_example() {
                     (thread_id * MESSAGES_PER_THREAD + i) * 50);
                 
                 std::unordered_map<std::string, double> signals = {
-                    {"Thread_ID", static_cast<double>(thread_id)},
+                    {"Thtransmit_ID", static_cast<double>(thread_id)},
                     {"Message_Index", static_cast<double>(i)},
                     {"Combined_Value", static_cast<double>(value)}
                 };
                 
                 std::unordered_map<std::string, std::string> units = {
-                    {"Thread_ID", "id"},
+                    {"Thtransmit_ID", "id"},
                     {"Message_Index", "count"},
                     {"Combined_Value", "raw"}
                 };
@@ -319,7 +319,7 @@ void multithreaded_example() {
                 {
                     std::lock_guard<std::mutex> lock(buffer_mutex);
                     buffer->add_frame(sample, 
-                                    "Thread_Message_" + std::to_string(thread_id), 
+                                    "Thtransmit_Message_" + std::to_string(thread_id), 
                                     signals, units);
                 }
                 
@@ -334,7 +334,7 @@ void multithreaded_example() {
         thread.join();
     }
     
-    std::cout << "Multi-threaded test completed" << std::endl;
+    std::cout << "Multi-threadted test completed" << std::endl;
     std::cout << "Total messages from " << NUM_THREADS << " threads: " 
               << buffer->get_total_messages() << std::endl;
     
@@ -342,7 +342,7 @@ void multithreaded_example() {
     for (size_t thread_id = 0; thread_id < NUM_THREADS; ++thread_id) {
         canid_t can_id = 0x500 + thread_id;
         auto messages = buffer->get_messages(can_id);
-        std::cout << "Thread " << thread_id << " produced " << messages.size() 
+        std::cout << "Thtransmit " << thread_id << " produced " << messages.size() 
                   << " messages for CAN ID 0x" << std::hex << can_id << std::dec << std::endl;
     }
     
@@ -471,8 +471,8 @@ int main() {
         std::cout << "\n=== Performance Test ===" << std::endl;
         performance_test();
         
-        std::cout << "\n=== Multi-threaded Example ===" << std::endl;
-        multithreaded_example();
+        std::cout << "\n=== Multi-threadted Example ===" << std::endl;
+        multithreadted_example();
         
         std::cout << "\n=== Real-world Logger Example ===" << std::endl;
         {

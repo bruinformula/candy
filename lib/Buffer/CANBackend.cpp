@@ -26,13 +26,13 @@ namespace Candy {
         create_metadata_table();
     }
 
-    void SQLBackend::write_message(const CANMessage& message) {
+    void SQLBackend::receive_message(const CANMessage& message) {
         // Convert timestamp to milliseconds
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             message.sample.first.time_since_epoch()).count();
         
-        // Use existing transcoder to write the raw frame
-        transcoder->write_raw_message(message.sample);
+        // Use existing transcoder to receive the raw frame
+        transcoder->receive_raw_message(message.sample);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -55,12 +55,12 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                transcoder->write_table_message("decoded_frames", signal_data);
+                transcoder->receive_table_message("decoded_frames", signal_data);
             }
         }
     }
 
-    void SQLBackend::write_metadata(const CANDataStreamMetadata& metadata) {
+    void SQLBackend::receive_metadata(const CANDataStreamMetadata& metadata) {
         auto creation_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             metadata.creation_time.time_since_epoch()).count();
         auto update_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -98,8 +98,8 @@ namespace Candy {
         };
         
         // Clear existing metadata and insert new
-        transcoder->write_table_message("DELETE FROM metadata", {});
-        transcoder->write_table_message("metadata", meta_data);
+        transcoder->receive_table_message("DELETE FROM metadata", {});
+        transcoder->receive_table_message("metadata", meta_data);
     }
 
     void SQLBackend::flush() {
@@ -121,21 +121,21 @@ namespace Candy {
         return future;
     }
 
-    std::vector<CANMessage> SQLBackend::read_messages(canid_t can_id) {
-        return read_messages_in_range(can_id, 
+    std::vector<CANMessage> SQLBackend::transmit_messages(canid_t can_id) {
+        return transmit_messages_in_range(can_id, 
             std::chrono::system_clock::time_point::min(),
             std::chrono::system_clock::time_point::max());
     }
 
-    std::vector<CANMessage> SQLBackend::read_messages_in_range(
+    std::vector<CANMessage> SQLBackend::transmit_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) {
         
         std::vector<CANMessage> messages;
         
-        // Open database connection for reading
+        // Open database connection for transmiting
         sqlite3* db;
         if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open database for reading");
+            throw std::runtime_error("Failed to open database for transmiting");
         }
         
         auto start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -192,12 +192,12 @@ namespace Candy {
         return messages;
     }
 
-    const CANDataStreamMetadata& SQLBackend::read_metadata() {
+    const CANDataStreamMetadata& SQLBackend::transmit_metadata() {
         CANDataStreamMetadata metadata;
         
         sqlite3* db;
         if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open database for reading metadata");
+            throw std::runtime_error("Failed to open database for transmiting metadata");
         }
         
         const char* meta_sql = "SELECT * FROM metadata LIMIT 1";
@@ -246,12 +246,12 @@ namespace Candy {
         ensure_metadata_file();
     }
 
-    void CSVBackend::write_message(const CANMessage& message) {
+    void CSVBackend::receive_message(const CANMessage& message) {
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             message.sample.first.time_since_epoch()).count();
         
         // Write raw frame using existing transcoder
-        transcoder->write_raw_message(message.sample);
+        transcoder->receive_raw_message(message.sample);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -273,12 +273,12 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                transcoder->write_table_message("decoded_frames.csv", signal_data);
+                transcoder->receive_table_message("decoded_frames.csv", signal_data);
             }
         }
     }
 
-    void CSVBackend::write_metadata(const CANDataStreamMetadata& metadata) {
+    void CSVBackend::receive_metadata(const CANDataStreamMetadata& metadata) {
         auto creation_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             metadata.creation_time.time_since_epoch()).count();
         auto update_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -305,7 +305,7 @@ namespace Candy {
             {"message_counts", counts_str.str()}
         };
         
-        transcoder->write_table_message("metadata.csv", meta_data);
+        transcoder->receive_table_message("metadata.csv", meta_data);
     }
 
     void CSVBackend::flush() {
@@ -327,13 +327,13 @@ namespace Candy {
         return future;
     }
 
-    std::vector<CANMessage> CSVBackend::read_messages(canid_t can_id) {
-        return read_messages_in_range(can_id,
+    std::vector<CANMessage> CSVBackend::transmit_messages(canid_t can_id) {
+        return transmit_messages_in_range(can_id,
             std::chrono::system_clock::time_point::min(),
             std::chrono::system_clock::time_point::max());
     }
 
-    std::vector<CANMessage> CSVBackend::read_messages_in_range(
+    std::vector<CANMessage> CSVBackend::transmit_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) {
         
         std::vector<CANMessage> messages;
@@ -445,7 +445,7 @@ namespace Candy {
         return messages;
     }
 
-    const CANDataStreamMetadata& CSVBackend::read_metadata() {
+    const CANDataStreamMetadata& CSVBackend::transmit_metadata() {
         CANDataStreamMetadata metadata;
         
         std::string meta_path = base_path + "/metadata.csv";

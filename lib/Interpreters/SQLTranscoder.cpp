@@ -27,7 +27,7 @@ namespace Candy {
         create_tables();
         prepare_statements();
 
-        writer_thread = std::thread(&SQLTranscoder::writer_loop, this);
+        receiver_thread = std::thread(&SQLTranscoder::receiver_loop, this);
     }
 
     SQLTranscoder::~SQLTranscoder() {
@@ -37,15 +37,15 @@ namespace Candy {
         }
         queue_cv.notify_all();
 
-        if (writer_thread.joinable()) {
-            writer_thread.join();
+        if (receiver_thread.joinable()) {
+            receiver_thread.join();
         }
 
         finalize_statements();
     }
 
     //methods 
-    void SQLTranscoder::write_raw_message(std::pair<CANTime, CANFrame> sample) {
+    void SQLTranscoder::receive_raw_message(std::pair<CANTime, CANFrame> sample) {
         enqueue_task([this, sample]() {
             batch_frame(sample);
 
@@ -59,7 +59,7 @@ namespace Candy {
         });
     }
 
-    void SQLTranscoder::write_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
+    void SQLTranscoder::receive_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
         std::string sql = build_insert_sql(table, data);
         enqueue_task([this, sql]() {
             execute_sql(sql);
@@ -268,13 +268,13 @@ namespace Candy {
     
     //CANIO Methods
 
-    void SQLTranscoder::write_message(const CANMessage& message) {
+    void SQLTranscoder::receive_message(const CANMessage& message) {
         // Convert timestamp to milliseconds
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             message.sample.first.time_since_epoch()).count();
         
-        // Use existing transcoder to write the raw frame
-        write_raw_message(message.sample);
+        // Use existing transcoder to receive the raw frame
+        receive_raw_message(message.sample);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -297,12 +297,12 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                write_table_message("decoded_frames", signal_data);
+                receive_table_message("decoded_frames", signal_data);
             }
         }
     }
 
-    void SQLTranscoder::write_metadata(const CANDataStreamMetadata& metadata) {
+    void SQLTranscoder::receive_metadata(const CANDataStreamMetadata& metadata) {
         auto creation_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             metadata.creation_time.time_since_epoch()).count();
         auto update_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -340,25 +340,25 @@ namespace Candy {
         };
         
         // Clear existing metadata and insert new
-        write_table_message("DELETE FROM metadata", {});
-        write_table_message("metadata", meta_data);
+        receive_table_message("DELETE FROM metadata", {});
+        receive_table_message("metadata", meta_data);
     }
 
-    std::vector<CANMessage> SQLTranscoder::read_messages(canid_t can_id) {
-        return read_messages_in_range(can_id, 
+    std::vector<CANMessage> SQLTranscoder::transmit_messages(canid_t can_id) {
+        return transmit_messages_in_range(can_id, 
             std::chrono::system_clock::time_point::min(),
             std::chrono::system_clock::time_point::max());
     }
 
-    std::vector<CANMessage> SQLTranscoder::read_messages_in_range(
+    std::vector<CANMessage> SQLTranscoder::transmit_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) {
         
         std::vector<CANMessage> messages;
         
-        // Open database connection for reading
+        // Open database connection for transmiting
         sqlite3* db;
         if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open database for reading");
+            throw std::runtime_error("Failed to open database for transmiting");
         }
         
         auto start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -415,10 +415,10 @@ namespace Candy {
         return messages;
     }
 
-    const CANDataStreamMetadata& SQLTranscoder::read_metadata() {        
+    const CANDataStreamMetadata& SQLTranscoder::transmit_metadata() {        
         sqlite3* db;
         if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open database for reading metadata");
+            throw std::runtime_error("Failed to open database for transmiting metadata");
         }
         
         const char* meta_sql = "SELECT * FROM metadata LIMIT 1";

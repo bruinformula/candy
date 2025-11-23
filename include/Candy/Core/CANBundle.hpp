@@ -1,9 +1,22 @@
 #pragma once
 
-#include "Candy/Core/CANIO.hpp"
 #include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/Core/CANIOConcepts.hpp"
+
 
 namespace Candy {
+    //Forward Declarations
+    template<typename Derived>
+    struct CANReceivable;
+
+    template<size_t BatchSize, typename Derived>
+    struct CANBatchReceivable;
+
+    template<typename Derived>
+    struct CANTransmittable;
+
+    template<size_t BatchSize, typename Derived>
+    struct CANBatchTransmittable;
 
     //Parse
     template <typename... Items>
@@ -11,15 +24,15 @@ namespace Candy {
     struct DBCBundle : 
         public DBCParser<DBCBundle<Items&...>> 
     {
-        std::tuple<Items&...> writers;
+        std::tuple<Items&...> item;
 
         DBCBundle(Items&... xs)
-            : writers(xs...)
+            : item(xs...)
         {}
         
         template <typename Func>
         inline void for_each_item(Func f) {
-            std::apply([&](Items&... args) { (f(args), ...); }, writers);
+            std::apply([&](Items&... args) { (f(args), ...); }, item);
         }
         
         bool parse_dbc(std::string_view dbc_src) { 
@@ -36,314 +49,319 @@ namespace Candy {
     };
 
     // One Read / Many Write
-    template <typename Reader, typename... Writers>
-    requires (IsCANWritable<Writers> && ...)
-    struct CANManyWriterBundle : 
-        public CANReadable<CANManyWriterBundle<Reader&, Writers&...>>,
-        public CANWritable<CANManyWriterBundle<Reader&, Writers&...>> 
+    template <typename Transmitter, typename... Receivers>
+    requires IsCANTransmittable<Transmitter> && (IsCANReceivable<Receivers> && ...)
+    struct CANManyReceiverBundle : 
+        public CANTransmittable<CANManyReceiverBundle<Transmitter&, Receivers&...>>,
+        public CANReceivable<CANManyReceiverBundle<Transmitter&, Receivers&...>> 
     {
     public:
-        Reader& reader;
-        std::tuple<Writers&...> writers;
+        Transmitter& transmitter;
+        std::tuple<Receivers&...> receivers;
 
-        CANManyWriterBundle(Writers&... writers, Reader reader) :
-            reader(reader),
-            writers(writers...)
+        CANManyReceiverBundle(Transmitter& transmitter, Receivers&... receivers) :
+            transmitter(transmitter),
+            receivers(receivers...)
         {}
 
-        const CANMessage& read_message() {
-            return reader.read_message();
+        template <typename Func>
+        inline void for_each_item(Func f) {
+            std::apply([&](Receivers&... args) { (f(args), ...); }, receivers);
         }
 
-        const std::pair<CANTime, CANFrame>& read_raw_message() {
-            return reader.read_raw_message();
+        const CANMessage& transmit_message() {
+            return transmitter.transmit_message();
         }
 
-        const std::tuple<std::string, TableType>& read_table_message() {
-            return reader.read_table_message();
+        const std::pair<CANTime, CANFrame>& transmit_raw_message() {
+            return transmitter.transmit_raw_message();
         }
-        const CANDataStreamMetadata& read_metadata() {
-            return reader.read_metadata();
+
+        const std::tuple<std::string, TableType>& transmit_table_message() {
+            return transmitter.transmit_table_message();
+        }
+        const CANDataStreamMetadata& transmit_metadata() {
+            return transmitter.transmit_metadata();
         }
 
         //CANWriteable
-        void write_message(const CANMessage& message) {
+        void receive_message(const CANMessage& message) {
             for_each_item([&](auto& item) {
-                item.write_message(message);
+                item.receive_message(message);
             });
         }
         
-        void write_metadata(const CANDataStreamMetadata& metadata) {
+        void receive_metadata(const CANDataStreamMetadata& metadata) {
             for_each_item([&](auto& item) {
-                item.write_metadata(metadata);
+                item.receive_metadata(metadata);
             });
         }
 
-        void write_raw_message(std::pair<CANTime, CANFrame> sample) {
+        void receive_raw_message(std::pair<CANTime, CANFrame> sample) {
             for_each_item([&](auto& item) {
-                item.write_raw_message(sample);
+                item.receive_raw_message(sample);
             });
         }
 
-        void write_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
+        void receive_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
             for_each_item([&](auto& item) {
-                item.write_table_message(table, data);
+                item.receive_table_message(table, data);
             });
         }
 
     };
 
     // One Read / One Write
-    template <typename Reader, typename Writer>
-    requires IsCANReadable<Reader> && IsCANWritable<Writer>
+    template <typename Transmitter, typename Receiver>
+    requires IsCANTransmittable<Transmitter> && IsCANReceivable<Receiver>
     struct CANPairBundle : 
-        public CANReadable<CANPairBundle<Reader&, Writer&>>, 
-        public CANWritable<CANPairBundle<Reader&, Writer&>> 
+        public CANTransmittable<CANPairBundle<Transmitter&, Receiver&>>, 
+        public CANReceivable<CANPairBundle<Transmitter&, Receiver&>> 
     {
-        Reader& reader;
-        Writer& writer; 
+        Transmitter& transmitter;
+        Receiver& receiver; 
 
-        CANPairBundle(Reader& reader, Writer& writer) :
-            reader(reader),
-            writer(writer)
+        CANPairBundle(Transmitter& transmitter, Receiver& receiver) :
+            transmitter(transmitter),
+            receiver(receiver)
         {}
 
-        //CANReadable 
-        const CANMessage& read_message() {
-            return reader.read_message();
+        //CANTransmittable 
+        const CANMessage& transmit_message() {
+            return transmitter.transmit_message();
         }
 
-        const std::pair<CANTime, CANFrame>& read_raw_message() {
-            return reader.read_raw_message();
+        const std::pair<CANTime, CANFrame>& transmit_raw_message() {
+            return transmitter.transmit_raw_message();
         }
 
-        const std::tuple<std::string, TableType>& read_table_message() {
-            return reader.read_table_message();
+        const std::tuple<std::string, TableType>& transmit_table_message() {
+            return transmitter.transmit_table_message();
         }
-        const CANDataStreamMetadata& read_metadata() {
-            return reader.read_metadata();
+        const CANDataStreamMetadata& transmit_metadata() {
+            return transmitter.transmit_metadata();
         }
 
         //CANWriteable
-        void write_message(const CANMessage& message) {
-            writer.write_message(message);
+        void receive_message(const CANMessage& message) {
+            receiver.receive_message(message);
         }
         
-        void write_metadata(const CANDataStreamMetadata& metadata) {
-            writer.write_metadata(metadata);
+        void receive_metadata(const CANDataStreamMetadata& metadata) {
+            receiver.receive_metadata(metadata);
         }
 
-        void write_raw_message(std::pair<CANTime, CANFrame> sample) {
-            writer.write_raw_message(sample);
+        void receive_raw_message(std::pair<CANTime, CANFrame> sample) {
+            receiver.receive_raw_message(sample);
         }
 
-        void write_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
-            writer.write_table_message(table, data);  
+        void receive_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
+            receiver.receive_table_message(table, data);  
         }
 
     };
     // Batch Read / One Write
-    template <size_t BatchSize, typename Writer, typename BatchReader>
-    requires IsCANBatchReadable<BatchSize, BatchReader> && IsCANWritable<Writer>
-    struct CANBatchReaderBundle : 
-        public CANBatchReadable<BatchSize, CANBatchReaderBundle<BatchSize, Writer&, BatchReader&>>, 
-        public CANWritable<CANBatchReaderBundle<BatchSize, Writer&, BatchReader&>> 
+    template <size_t BatchSize, typename Receiver, typename BatchTransmitter>
+    requires IsCANBatchTransmittable<BatchSize, BatchTransmitter> && IsCANReceivable<Receiver>
+    struct CANBatchTransmitterBundle : 
+        public CANBatchTransmittable<BatchSize, CANBatchTransmitterBundle<BatchSize, Receiver&, BatchTransmitter&>>, 
+        public CANReceivable<CANBatchTransmitterBundle<BatchSize, Receiver&, BatchTransmitter&>> 
     {
-        BatchReader& batch_reader; 
-        Writer& writer;
+        BatchTransmitter& batch_transmitter; 
+        Receiver& receiver;
 
-        CANBatchReaderBundle(BatchReader& batch_reader, Writer& writer) : 
-            batch_reader(batch_reader), 
-            writer(writer)
+        CANBatchTransmitterBundle(BatchTransmitter& batch_transmitter, Receiver& receiver) : 
+            batch_transmitter(batch_transmitter), 
+            receiver(receiver)
         {}
-        //CANBatchReadable
-        const std::array<CANMessage, BatchSize>& read_message_batch() {
-            return batch_reader.read_message_batch();
+        //CANBatchTransmittable
+        const std::array<CANMessage, BatchSize>& transmit_message_batch() {
+            return batch_transmitter.transmit_message_batch();
         }
 
-        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& read_raw_message_batch() {
-            return batch_reader.read_raw_message_batch();
+        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& transmit_raw_message_batch() {
+            return batch_transmitter.transmit_raw_message_batch();
         }
 
-        const std::array<std::tuple<std::string, TableType>, BatchSize>& read_table_message_batch() {
-            return batch_reader.read_table_message_batch();
+        const std::array<std::tuple<std::string, TableType>, BatchSize>& transmit_table_message_batch() {
+            return batch_transmitter.transmit_table_message_batch();
         }
-        //CANWritable
-        void write_message(const CANMessage& message) {
-            writer.write_message(message);
+        //CANReceivable
+        void receive_message(const CANMessage& message) {
+            receiver.receive_message(message);
         }
         
-        void write_metadata(const CANDataStreamMetadata& metadata) {
-            writer.write_metadata(metadata);
+        void receive_metadata(const CANDataStreamMetadata& metadata) {
+            receiver.receive_metadata(metadata);
         }
 
-        void write_raw_message(const std::pair<CANTime, CANFrame>& sample) {
-            writer.write_raw_message(sample);
+        void receive_raw_message(const std::pair<CANTime, CANFrame>& sample) {
+            receiver.receive_raw_message(sample);
         }
 
-        void write_table_message(const std::string& table, const TableType& data) {
-            writer.write_table_message(table, data);
+        void receive_table_message(const std::string& table, const TableType& data) {
+            receiver.receive_table_message(table, data);
         }
 
     };
     // One Read / Batch Write
-    template <size_t BatchSize, typename Reader, typename BatchWriter>
-    requires IsCANReadable<Reader> && IsCANBatchWritable<BatchSize, BatchWriter>
-    struct CANBatchWriterBundle : 
-        public CANReadable<CANBatchWriterBundle<BatchSize, Reader&, BatchWriter&>>, 
-        public CANBatchWritable<BatchSize, CANBatchWriterBundle<BatchSize, Reader&, BatchWriter&>> 
+    template <size_t BatchSize, typename Transmitter, typename BatchReceiver>
+    requires IsCANTransmittable<Transmitter> && IsCANBatchReceivable<BatchSize, BatchReceiver>
+    struct CANBatchReceiverBundle : 
+        public CANTransmittable<CANBatchReceiverBundle<BatchSize, Transmitter&, BatchReceiver&>>, 
+        public CANBatchReceivable<BatchSize, CANBatchReceiverBundle<BatchSize, Transmitter&, BatchReceiver&>> 
     {
-        Reader& reader; 
-        BatchWriter& batch_writer;
+        Transmitter& transmitter; 
+        BatchReceiver& batch_receiver;
 
-        CANBatchWriterBundle(Reader& reader, BatchWriter& batch_writer) : 
-            reader(reader), 
-            batch_writer(batch_writer)
+        CANBatchReceiverBundle(Transmitter& transmitter, BatchReceiver& batch_receiver) : 
+            transmitter(transmitter), 
+            batch_receiver(batch_receiver)
         {}
 
-        //CANReadable
-        const CANMessage& read_message() {
-            return reader.read_message();
+        //CANTransmittable
+        const CANMessage& transmit_message() {
+            return transmitter.transmit_message();
         }
 
-        const std::pair<CANTime, CANFrame>& read_raw_message() {
-            return reader.read_raw_message();
+        const std::pair<CANTime, CANFrame>& transmit_raw_message() {
+            return transmitter.transmit_raw_message();
         }
 
-        const std::tuple<std::string, TableType>& read_table_message() {
-            return reader.read_table_message();
+        const std::tuple<std::string, TableType>& transmit_table_message() {
+            return transmitter.transmit_table_message();
         }
 
-        const CANDataStreamMetadata& read_metadata() {
-            return reader.read_metadata();
+        const CANDataStreamMetadata& transmit_metadata() {
+            return transmitter.transmit_metadata();
         }
-        //CANBatchWritable
-        void write_message_batch(const std::array<CANMessage, BatchSize>& message) {
-            batch_writer.write_message_batch(message);
-        }
-
-        void write_raw_message_batch(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
-            batch_writer.write_raw_message_batch(samples);
+        //CANBatchReceivable
+        void receive_message_batch(const std::array<CANMessage, BatchSize>& message) {
+            batch_receiver.receive_message_batch(message);
         }
 
-        void write_table_message_batch(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
-            batch_writer.write_table_message_batch(table, data);
+        void receive_raw_message_batch(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
+            batch_receiver.receive_raw_message_batch(samples);
+        }
+
+        void receive_table_message_batch(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
+            batch_receiver.receive_table_message_batch(table, data);
         }
 
     };
 
     // Batch Read / Batch Write
-    template <size_t BatchSize, typename BatchReader, typename BatchWriter>
-    requires IsCANBatchReadable<BatchSize, BatchReader> && IsCANBatchWritable<BatchSize, BatchWriter>
+    template <size_t BatchSize, typename BatchTransmitter, typename BatchReceiver>
+    requires IsCANBatchTransmittable<BatchSize, BatchTransmitter> && IsCANBatchReceivable<BatchSize, BatchReceiver>
     struct CANBatchBundle : 
-        public CANBatchReadable<BatchSize, CANBatchBundle<BatchSize, BatchReader&, BatchWriter&>>, 
-        public CANBatchWritable<BatchSize, CANBatchBundle<BatchSize, BatchReader&, BatchWriter&>> 
+        public CANBatchTransmittable<BatchSize, CANBatchBundle<BatchSize, BatchTransmitter&, BatchReceiver&>>, 
+        public CANBatchReceivable<BatchSize, CANBatchBundle<BatchSize, BatchTransmitter&, BatchReceiver&>> 
     {
-        BatchReader& batch_reader; 
-        BatchWriter& batch_writer;
+        BatchTransmitter& batch_transmitter; 
+        BatchReceiver& batch_receiver;
 
-        CANBatchBundle(BatchReader& batch_reader, BatchWriter& batch_writer) : 
-            batch_reader(batch_reader), 
-            batch_writer(batch_writer)
+        CANBatchBundle(BatchTransmitter& batch_transmitter, BatchReceiver& batch_receiver) : 
+            batch_transmitter(batch_transmitter), 
+            batch_receiver(batch_receiver)
         {}
 
-        //CANBatchReadable
-        const std::array<CANMessage, BatchSize>& read_message_batch() {
-            return batch_reader.read_message_batch();
+        //CANBatchTransmittable
+        const std::array<CANMessage, BatchSize>& transmit_message_batch() {
+            return batch_transmitter.transmit_message_batch();
         }
 
-        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& read_raw_message_batch() {
-            return batch_reader.read_raw_message_batch();
+        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& transmit_raw_message_batch() {
+            return batch_transmitter.transmit_raw_message_batch();
         }
 
-        const std::array<std::tuple<std::string, TableType>, BatchSize>& read_table_message_batch() {
-            return batch_reader.read_table_message_batch();
+        const std::array<std::tuple<std::string, TableType>, BatchSize>& transmit_table_message_batch() {
+            return batch_transmitter.transmit_table_message_batch();
         }
 
-        //CANBatchWritable
-        void write_message_batch(const std::array<CANMessage, BatchSize>& message) {
-            batch_writer.write_message_batch(message);
+        //CANBatchReceivable
+        void receive_message_batch(const std::array<CANMessage, BatchSize>& message) {
+            batch_receiver.receive_message_batch(message);
         }
 
-        void write_raw_message_batch(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
-            batch_writer.write_raw_message_batch(samples);
+        void receive_raw_message_batch(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
+            batch_receiver.receive_raw_message_batch(samples);
         }
 
-        void write_table_message_batch(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
-            batch_writer.write_table_message_batch(table, data);
+        void receive_table_message_batch(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
+            batch_receiver.receive_table_message_batch(table, data);
         }
 
     };
     
-    template <size_t BatchReaderSize, size_t BatchWriterSize, typename BatchReader, typename BatchWriter>
-    requires IsCANBatchReadable<BatchReaderSize, BatchReader> && IsCANBatchWritable<BatchWriterSize, BatchWriter>
+    template <size_t BatchTransmitterSize, size_t BatchReceiverSize, typename BatchTransmitter, typename BatchReceiver>
+    requires IsCANBatchTransmittable<BatchTransmitterSize, BatchTransmitter> && IsCANBatchReceivable<BatchReceiverSize, BatchReceiver>
     struct CANDualBatchBundle : 
-        public CANBatchReadable<BatchReaderSize, CANDualBatchBundle<BatchReaderSize, BatchWriterSize, BatchReader&, BatchWriter&>>, 
-        public CANBatchWritable<BatchWriterSize, CANDualBatchBundle<BatchReaderSize, BatchWriterSize, BatchReader&, BatchWriter&>> 
+        public CANBatchTransmittable<BatchTransmitterSize, CANDualBatchBundle<BatchTransmitterSize, BatchReceiverSize, BatchTransmitter&, BatchReceiver&>>, 
+        public CANBatchReceivable<BatchReceiverSize, CANDualBatchBundle<BatchTransmitterSize, BatchReceiverSize, BatchTransmitter&, BatchReceiver&>> 
     {
-        BatchReader& batch_reader; 
-        BatchWriter& batch_writer;
+        BatchTransmitter& batch_transmitter; 
+        BatchReceiver& batch_receiver;
 
-        CANDualBatchBundle(BatchReader& batch_reader, BatchWriter& batch_writer) : 
-            batch_reader(batch_reader), 
-            batch_writer(batch_writer)
+        CANDualBatchBundle(BatchTransmitter& batch_transmitter, BatchReceiver& batch_receiver) : 
+            batch_transmitter(batch_transmitter), 
+            batch_receiver(batch_receiver)
         {}
 
-        // CANBatchReadable (BatchReaderSize)
-        const std::array<CANMessage, BatchReaderSize>& read_message_batch() {
-            return batch_reader.read_message_batch();
+        // CANBatchTransmittable (BatchTransmitterSize)
+        const std::array<CANMessage, BatchTransmitterSize>& transmit_message_batch() {
+            return batch_transmitter.transmit_message_batch();
         }
 
-        const std::array<std::pair<CANTime, CANFrame>, BatchReaderSize>& read_raw_message_batch() {
-            return batch_reader.read_raw_message_batch();
+        const std::array<std::pair<CANTime, CANFrame>, BatchTransmitterSize>& transmit_raw_message_batch() {
+            return batch_transmitter.transmit_raw_message_batch();
         }
 
-        const std::array<std::tuple<std::string, TableType>, BatchReaderSize>& read_table_message_batch() {
-            return batch_reader.read_table_message_batch();
+        const std::array<std::tuple<std::string, TableType>, BatchTransmitterSize>& transmit_table_message_batch() {
+            return batch_transmitter.transmit_table_message_batch();
         }
 
-        // CANBatchWritable (BatchWriterSize)
-        void write_message_batch(const std::array<CANMessage, BatchWriterSize>& message) {
-            batch_writer.write_message_batch(message);
+        // CANBatchReceivable (BatchReceiverSize)
+        void receive_message_batch(const std::array<CANMessage, BatchReceiverSize>& message) {
+            batch_receiver.receive_message_batch(message);
         }
 
-        void write_raw_message_batch(const std::array<std::pair<CANTime, CANFrame>, BatchWriterSize>& samples) {
-            batch_writer.write_raw_message_batch(samples);
+        void receive_raw_message_batch(const std::array<std::pair<CANTime, CANFrame>, BatchReceiverSize>& samples) {
+            batch_receiver.receive_raw_message_batch(samples);
         }
 
-        void write_table_message_batch(const std::array<std::string, BatchWriterSize>& table, const std::array<TableType, BatchWriterSize>& data) {
-            batch_writer.write_table_message_batch(table, data);
+        void receive_table_message_batch(const std::array<std::string, BatchReceiverSize>& table, const std::array<TableType, BatchReceiverSize>& data) {
+            batch_receiver.receive_table_message_batch(table, data);
         }
     };
 
     // Batch Read // errrr 
-    template <size_t BatchSize = 0, typename Reader = void>
-    requires IsCANReadable<Reader> && IsCANBatchReadable<BatchSize, Reader>
-    struct NullReader :
-        public CANReadable<NullReader<BatchSize, Reader>>,
-        public CANBatchReadable<BatchSize, NullReader<BatchSize, Reader>>
+    template <size_t BatchSize = 0, typename Transmitter = void>
+    requires IsCANTransmittable<Transmitter> && IsCANBatchTransmittable<BatchSize, Transmitter>
+    struct NullTransmitter :
+        public CANTransmittable<NullTransmitter<BatchSize, Transmitter>>,
+        public CANBatchTransmittable<BatchSize, NullTransmitter<BatchSize, Transmitter>>
     {
-        //CANReadable
-        const CANMessage& read_message() {
-            throw std::runtime_error("NullReader: no data");
+        //CANTransmittable
+        const CANMessage& transmit_message() {
+            throw std::runtime_error("NullTransmitter: no data");
         }
-        const std::pair<CANTime, CANFrame>& read_raw_message() {
-            throw std::runtime_error("NullReader: no data");
+        const std::pair<CANTime, CANFrame>& transmit_raw_message() {
+            throw std::runtime_error("NullTransmitter: no data");
         }
-        const std::tuple<std::string, TableType>& read_table_message() {
-            throw std::runtime_error("NullReader: no data");
+        const std::tuple<std::string, TableType>& transmit_table_message() {
+            throw std::runtime_error("NullTransmitter: no data");
         }
-        const CANDataStreamMetadata& read_metadata() = delete;
+        const CANDataStreamMetadata& transmit_metadata() = delete;
 
-        //CANBatchReadable
-        const std::array<CANMessage, BatchSize>& read_message_batch() {
-            throw std::runtime_error("NullReader: no data");
+        //CANBatchTransmittable
+        const std::array<CANMessage, BatchSize>& transmit_message_batch() {
+            throw std::runtime_error("NullTransmitter: no data");
         }
-        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& read_raw_message_batch() {
-            throw std::runtime_error("NullReader: no data");
+        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& transmit_raw_message_batch() {
+            throw std::runtime_error("NullTransmitter: no data");
         }
-        const std::array<std::tuple<std::string, TableType>, BatchSize>& read_table_message_batch() {
-            throw std::runtime_error("NullReader: no data");
+        const std::array<std::tuple<std::string, TableType>, BatchSize>& transmit_table_message_batch() {
+            throw std::runtime_error("NullTransmitter: no data");
         }
     };
 

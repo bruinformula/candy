@@ -2,8 +2,6 @@
 
 #include <optional>
 
-#include <boost/spirit/home/x3.hpp>
-
 #include "Candy/Core/DBC/DBCParserUtils.hpp"
 #include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
 #include "Candy/Core/DBC/DBCParser.hpp"

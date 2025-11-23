@@ -18,7 +18,7 @@ namespace Candy {
         frames_batch.reserve(batch_size);
         decoded_signals_batch.reserve(batch_size);
 
-        writer_thread = std::thread(&CSVTranscoder::writer_loop, this);
+        receiver_thread = std::thread(&CSVTranscoder::receiver_loop, this);
     }
 
     CSVTranscoder::~CSVTranscoder() {
@@ -28,8 +28,8 @@ namespace Candy {
         }
         queue_cv.notify_all();
 
-        if (writer_thread.joinable()) {
-            writer_thread.join();
+        if (receiver_thread.joinable()) {
+            receiver_thread.join();
         }
 
         // Close all CSV files
@@ -41,7 +41,7 @@ namespace Candy {
     }
 
     // public Methods
-    void CSVTranscoder::write_raw_message(std::pair<CANTime, CANFrame> sample) {
+    void CSVTranscoder::receive_raw_message(std::pair<CANTime, CANFrame> sample) {
         enqueue_task([this, sample]() {
             batch_frame(sample);
 
@@ -55,7 +55,7 @@ namespace Candy {
         });
     }
 
-    void CSVTranscoder::write_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data) {
+    void CSVTranscoder::receive_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data) {
         std::string csv_row = build_csv_row(data);
         enqueue_task([this, filename, csv_row, data]() {
             // Extract headers from data for first-time file creation
@@ -64,7 +64,7 @@ namespace Candy {
                 headers.push_back(key);
             }
             ensure_csv_file(filename, headers);
-            write_to_csv(filename, csv_row);
+            receive_to_csv(filename, csv_row);
         });
     }
 
@@ -132,7 +132,7 @@ namespace Candy {
 
         // Write all batched frames
         for (const auto& row : frames_batch) {
-            write_to_csv("frames.csv", row);
+            receive_to_csv("frames.csv", row);
         }
 
         frames_batch.clear();
@@ -147,7 +147,7 @@ namespace Candy {
 
         // Write all batched decoded signals
         for (const auto& row : decoded_signals_batch) {
-            write_to_csv("decoded_frames.csv", row);
+            receive_to_csv("decoded_frames.csv", row);
         }
 
         decoded_signals_batch.clear();
@@ -181,7 +181,7 @@ namespace Candy {
         if (csv_files.find(filename) == csv_files.end()) {
             std::string full_path = base_path + "/" + filename;
             
-            // Check if file already exists and has content
+            // Check if file altransmity exists and has content
             bool file_exists = std::filesystem::exists(full_path);
             bool file_has_content = false;
             
@@ -201,7 +201,7 @@ namespace Candy {
                 throw std::runtime_error("Failed to open CSV file: " + full_path);
             }
 
-            // Only write headers if file doesn't exist or is empty
+            // Only receive headers if file doesn't exist or is empty
             if (!file_has_content && headers_written.find(filename) == headers_written.end()) {
                 std::ostringstream header_row;
                 for (size_t i = 0; i < headers.size(); ++i) {
@@ -213,13 +213,13 @@ namespace Candy {
                 *csv_files[filename] << header_row.str() << "\n";
                 headers_written[filename] = true;
             } else {
-                // Mark headers as already written for existing files
+                // Mark headers as altransmity written for existing files
                 headers_written[filename] = true;
             }
         }
     }
 
-    void CSVTranscoder::write_to_csv(const std::string& filename, const std::string& row) {
+    void CSVTranscoder::receive_to_csv(const std::string& filename, const std::string& row) {
         auto it = csv_files.find(filename);
         if (it != csv_files.end() && it->second && it->second->is_open()) {
             *it->second << row << "\n";
@@ -248,12 +248,12 @@ namespace Candy {
     }
 
     //CANIO
-    void CSVTranscoder::write_message(const CANMessage& message) {
+    void CSVTranscoder::receive_message(const CANMessage& message) {
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             message.sample.first.time_since_epoch()).count();
         
         // Write raw frame using existing transcoder
-        write_raw_message(message.sample);
+        receive_raw_message(message.sample);
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
@@ -275,12 +275,12 @@ namespace Candy {
                     {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
                 };
                 
-                write_table_message("decoded_frames.csv", signal_data);
+                receive_table_message("decoded_frames.csv", signal_data);
             }
         }
     }
 
-    void CSVTranscoder::write_metadata(const CANDataStreamMetadata& metadata) {
+    void CSVTranscoder::receive_metadata(const CANDataStreamMetadata& metadata) {
         auto creation_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             metadata.creation_time.time_since_epoch()).count();
         auto update_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -307,16 +307,16 @@ namespace Candy {
             {"message_counts", counts_str.str()}
         };
         
-        write_table_message("metadata.csv", meta_data);
+        receive_table_message("metadata.csv", meta_data);
     }
 
-    std::vector<CANMessage> CSVTranscoder::read_messages(canid_t can_id) {
-        return read_messages_in_range(can_id,
+    std::vector<CANMessage> CSVTranscoder::transmit_messages(canid_t can_id) {
+        return transmit_messages_in_range(can_id,
             std::chrono::system_clock::time_point::min(),
             std::chrono::system_clock::time_point::max());
     }
 
-    std::vector<CANMessage> CSVTranscoder::read_messages_in_range(
+    std::vector<CANMessage> CSVTranscoder::transmit_messages_in_range(
         canid_t can_id, CANTime start, CANTime end) {
         
         std::vector<CANMessage> messages;
@@ -428,7 +428,7 @@ namespace Candy {
         return messages;
     }
 
-    const CANDataStreamMetadata& CSVTranscoder::read_metadata() {
+    const CANDataStreamMetadata& CSVTranscoder::transmit_metadata() {
         
         std::string meta_path = base_path + "/metadata.csv";
         if (!std::filesystem::exists(meta_path)) {

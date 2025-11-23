@@ -140,22 +140,22 @@ namespace Candy {
         // Write all buffered messages to backend
         for (const auto& [can_id, messages] : message_buffers) {
             for (const auto& message : messages) {
-                backend->write_message(message);
+                backend->receive_message(message);
             }
         }
         
-        // Update and write metadata
+        // Update and receive metadata
         metadata.last_update = std::chrono::system_clock::now();
-        backend->write_metadata(metadata);
+        backend->receive_metadata(metadata);
     }
 
     void CANDataBuffer::load_from_backend() {
         // Load metadata first
-        metadata = backend->read_metadata();
+        metadata = backend->transmit_metadata();
         
         // Load all messages for each known CAN ID
         for (const auto& [can_id, _] : metadata.message_names) {
-            auto messages = backend->read_messages(can_id);
+            auto messages = backend->transmit_messages(can_id);
             if (!messages.empty()) {
                 message_buffers[can_id] = std::move(messages);
             }

@@ -32,7 +32,7 @@ namespace Candy {
         return frame;
     }
 
-    inline std::string read_file(const std::string& dbc_path) {
+    inline std::string transmit_file(const std::string& dbc_path) {
         std::ifstream dbc_content(dbc_path);
         std::ostringstream ss;
         ss << dbc_content.rdbuf();

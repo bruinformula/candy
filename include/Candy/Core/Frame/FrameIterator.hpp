@@ -27,7 +27,7 @@ namespace Candy {
         
     private:
         template<typename IntType>
-        IntType read_at_offset(size_t offset) const;
+        IntType transmit_at_offset(size_t offset) const;
     };
 
     inline FrameIterator begin(const FramePacket& fp) {
