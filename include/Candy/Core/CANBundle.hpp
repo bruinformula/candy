@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/Core/DBC/DBCParsable.hpp"
 #include "Candy/Core/CANIOConcepts.hpp"
 
 
@@ -22,7 +22,7 @@ namespace Candy {
     template <typename... Items>
     requires (IsDBCParsable<Items> && ...)
     struct DBCBundle : 
-        public DBCParser<DBCBundle<Items&...>> 
+        public DBCParsable<DBCBundle<Items&...>> 
     {
         std::tuple<Items&...> item;
 
@@ -55,7 +55,6 @@ namespace Candy {
         public CANTransmittable<CANManyReceiverBundle<Transmitter&, Receivers&...>>,
         public CANReceivable<CANManyReceiverBundle<Transmitter&, Receivers&...>> 
     {
-    public:
         Transmitter& transmitter;
         std::tuple<Receivers&...> receivers;
 
@@ -160,6 +159,7 @@ namespace Candy {
         }
 
     };
+    
     // Batch Read / One Write
     template <size_t BatchSize, typename Receiver, typename BatchTransmitter>
     requires IsCANBatchTransmittable<BatchSize, BatchTransmitter> && IsCANReceivable<Receiver>

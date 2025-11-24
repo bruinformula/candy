@@ -2,15 +2,17 @@
 
 #include <optional>
 
-#include "Candy/Core/DBC/DBCParserUtils.hpp"
-#include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
 #include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
+#include "Candy/Core/DBC/DBCParsable.hpp"
 
 namespace Candy {
-
+    
+    using ParseResult = std::pair<std::string_view, bool>;
+    using attr_val_t = std::variant<int32_t, double, std::string>;
 
     template <typename Derived>
-    class DBCInterpreter : public DBCParser<Derived> {
+    class DBCInterpreter : public DBCParsable<Derived> {
     protected:
         void version_vrtl(const std::string& v) {
             if constexpr (HasVersion<Derived>) {
@@ -187,9 +189,7 @@ namespace Candy {
         }
     
     public:
-
         //there are no static assertions to impliment a DBC Interpreter. It is up to the Derived classes
-
         ParseResult parse_version(std::string_view rng);
         ParseResult parse_ns_(std::string_view rng);
         ParseResult parse_bs_(std::string_view rng);

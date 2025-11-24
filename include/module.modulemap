@@ -3,6 +3,7 @@ module Candy {
     umbrella header "Candy/Candy.h"
 
     module Core {
+        umbrella "Candy/Core"
         module DBC {
             umbrella "Candy/Core/DBC"
         }
@@ -12,11 +13,15 @@ module Candy {
         module Signal {
             umbrella "Candy/Core/Signal"
         }
-        umbrella "Candy/Core"
     }
 
     module Interpreters {
         umbrella "Candy/Interpreters"
-        export Core
+        module File {
+            umbrella "Candy/Interpreters/File"
+        }
+        module V2C {
+            umbrella "Candy/Interpreters/V2C"
+        }
     }
 }

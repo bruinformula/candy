@@ -2,6 +2,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <filesystem>
+#include <algorithm>
 
 #include "Candy/Interpreters/CSVTranscoder.hpp"
 
@@ -421,7 +422,7 @@ namespace Candy {
             messages.push_back(std::move(message));
         }
         
-        std::ranges::sort(messages, [](const CANMessage& a, const CANMessage& b) {
+        std::sort(messages.begin(), messages.end(), [](const CANMessage& a, const CANMessage& b) {
             return a.sample.first < b.sample.first;
         });
         
