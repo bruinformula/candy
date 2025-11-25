@@ -42,11 +42,9 @@ namespace Candy {
         messages[message_id].name = message_name;
         messages[message_id].size = message_size;
         messages[message_id].transmitter = transmitter;
-        this->receive_table_message_vrtl("messages", {
-            {"message_id", std::to_string(message_id)},
-            {"message_name", message_name},
-            {"message_size", std::to_string(message_size)}
-        });
+        
+        // Store message metadata in the underlying transcoder
+        this->store_message_metadata_vrtl(message_id, message_name, message_size);
     }
 
     template<typename T, typename TaskType>
@@ -58,79 +56,6 @@ namespace Candy {
                 break;
             }
         }
-    }
-
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::receiver_loop() {
-        while (true) {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            queue_cv.wait(lock, [this] {
-                return !task_queue.empty() || shutdown_requested;
-            });
-
-            while (!task_queue.empty()) {
-                is_processing = true;
-                TaskType task = std::move(task_queue.front());
-                task_queue.pop();
-                lock.unlock();
-
-                try {
-                    task.operation();
-                    tasks_processed++;
-                    if (task.promise) task.promise->set_value();
-                } catch (...) {
-                    if (task.promise) task.promise->set_exception(std::current_exception());
-                }
-
-                lock.lock();
-            }
-
-            is_processing = false;
-
-            if (shutdown_requested) {
-                flush_all_batches_vrtl();
-                break;
-            }
-        }
-    }
-
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::enqueue_task(std::function<void()> task) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        task_queue.emplace(std::move(task));
-        queue_cv.notify_one();
-    }
-
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::enqueue_task_with_promise(std::function<void()> task, std::promise<void> promise) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        task_queue.emplace(std::move(task), std::move(promise));
-        queue_cv.notify_one();
-    }
-
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::flush_async(std::function<void()> callback) {
-        enqueue_task([this, callback]() {
-            flush_all_batches_vrtl();
-            callback();
-        });
-    }
-
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::flush_sync() {
-        std::promise<void> promise;
-        auto future = promise.get_future();
-        enqueue_task_with_promise([this]() {
-            flush_all_batches_vrtl();
-        }, std::move(promise));
-        future.wait();
-    }
-
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::flush() {
-        enqueue_task([this]() {
-            flush_all_batches_vrtl();
-        });
     }
 
     template class FileTranscoder<CSVTranscoder, CSVTask>;

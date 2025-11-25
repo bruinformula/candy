@@ -102,12 +102,6 @@ namespace Candy {
             });
         }
 
-        void receive_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
-            for_each_item([&](auto& item) {
-                item.receive_table_message(table, data);
-            });
-        }
-
     };
 
     // One Read / One Write
@@ -154,10 +148,6 @@ namespace Candy {
             receiver.receive_raw_message(sample);
         }
 
-        void receive_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
-            receiver.receive_table_message(table, data);  
-        }
-
     };
     
     // Batch Read / One Write
@@ -197,10 +187,6 @@ namespace Candy {
 
         void receive_raw_message(const std::pair<CANTime, CANFrame>& sample) {
             receiver.receive_raw_message(sample);
-        }
-
-        void receive_table_message(const std::string& table, const TableType& data) {
-            receiver.receive_table_message(table, data);
         }
 
     };
@@ -244,10 +230,6 @@ namespace Candy {
             batch_receiver.receive_raw_message_batch(samples);
         }
 
-        void receive_table_message_batch(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
-            batch_receiver.receive_table_message_batch(table, data);
-        }
-
     };
 
     // Batch Read / Batch Write
@@ -285,10 +267,6 @@ namespace Candy {
 
         void receive_raw_message_batch(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
             batch_receiver.receive_raw_message_batch(samples);
-        }
-
-        void receive_table_message_batch(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
-            batch_receiver.receive_table_message_batch(table, data);
         }
 
     };
@@ -329,9 +307,6 @@ namespace Candy {
             batch_receiver.receive_raw_message_batch(samples);
         }
 
-        void receive_table_message_batch(const std::array<std::string, BatchReceiverSize>& table, const std::array<TableType, BatchReceiverSize>& data) {
-            batch_receiver.receive_table_message_batch(table, data);
-        }
     };
 
     // Batch Read // errrr 

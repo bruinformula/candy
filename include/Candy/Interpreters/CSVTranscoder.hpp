@@ -33,7 +33,6 @@ namespace Candy {
         //CANReceivable methods 
         void receive_message(const CANMessage& message);
         void receive_raw_message(std::pair<CANTime, CANFrame> sample);
-        void receive_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data);
         void receive_metadata(const CANDataStreamMetadata& metadata);
 
         std::vector<CANMessage> transmit_messages(canid_t can_id);
@@ -46,6 +45,7 @@ namespace Candy {
         void flush_frames_batch();
         void flush_decoded_signals_batch();
         void flush_all_batches();
+        void store_message_metadata(canid_t message_id, const std::string& message_name, size_t message_size);
         
     private:
         std::string base_path;

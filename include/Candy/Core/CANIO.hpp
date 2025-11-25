@@ -24,10 +24,6 @@ namespace Candy {
             static_cast<Derived&>(*this).receive_raw_message(sample);
         }
 
-        void receive_table_message_vrtl(const std::string& table, const TableType& data) {
-            static_cast<Derived&>(*this).receive_table_message(table, data);
-        }
-
         CANReceivable() {
             static_assert(IsCANReceivable<Derived>, "Derived must satisfy IsCANReceivable concept");
         }
@@ -43,10 +39,6 @@ namespace Candy {
 
         void receive_raw_message_batch_vrtl(const std::array<std::pair<CANTime, CANFrame>, BatchSize>& samples) {
             static_cast<Derived&>(*this).receive_raw_message_batch(samples);
-        }
-
-        void receive_table_message_batch_vrtl(const std::array<std::string, BatchSize>& table, const std::array<TableType, BatchSize>& data) {
-            static_cast<Derived&>(*this).receive_table_message_batch(table, data);
         }
 
         CANBatchReceivable() {
@@ -115,37 +107,12 @@ namespace Candy {
 
 
     //To Be Slimed...
-    template<typename T>
-    concept CANStoreWriteable = requires(T t, const CANMessage& msg, const CANDataStreamMetadata& md) {
-        { t.flush() } -> std::same_as<void>;
-        { t.flush_sync() } -> std::same_as<void>;
-        { t.flush_async([]{} ) } -> std::same_as<void>;
-    };
 
     template<typename T>
     concept CANStoreTransmittable = requires(T t, canid_t id, CANTime start, CANTime end) {
         { t.transmit_messages(id) } -> std::same_as<std::vector<CANMessage>>;
         { t.transmit_messages_in_range(id, start, end) } -> std::same_as<std::vector<CANMessage>>;
         { t.transmit_metadata() } -> std::same_as<const CANDataStreamMetadata&>;
-    };
-
-    template<typename Derived>
-    struct CANStoreReceiver {
-
-        void flush_vrtl() {
-            static_cast<Derived&>(*this).flush();
-        }
-
-        void flush_async_vrtl(std::function<void()> callback) {
-            static_cast<Derived&>(*this).flush_async(callback);
-        }
-        
-        void flush_sync_vrtl() {
-            static_cast<Derived&>(*this).flush_sync();
-        }
-        CANStoreReceiver() {
-            static_assert(CANStoreWriteable<Derived>, "Derived must satisfy CANStoreWriteable concept");
-        }
     };
 
     template<typename Derived>

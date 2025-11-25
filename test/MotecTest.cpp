@@ -65,6 +65,5 @@ int main() {
     
     // Only use blocking flush at the very end
     std::cout << "   Final flush (blocking)..." << std::endl;
-    transcoder.flush_sync();
     */
 }

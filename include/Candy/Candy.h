@@ -1,9 +1,6 @@
 #pragma once 
 //umbrella
 
-#include "Candy/Buffer/CANDataBuffer.hpp"
-#include "Candy/Buffer/BackendInterface.hpp"
-#include "Candy/Buffer/BufferUtils.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/Frame/FrameIterator.hpp"
 #include "Candy/Core/Frame/FramePacket.hpp"

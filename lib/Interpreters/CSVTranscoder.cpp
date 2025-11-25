@@ -9,7 +9,7 @@
 namespace Candy {
 
     CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size) : 
-        FileTranscoder<CSVTranscoder, CSVTask>(false, batch_size, 0, 0),
+        FileTranscoder<CSVTranscoder, CSVTask>(batch_size, 0, 0),
         base_path(base_path)
     {
         // Ensure the base directory exists
@@ -18,21 +18,9 @@ namespace Candy {
         // Reserve space for batches to avoid frequent reallocations
         frames_batch.reserve(batch_size);
         decoded_signals_batch.reserve(batch_size);
-
-        receiver_thread = std::thread(&CSVTranscoder::receiver_loop, this);
     }
 
     CSVTranscoder::~CSVTranscoder() {
-        {
-            std::lock_guard<std::mutex> lock(queue_mutex);
-            shutdown_requested = true;
-        }
-        queue_cv.notify_all();
-
-        if (receiver_thread.joinable()) {
-            receiver_thread.join();
-        }
-
         // Close all CSV files
         for (auto& [filename, file] : csv_files) {
             if (file && file->is_open()) {
@@ -43,30 +31,30 @@ namespace Candy {
 
     // public Methods
     void CSVTranscoder::receive_raw_message(std::pair<CANTime, CANFrame> sample) {
-        enqueue_task([this, sample]() {
-            batch_frame(sample);
+        batch_frame(sample);
 
-            auto msg_it = messages.find(sample.second.can_id);
-            if (msg_it != messages.end()) {
-                batch_decoded_signals(sample, msg_it->second);
-            }
+        auto msg_it = messages.find(sample.second.can_id);
+        if (msg_it != messages.end()) {
+            batch_decoded_signals(sample, msg_it->second);
+        }
 
-            if (frames_batch_count >= batch_size) flush_frames_batch();
-            if (decoded_signals_batch_count >= batch_size) flush_decoded_signals_batch();
-        });
+        if (frames_batch_count >= batch_size) {
+            flush_frames_batch();
+        }
+        if (decoded_signals_batch_count >= batch_size) {
+            flush_decoded_signals_batch();
+        }
     }
 
-    void CSVTranscoder::receive_table_message(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& data) {
-        std::string csv_row = build_csv_row(data);
-        enqueue_task([this, filename, csv_row, data]() {
-            // Extract headers from data for first-time file creation
-            std::vector<std::string> headers;
-            for (const auto& [key, value] : data) {
-                headers.push_back(key);
-            }
-            ensure_csv_file(filename, headers);
-            receive_to_csv(filename, csv_row);
-        });
+    void CSVTranscoder::store_message_metadata(canid_t message_id, const std::string& message_name, size_t message_size) {
+        ensure_csv_file("messages.csv", {"message_id", "message_name", "message_size"});
+        
+        std::ostringstream row;
+        row << message_id << ","
+            << "\"" << escape_csv(message_name) << "\","
+            << message_size;
+        
+        receive_to_csv("messages.csv", row.str());
     }
 
     // protected Methods
@@ -258,6 +246,9 @@ namespace Candy {
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
+            // Ensure decoded signals CSV file exists with headers
+            ensure_csv_file("decoded_frames.csv", {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"});
+            
             for (const auto& [signal_name, signal_value] : message.decoded_signals) {
                 std::string unit = "";
                 auto unit_it = message.signal_units.find(signal_name);
@@ -265,18 +256,17 @@ namespace Candy {
                     unit = unit_it->second;
                 }
                 
-                std::vector<std::pair<std::string, std::string>> signal_data = {
-                    {"timestamp", std::to_string(timestamp_ms)},
-                    {"can_id", std::to_string(message.sample.second.can_id)},
-                    {"message_name", message.message_name},
-                    {"signal_name", signal_name},
-                    {"signal_value", std::to_string(signal_value)},
-                    {"raw_value", "0"},
-                    {"unit", unit},
-                    {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
-                };
+                std::ostringstream row;
+                row << timestamp_ms << ","
+                    << message.sample.second.can_id << ","
+                    << "\"" << escape_csv(message.message_name) << "\","
+                    << "\"" << escape_csv(signal_name) << "\","
+                    << std::fixed << std::setprecision(6) << signal_value << ","
+                    << "0," // raw_value not available
+                    << "\"" << escape_csv(unit) << "\","
+                    << (message.mux_value ? std::to_string(*message.mux_value) : "");
                 
-                receive_table_message("decoded_frames.csv", signal_data);
+                receive_to_csv("decoded_frames.csv", row.str());
             }
         }
     }
@@ -298,17 +288,19 @@ namespace Candy {
             counts_str << can_id << ":" << count << ";";
         }
         
-        std::vector<std::pair<std::string, std::string>> meta_data = {
-            {"stream_name", metadata.stream_name},
-            {"description", metadata.description},
-            {"creation_time", std::to_string(creation_ms)},
-            {"last_update", std::to_string(update_ms)},
-            {"total_messages", std::to_string(metadata.total_messages)},
-            {"message_names", names_str.str()},
-            {"message_counts", counts_str.str()}
-        };
+        ensure_csv_file("metadata.csv", {"stream_name", "description", "creation_time", "last_update", "total_messages", "message_names", "message_counts"});
         
-        receive_table_message("metadata.csv", meta_data);
+        // Build and write metadata row
+        std::ostringstream row;
+        row << "\"" << escape_csv(metadata.stream_name) << "\","
+            << "\"" << escape_csv(metadata.description) << "\","
+            << creation_ms << ","
+            << update_ms << ","
+            << metadata.total_messages << ","
+            << "\"" << escape_csv(names_str.str()) << "\","
+            << "\"" << escape_csv(counts_str.str()) << "\"";
+        
+        receive_to_csv("metadata.csv", row.str());
     }
 
     std::vector<CANMessage> CSVTranscoder::transmit_messages(canid_t can_id) {

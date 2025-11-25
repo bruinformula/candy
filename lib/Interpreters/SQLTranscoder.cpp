@@ -8,7 +8,7 @@
 namespace Candy {
 
     SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size) : 
-        FileTranscoder<SQLTranscoder, SQLTask>(false, batch_size, 0, 0),
+        FileTranscoder<SQLTranscoder, SQLTask>(batch_size, 0, 0),
         db_path(db_file_path),
         db(nullptr, sqlite3_close)
     {
@@ -26,44 +26,19 @@ namespace Candy {
 
         create_tables();
         prepare_statements();
-
-        receiver_thread = std::thread(&SQLTranscoder::receiver_loop, this);
     }
 
     SQLTranscoder::~SQLTranscoder() {
-        {
-            std::lock_guard<std::mutex> lock(queue_mutex);
-            shutdown_requested = true;
-        }
-        queue_cv.notify_all();
-
-        if (receiver_thread.joinable()) {
-            receiver_thread.join();
-        }
-
         finalize_statements();
     }
 
     //methods 
-    void SQLTranscoder::receive_raw_message(std::pair<CANTime, CANFrame> sample) {
-        enqueue_task([this, sample]() {
-            batch_frame(sample);
 
-            auto msg_it = messages.find(sample.second.can_id);
-            if (msg_it != messages.end()) {
-                batch_decoded_signals(sample, msg_it->second);
-            }
-
-            if (frames_batch_count >= batch_size) flush_frames_batch();
-            if (decoded_signals_batch_count >= batch_size) flush_decoded_signals_batch();
-        });
-    }
-
-    void SQLTranscoder::receive_table_message(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data) {
-        std::string sql = build_insert_sql(table, data);
-        enqueue_task([this, sql]() {
-            execute_sql(sql);
-        });
+    void SQLTranscoder::store_message_metadata(canid_t message_id, const std::string& message_name, size_t message_size) {
+        std::string sql = "INSERT INTO messages (message_id, message_name, message_size) VALUES (" +
+            std::to_string(message_id) + ", '" + escape_sql(message_name) + "', " +
+            std::to_string(message_size) + ")";
+        execute_sql(sql);
     }
 
     // Private Methods
@@ -268,6 +243,22 @@ namespace Candy {
     
     //CANIO Methods
 
+    void SQLTranscoder::receive_raw_message(std::pair<CANTime, CANFrame> sample) {
+        batch_frame(sample);
+
+        auto msg_it = messages.find(sample.second.can_id);
+        if (msg_it != messages.end()) {
+            batch_decoded_signals(sample, msg_it->second);
+        }
+
+        if (frames_batch_count >= batch_size) {
+            flush_frames_batch();
+        } 
+        if (decoded_signals_batch_count >= batch_size) {
+            flush_decoded_signals_batch();
+        }
+    }
+
     void SQLTranscoder::receive_message(const CANMessage& message) {
         // Convert timestamp to milliseconds
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -285,19 +276,30 @@ namespace Candy {
                     unit = unit_it->second;
                 }
                 
-                // Build data for decoded signals
-                std::vector<std::pair<std::string, std::string>> signal_data = {
-                    {"timestamp", std::to_string(timestamp_ms)},
-                    {"can_id", std::to_string(message.sample.second.can_id)},
-                    {"message_name", message.message_name},
-                    {"signal_name", signal_name},
-                    {"signal_value", std::to_string(signal_value)},
-                    {"raw_value", "0"}, // We don't have raw value in this context
-                    {"unit", unit},
-                    {"mux_value", message.mux_value ? std::to_string(*message.mux_value) : ""}
-                };
+                // Directly insert into decoded_frames table
+                sqlite3_bind_int64(decoded_signals_insert_stmt, 1, timestamp_ms);
+                sqlite3_bind_int(decoded_signals_insert_stmt, 2, message.sample.second.can_id);
+                sqlite3_bind_text(decoded_signals_insert_stmt, 3, message.message_name.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(decoded_signals_insert_stmt, 4, signal_name.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_double(decoded_signals_insert_stmt, 5, signal_value);
+                sqlite3_bind_int64(decoded_signals_insert_stmt, 6, 0); // raw_value not available
+                sqlite3_bind_text(decoded_signals_insert_stmt, 7, unit.c_str(), -1, SQLITE_TRANSIENT);
+                if (message.mux_value) {
+                    sqlite3_bind_int64(decoded_signals_insert_stmt, 8, *message.mux_value);
+                } else {
+                    sqlite3_bind_null(decoded_signals_insert_stmt, 8);
+                }
                 
-                receive_table_message("decoded_frames", signal_data);
+                if (sqlite3_step(decoded_signals_insert_stmt) != SQLITE_DONE) {
+                    throw std::runtime_error("Failed to insert decoded signal");
+                }
+                
+                sqlite3_reset(decoded_signals_insert_stmt);
+                decoded_signals_batch_count++;
+            }
+            
+            if (decoded_signals_batch_count >= batch_size) {
+                flush_decoded_signals_batch();
             }
         }
     }
@@ -328,20 +330,21 @@ namespace Candy {
             first = false;
         }
         counts_json << "}";
+
+        execute_sql("DELETE FROM metadata");
         
-        std::vector<std::pair<std::string, std::string>> meta_data = {
-            {"stream_name", metadata.stream_name},
-            {"description", metadata.description},
-            {"creation_time", std::to_string(creation_ms)},
-            {"last_update", std::to_string(update_ms)},
-            {"total_messages", std::to_string(metadata.total_messages)},
-            {"message_names", names_json.str()},
-            {"message_counts", counts_json.str()}
-        };
+        // Insert new metadata
+        std::string insert_sql = 
+            "INSERT INTO metadata (stream_name, description, creation_time, last_update, total_messages, message_names, message_counts) "
+            "VALUES ('" + escape_sql(metadata.stream_name) + "', '" + 
+            escape_sql(metadata.description) + "', " + 
+            std::to_string(creation_ms) + ", " + 
+            std::to_string(update_ms) + ", " + 
+            std::to_string(metadata.total_messages) + ", '" + 
+            escape_sql(names_json.str()) + "', '" + 
+            escape_sql(counts_json.str()) + "')";
         
-        // Clear existing metadata and insert new
-        receive_table_message("DELETE FROM metadata", {});
-        receive_table_message("metadata", meta_data);
+        execute_sql(insert_sql);
     }
 
     std::vector<CANMessage> SQLTranscoder::transmit_messages(canid_t can_id) {

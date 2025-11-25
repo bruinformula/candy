@@ -128,7 +128,6 @@ int main() {
     
     // Only use blocking flush at the very end
     std::cout << "   Final flush (blocking)..." << std::endl;
-    node.flush_sync();
 
     return 0;
     */
