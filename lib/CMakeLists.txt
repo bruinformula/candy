@@ -6,6 +6,11 @@ add_library(candy STATIC ${candy_CXX_FILES})
 
 target_include_directories(candy PUBLIC "${CMAKE_SOURCE_DIR}/include")
 
+target_compile_options(candy PUBLIC
+    "-O3"
+    "-flto"
+)
+
 if (${BUILD_SQLITE3})
     # Ensure the ExternalProject that builds sqlite3 runs before candy links.
     if(TARGET sqlite3)

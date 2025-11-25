@@ -4,8 +4,8 @@
 
 namespace Candy {
 
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
+    template<typename T>
+    void FileTranscoder<T>::sg(canid_t message_id, std::optional<unsigned> mux_val, const std::string& signal_name,
                         unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
                         double factor, double offset, double min_val, double max_val,
                         std::string unit, std::vector<size_t> receivers)
@@ -22,8 +22,8 @@ namespace Candy {
         messages[message_id].signals.push_back(std::move(sig_def));
     }
 
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::sg_mux(canid_t message_id, const std::string& signal_name,
+    template<typename T>
+    void FileTranscoder<T>::sg_mux(canid_t message_id, const std::string& signal_name,
                             unsigned start_bit, unsigned bit_size, char byte_order, char sign_type,
                             std::string unit, std::vector<size_t> receivers)
     {
@@ -37,8 +37,8 @@ namespace Candy {
         messages[message_id].multiplexer = std::move(mux_def);
     }
 
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter) {
+    template<typename T>
+    void FileTranscoder<T>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter) {
         messages[message_id].name = message_name;
         messages[message_id].size = message_size;
         messages[message_id].transmitter = transmitter;
@@ -47,8 +47,8 @@ namespace Candy {
         this->store_message_metadata_vrtl(message_id, message_name, message_size);
     }
 
-    template<typename T, typename TaskType>
-    void FileTranscoder<T, TaskType>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type) {
+    template<typename T>
+    void FileTranscoder<T>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type) {
         auto& msg = messages[message_id];
         for (auto& sig : msg.signals) {
             if (sig.name == signal_name) {
@@ -58,7 +58,7 @@ namespace Candy {
         }
     }
 
-    template class FileTranscoder<CSVTranscoder, CSVTask>;
-    template class FileTranscoder<SQLTranscoder, SQLTask>;
+    template class FileTranscoder<CSVTranscoder>;
+    template class FileTranscoder<SQLTranscoder>;
 
 }

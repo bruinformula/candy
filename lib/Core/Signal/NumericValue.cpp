@@ -3,8 +3,10 @@
 
 namespace Candy {
 
-    NumericValue::NumericValue(double scale_factor, double offset_value)
-        : factor(scale_factor), offset(offset_value) {}
+    NumericValue::NumericValue(double scale_factor, double offset_value) : 
+        factor(scale_factor), 
+        offset(offset_value)
+    {}
 
     std::optional<double> NumericValue::convert(uint64_t raw_value, NumericValueType type) const {
         switch (type) {
@@ -21,5 +23,4 @@ namespace Candy {
     double NumericValue::convert_raw_to_numeric(T value) const {
         return static_cast<double>(value) * factor + offset;
     }
-
 }

@@ -11,6 +11,60 @@
 
 namespace Candy {
 
+    template <typename Numeric>
+    uint64_t LastSignal<Numeric>::assemble(int64_t mux_val, uint64_t fd) {
+        if (!this->_sig.is_active(mux_val))
+            return 0;
+
+        uint64_t decoded = this->_sig.decode(fd);
+        Numeric val = *reinterpret_cast<const Numeric*>(&decoded);
+        this->_val = val;
+        uint64_t raw = *reinterpret_cast<const uint64_t*>(&val);
+        return this->_sig.encode(raw);
+    }
+
+    template <typename Numeric>
+    void LastSignal<Numeric>::reset() {
+        // No-op
+    }
+
+    template <typename Numeric>
+    uint64_t AverageSignal<Numeric>::assemble(int64_t mux_val, uint64_t fd) {
+        if (!this->_sig.is_active(mux_val))
+            return 0;
+
+        uint64_t decoded = this->_sig.decode(fd);
+        Numeric val = *reinterpret_cast<const Numeric*>(&decoded);
+        this->_val = (_num_samples == 0) ? val : this->_val + val;
+        ++_num_samples;
+
+        Numeric result;
+        if constexpr (std::is_integral_v<Numeric>) {
+            result = (this->_val < 0) ? (this->_val - _num_samples / 2) / _num_samples : (this->_val + _num_samples / 2) / _num_samples;
+        } else {
+            result = this->_val / _num_samples;
+        }
+        
+        uint64_t raw = *reinterpret_cast<const uint64_t*>(&result);
+        return this->_sig.encode(raw);
+    }
+
+    template <typename Numeric>
+    void AverageSignal<Numeric>::reset() {
+        this->_val = 0;
+        _num_samples = 0;
+    }
+
+    template struct AverageSignal<uint64_t>;
+    template struct AverageSignal<int64_t>;
+    template struct AverageSignal<double>;
+    template struct AverageSignal<float>;
+
+    template struct LastSignal<uint64_t>;
+    template struct LastSignal<int64_t>;
+    template struct LastSignal<double>;
+    template struct LastSignal<float>;
+
     template <template <typename> typename AssemblerType>
     static SignalAssemblerVariant make_sig_agg(const TranslatedSignal& sig) {
         switch (sig.value_type()) {
@@ -112,5 +166,4 @@ namespace Candy {
     void TranslatedMessage::add_muxer(TranslatedMultiplexer mux) {
         _mux = std::move(mux);
     }
-
 }

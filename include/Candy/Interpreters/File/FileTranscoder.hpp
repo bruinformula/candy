@@ -1,13 +1,7 @@
 #pragma once 
 
-#include <queue>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <atomic>
 #include <optional>
 #include <vector>
-#include <future>
 
 #include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/File/FileTranscoderConcepts.hpp"
@@ -18,7 +12,7 @@
 
 namespace Candy {
 
-    template <typename Derived, typename TaskType>
+    template <typename Derived>
     class FileTranscoder : public DBCInterpreter<Derived>,
                            public CANStoreTransmitter<Derived>,
                            public CANReceivable<Derived>
@@ -85,6 +79,12 @@ namespace Candy {
 
         void sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type);
     };
+
+    class SQLTranscoder;
+    class CSVTranscoder;
+
+    extern template class FileTranscoder<CSVTranscoder>;
+    extern template class FileTranscoder<SQLTranscoder>;
 
 }
 

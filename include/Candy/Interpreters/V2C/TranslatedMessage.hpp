@@ -14,6 +14,17 @@
 
 namespace Candy {
     
+    using SignalAssemblerVariant = std::variant<
+        LastSignal<uint64_t>,
+        LastSignal<int64_t>,
+        LastSignal<double>,
+        LastSignal<float>,
+        AverageSignal<uint64_t>,
+        AverageSignal<int64_t>,
+        AverageSignal<double>,
+        AverageSignal<float>
+    >;
+
     static SignalAssemblerVariant make_sig_agg(const TranslatedSignal& sig);
 
     class TranslatedMessage {

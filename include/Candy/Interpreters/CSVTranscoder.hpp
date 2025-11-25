@@ -3,8 +3,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <future>
-#include <functional>
 #include <memory>
 #include <unordered_map>
 
@@ -14,18 +12,7 @@
 
 namespace Candy {
 
-    struct CSVTask {
-        std::function<void()> operation;
-        std::unique_ptr<std::promise<void>> promise;
-
-        CSVTask(std::function<void()> op) : operation(std::move(op)), promise(nullptr) {}
-        CSVTask(std::function<void()> op, std::promise<void> p) : 
-            operation(std::move(op)), 
-            promise(std::make_unique<std::promise<void>>(std::move(p))) 
-        {}
-    };
-
-    class CSVTranscoder final : public FileTranscoder<CSVTranscoder, CSVTask> {
+    class CSVTranscoder final : public FileTranscoder<CSVTranscoder> {
     public:
         CSVTranscoder(const std::string& base_path, size_t batch_size = 10000);
         ~CSVTranscoder();
@@ -56,8 +43,8 @@ namespace Candy {
 
         //csv methods
         std::string build_csv_row(const std::vector<std::pair<std::string, std::string>>& data);
-        void ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers);
-        void receive_to_csv(const std::string& filename, const std::string& row);
+        bool ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers);
+        bool receive_to_csv(const std::string& filename, const std::string& row);
         std::string escape_csv(const std::string& input);
         std::string format_hex_data(const uint8_t* data, size_t len);
 

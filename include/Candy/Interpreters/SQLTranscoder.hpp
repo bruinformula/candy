@@ -2,8 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <future>
-#include <functional>
 #include <memory>
 #include <unordered_map>
 #include "sqlite3.h"
@@ -14,25 +12,7 @@
 
 namespace Candy {
 
-    struct SQLTask {
-        std::function<void()> operation;
-        std::unique_ptr<std::promise<void>> promise;
-        
-        // For fire-and-forget operations
-        SQLTask(std::function<void()> op) : 
-            operation(std::move(op)), 
-            promise(nullptr) 
-        {}
-        
-        // For operations that need synchronization
-        SQLTask(std::function<void()> op, std::promise<void> p) : 
-            operation(std::move(op)), 
-            promise(std::make_unique<std::promise<void>>(std::move(p))) 
-        {}
-    };
-
-
-    class SQLTranscoder final : public FileTranscoder<SQLTranscoder, SQLTask> {
+    class SQLTranscoder final : public FileTranscoder<SQLTranscoder> {
     public:
         SQLTranscoder(const std::string& db_file_path, size_t batch_size = 10000);
         ~SQLTranscoder();
@@ -63,7 +43,7 @@ namespace Candy {
         sqlite3_stmt* frames_insert_stmt;
 
         //sql methods 
-        void prepare_statements();
+        bool prepare_statements();
         void finalize_statements();
         std::string build_insert_sql(const std::string& table, const std::vector<std::pair<std::string, std::string>>& data);
         void create_tables();

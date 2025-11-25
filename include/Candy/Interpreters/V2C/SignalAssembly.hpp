@@ -2,93 +2,76 @@
 
 #include <cstdint>
 #include <concepts>
-#include <variant>
 
 #include "Candy/Interpreters/V2C/TranslatedSignal.hpp"
-#include "Candy/Core/Signal/SignalCalculationType.hpp"
 
 namespace Candy {
     
     template <typename Derived>
-    concept HasAssembles = requires(Derived& self, int64_t mux_val, uint64_t fd) {
+    concept IsSignalAssembler = requires(Derived& self, int64_t mux_val, uint64_t fd) {
         { self.assemble(mux_val, fd) } -> std::convertible_to<uint64_t>;
-    };
-
-    template <typename Derived>
-    concept HasResets = requires(Derived& self) {
         { self.reset() } -> std::same_as<void>;
     };
+    template<typename T>
+    concept IsValidSignalType = std::is_same_v<T, uint64_t> ||
+                              std::is_same_v<T, int64_t>  ||
+                              std::is_same_v<T, float>    ||
+                              std::is_same_v<T, double>;
 
-    template <typename Derived>
+    template <typename Derived, typename Numeric>
     struct SignalAssembler {
+        const TranslatedSignal _sig;
+        Numeric _val{0};
 
-        uint64_t assemble(int64_t mux_val, uint64_t fd) requires HasAssembles<Derived> {
+        explicit SignalAssembler(const TranslatedSignal sig) : 
+            _sig(sig) 
+        {}
+
+        uint64_t assemble_vrtl(int64_t mux_val, uint64_t fd) {
             return static_cast<Derived*>(this)->assemble(mux_val, fd);
         }
 
-        void reset() requires HasResets<Derived> {
+        void reset_vrtl() {
             static_cast<Derived*>(this)->reset();
         }
-    };
 
-    template <typename T>
-    class LastSignal : public SignalAssembler<LastSignal<T>> {
-        const TranslatedSignal _sig;
-        SignalCalculationType<T> _val{0};
-
-    public:
-        explicit LastSignal(const TranslatedSignal sig) : _sig(sig) {}
-
-        uint64_t assemble(int64_t mux_val, uint64_t fd) {
-            if (!_sig.is_active(mux_val))
-                return 0;
-
-            SignalCalculationType<T> val(_sig.decode(fd));
-            _val = val;
-            return _sig.encode(val.get_raw_value());
-        }
-
-        void reset() {
-            // No-op
+        SignalAssembler() {
+            static_assert(IsSignalAssembler<Derived>, "Derived must satisfy IsSignalAssembler concepts");
+            static_assert(IsValidSignalType<Derived>, "Derived must satisfy IsValidSignalType concepts");
         }
     };
 
-    template <typename T>
-    class AverageSignal : public SignalAssembler<AverageSignal<T>> {
-        const TranslatedSignal _sig;
-        SignalCalculationType<T> _val{0};
+    template <typename Numeric>
+    struct LastSignal : public SignalAssembler<LastSignal<Numeric>, Numeric> {
+        LastSignal(const TranslatedSignal sig) : 
+            SignalAssembler<LastSignal<Numeric>, Numeric>(sig) 
+        {}
+
+        uint64_t assemble(int64_t mux_val, uint64_t fd);
+        void reset();
+    };
+
+    template <typename Numeric>
+    struct AverageSignal : public SignalAssembler<AverageSignal<Numeric>, Numeric> {
         uint64_t _num_samples{0};
 
-    public:
-        explicit AverageSignal(const TranslatedSignal sig) : _sig(sig) {}
+        AverageSignal(const TranslatedSignal sig) : 
+            SignalAssembler<AverageSignal<Numeric>, Numeric>(sig)
+        {}
 
-        uint64_t assemble(int64_t mux_val, uint64_t fd) {
-            if (!_sig.is_active(mux_val))
-                return 0;
-
-            SignalCalculationType<T> val(_sig.decode(fd));
-            _val = (_num_samples == 0) ? val : _val + val;
-            ++_num_samples;
-
-            return _sig.encode(_val.idivround(_num_samples).get_raw_value());
-        }
-
-        void reset() {
-            _val = 0;
-            _num_samples = 0;
-        }
+        uint64_t assemble(int64_t mux_val, uint64_t fd);
+        void reset();
     };
 
+    // Extern template declarations to prevent implicit instantiation
+    extern template struct LastSignal<uint64_t>;
+    extern template struct LastSignal<int64_t>;
+    extern template struct LastSignal<double>;
+    extern template struct LastSignal<float>;
 
-    using SignalAssemblerVariant = std::variant<
-        LastSignal<uint64_t>,
-        LastSignal<int64_t>,
-        LastSignal<double>,
-        LastSignal<float>,
-        AverageSignal<uint64_t>,
-        AverageSignal<int64_t>,
-        AverageSignal<double>,
-        AverageSignal<float>
-    >;
+    extern template struct AverageSignal<uint64_t>;
+    extern template struct AverageSignal<int64_t>;
+    extern template struct AverageSignal<double>;
+    extern template struct AverageSignal<float>;
 
 }

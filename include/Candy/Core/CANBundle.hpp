@@ -309,36 +309,5 @@ namespace Candy {
 
     };
 
-    // Batch Read // errrr 
-    template <size_t BatchSize = 0, typename Transmitter = void>
-    requires IsCANTransmittable<Transmitter> && IsCANBatchTransmittable<BatchSize, Transmitter>
-    struct NullTransmitter :
-        public CANTransmittable<NullTransmitter<BatchSize, Transmitter>>,
-        public CANBatchTransmittable<BatchSize, NullTransmitter<BatchSize, Transmitter>>
-    {
-        //CANTransmittable
-        const CANMessage& transmit_message() {
-            throw std::runtime_error("NullTransmitter: no data");
-        }
-        const std::pair<CANTime, CANFrame>& transmit_raw_message() {
-            throw std::runtime_error("NullTransmitter: no data");
-        }
-        const std::tuple<std::string, TableType>& transmit_table_message() {
-            throw std::runtime_error("NullTransmitter: no data");
-        }
-        const CANDataStreamMetadata& transmit_metadata() = delete;
-
-        //CANBatchTransmittable
-        const std::array<CANMessage, BatchSize>& transmit_message_batch() {
-            throw std::runtime_error("NullTransmitter: no data");
-        }
-        const std::array<std::pair<CANTime, CANFrame>, BatchSize>& transmit_raw_message_batch() {
-            throw std::runtime_error("NullTransmitter: no data");
-        }
-        const std::array<std::tuple<std::string, TableType>, BatchSize>& transmit_table_message_batch() {
-            throw std::runtime_error("NullTransmitter: no data");
-        }
-    };
-
 
 }

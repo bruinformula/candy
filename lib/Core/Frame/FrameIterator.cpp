@@ -1,4 +1,6 @@
 #include <cstring>
+#include <iostream>
+#include <optional>
 
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/Frame/FrameIterator.hpp"
@@ -40,7 +42,8 @@ namespace Candy {
     template<typename IntType>
     IntType FrameIterator::transmit_at_offset(size_t offset) const {
         if (offset + sizeof(IntType) > payload_data.size()) {
-            throw std::out_of_range("Read beyond payload bounds");
+            std::cerr << "Read beyond payload bounds" << std::endl;
+            return {};
         }
         IntType value;
         std::memcpy(&value, payload_data.data() + offset, sizeof(IntType));

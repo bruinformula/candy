@@ -8,7 +8,6 @@
 #include "Candy/Core/CANHelpers.hpp"
 #include "Candy/Core/Signal/SignalCodec.hpp"
 #include "Candy/Core/Signal/NumericValue.hpp"
-#include "Candy/Core/Signal/SignalCalculationType.hpp"
 #include "Candy/Interpreters//MotecGenerator.hpp"
 #include "Candy/Interpreters//LoggingTranscoder.hpp"
 #include "Candy/Interpreters/V2C/TranslatedMultiplexer.hpp"

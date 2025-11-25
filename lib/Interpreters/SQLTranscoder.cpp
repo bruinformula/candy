@@ -1,20 +1,20 @@
 #include <iomanip>
+#include <iostream>
 #include <sstream>
-#include <stdexcept>
 
 #include "Candy/Interpreters/SQLTranscoder.hpp"
-
 
 namespace Candy {
 
     SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size) : 
-        FileTranscoder<SQLTranscoder, SQLTask>(batch_size, 0, 0),
+        FileTranscoder<SQLTranscoder>(batch_size, 0, 0),
         db_path(db_file_path),
         db(nullptr, sqlite3_close)
     {
         sqlite3* raw_db = nullptr;
         if (sqlite3_open(db_file_path.c_str(), &raw_db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open SQLite database: " + db_file_path);
+            std::cerr << "Failed to open SQLite database: " + db_file_path << std::endl;
+            return;
         }
 
         db = std::unique_ptr<sqlite3, decltype(&sqlite3_close)>(raw_db, sqlite3_close);
@@ -25,7 +25,7 @@ namespace Candy {
         execute_sql("PRAGMA temp_store=MEMORY");
 
         create_tables();
-        prepare_statements();
+        bool sucess = prepare_statements();
     }
 
     SQLTranscoder::~SQLTranscoder() {
@@ -42,16 +42,19 @@ namespace Candy {
     }
 
     // Private Methods
-    void SQLTranscoder::prepare_statements() {
+    bool SQLTranscoder::prepare_statements() {
         const char* frames_sql = "INSERT INTO frames (timestamp, can_id, dlc, data, message_name) VALUES (?, ?, ?, ?, ?)";
         if (sqlite3_prepare_v2(db.get(), frames_sql, -1, &frames_insert_stmt, nullptr) != SQLITE_OK) {
-            throw std::runtime_error("Failed to prepare frames insert statement");
+            std::cerr << "Failed to prepare frames insert statement" << std::endl;
+            return false;
         }
 
         const char* decoded_sql = "INSERT INTO decoded_frames (timestamp, can_id, message_name, signal_name, signal_value, raw_value, unit, mux_value) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         if (sqlite3_prepare_v2(db.get(), decoded_sql, -1, &decoded_signals_insert_stmt, nullptr) != SQLITE_OK) {
-            throw std::runtime_error("Failed to prepare decoded signals insert statement");
+            std::cerr << "Failed to prepare decoded signals insert statement" << std::endl;
+            return false;
         }
+        return true;
     }
 
     void SQLTranscoder::finalize_statements() {
@@ -80,7 +83,8 @@ namespace Candy {
         sqlite3_bind_text(frames_insert_stmt, 5, message_name.c_str(), -1, SQLITE_TRANSIENT);
 
         if (sqlite3_step(frames_insert_stmt) != SQLITE_DONE) {
-            throw std::runtime_error("Failed to batch frame insert");
+            std::cerr << "Failed to batch frame insert" << std::endl;
+            return;
         }
 
         sqlite3_reset(frames_insert_stmt);
@@ -117,7 +121,8 @@ namespace Candy {
                 else sqlite3_bind_null(decoded_signals_insert_stmt, 8);
 
                 if (sqlite3_step(decoded_signals_insert_stmt) != SQLITE_DONE) {
-                    throw std::runtime_error("Failed to batch decoded signal insert");
+                    std::cerr << "Failed to batch decoded signal insert" << std::endl;
+                    return;
                 }
 
                 sqlite3_reset(decoded_signals_insert_stmt);
@@ -228,7 +233,7 @@ namespace Candy {
         if (sqlite3_exec(db.get(), sql.c_str(), nullptr, nullptr, &err_msg) != SQLITE_OK) {
             std::string error_message = "SQLite error: " + std::string(err_msg);
             sqlite3_free(err_msg);
-            throw std::runtime_error(error_message);
+            std::cerr << error_message << std::endl;
         }
     }
 
@@ -291,7 +296,8 @@ namespace Candy {
                 }
                 
                 if (sqlite3_step(decoded_signals_insert_stmt) != SQLITE_DONE) {
-                    throw std::runtime_error("Failed to insert decoded signal");
+                    std::cerr << "Failed to insert decoded signal" << std::endl;
+                    return;
                 }
                 
                 sqlite3_reset(decoded_signals_insert_stmt);
@@ -361,7 +367,8 @@ namespace Candy {
         // Open database connection for transmiting
         sqlite3* db;
         if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open database for transmiting");
+            std::cerr << "Failed to open database for transmiting" << std::endl;
+            return {};
         }
         
         auto start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -421,7 +428,8 @@ namespace Candy {
     const CANDataStreamMetadata& SQLTranscoder::transmit_metadata() {        
         sqlite3* db;
         if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open database for transmiting metadata");
+            std::cerr << "Failed to open database for transmiting metadata" << std::endl;
+            return metadata;
         }
         
         const char* meta_sql = "SELECT * FROM metadata LIMIT 1";

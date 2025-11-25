@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <filesystem>
@@ -9,7 +10,7 @@
 namespace Candy {
 
     CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size) : 
-        FileTranscoder<CSVTranscoder, CSVTask>(batch_size, 0, 0),
+        FileTranscoder<CSVTranscoder>(batch_size, 0, 0),
         base_path(base_path)
     {
         // Ensure the base directory exists
@@ -47,8 +48,12 @@ namespace Candy {
     }
 
     void CSVTranscoder::store_message_metadata(canid_t message_id, const std::string& message_name, size_t message_size) {
-        ensure_csv_file("messages.csv", {"message_id", "message_name", "message_size"});
+        bool write = ensure_csv_file("messages.csv", {"message_id", "message_name", "message_size"});
         
+        if (!write) {
+            return;
+        }
+
         std::ostringstream row;
         row << message_id << ","
             << "\"" << escape_csv(message_name) << "\","
@@ -117,8 +122,11 @@ namespace Candy {
         if (frames_batch_count == 0) return;
 
         // Ensure frames CSV file exists with headers
-        ensure_csv_file("frames.csv", {"timestamp", "can_id", "dlc", "data", "message_name"});
+        bool write = ensure_csv_file("frames.csv", {"timestamp", "can_id", "dlc", "data", "message_name"});
 
+        if (!write) {
+            return;
+        }
         // Write all batched frames
         for (const auto& row : frames_batch) {
             receive_to_csv("frames.csv", row);
@@ -132,9 +140,14 @@ namespace Candy {
         if (decoded_signals_batch_count == 0) return;
 
         // Ensure decoded signals CSV file exists with headers
-        ensure_csv_file("decoded_frames.csv", {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"});
+        bool write = ensure_csv_file("decoded_frames.csv", {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"});
 
+        if (!write) {
+            return;
+        }
+        
         // Write all batched decoded signals
+        
         for (const auto& row : decoded_signals_batch) {
             receive_to_csv("decoded_frames.csv", row);
         }
@@ -166,54 +179,60 @@ namespace Candy {
         return row.str();
     }
 
-    void CSVTranscoder::ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers) {
-        if (csv_files.find(filename) == csv_files.end()) {
-            std::string full_path = base_path + "/" + filename;
-            
-            // Check if file altransmity exists and has content
-            bool file_exists = std::filesystem::exists(full_path);
-            bool file_has_content = false;
-            
-            if (file_exists) {
-                std::ifstream check_file(full_path);
-                std::string first_line;
-                if (std::getline(check_file, first_line) && !first_line.empty()) {
-                    file_has_content = true;
-                }
-                check_file.close();
-            }
-            
-            // Open in append mode
-            csv_files[filename] = std::make_unique<std::ofstream>(full_path, std::ios::app);
-            
-            if (!csv_files[filename]->is_open()) {
-                throw std::runtime_error("Failed to open CSV file: " + full_path);
-            }
-
-            // Only receive headers if file doesn't exist or is empty
-            if (!file_has_content && headers_written.find(filename) == headers_written.end()) {
-                std::ostringstream header_row;
-                for (size_t i = 0; i < headers.size(); ++i) {
-                    header_row << headers[i];
-                    if (i < headers.size() - 1) {
-                        header_row << ",";
-                    }
-                }
-                *csv_files[filename] << header_row.str() << "\n";
-                headers_written[filename] = true;
-            } else {
-                // Mark headers as altransmity written for existing files
-                headers_written[filename] = true;
-            }
+    bool CSVTranscoder::ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers) {
+        if (csv_files.find(filename) != csv_files.end()) {
+            return false;
         }
+
+        std::string full_path = base_path + "/" + filename;
+        
+        // Check if file altransmity exists and has content
+        bool file_exists = std::filesystem::exists(full_path);
+        bool file_has_content = false;
+        
+        if (file_exists) {
+            std::ifstream check_file(full_path);
+            std::string first_line;
+            if (std::getline(check_file, first_line) && !first_line.empty()) {
+                file_has_content = true;
+            }
+            check_file.close();
+        }
+        
+        // Open in append mode
+        csv_files[filename] = std::make_unique<std::ofstream>(full_path, std::ios::app);
+        
+        if (!csv_files[filename]->is_open()) {
+            std::cerr << "Failed to open CSV file: " + full_path << std::endl;
+            return false;
+        }
+
+        // Only receive headers if file doesn't exist or is empty
+        if (!file_has_content && headers_written.find(filename) == headers_written.end()) {
+            std::ostringstream header_row;
+            for (size_t i = 0; i < headers.size(); ++i) {
+                header_row << headers[i];
+                if (i < headers.size() - 1) {
+                    header_row << ",";
+                }
+            }
+            *csv_files[filename] << header_row.str() << "\n";
+            headers_written[filename] = true;
+        } else {
+            // Mark headers as altransmity written for existing files
+            headers_written[filename] = true;
+        }
+        return true;
     }
 
-    void CSVTranscoder::receive_to_csv(const std::string& filename, const std::string& row) {
+    bool CSVTranscoder::receive_to_csv(const std::string& filename, const std::string& row) {
         auto it = csv_files.find(filename);
         if (it != csv_files.end() && it->second && it->second->is_open()) {
             *it->second << row << "\n";
+            return true;
         } else {
-            throw std::runtime_error("CSV file not open: " + filename);
+            std::cerr << "Failed to write to CSV" << std::endl;
+            return false;
         }
     }
 
@@ -247,8 +266,12 @@ namespace Candy {
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
             // Ensure decoded signals CSV file exists with headers
-            ensure_csv_file("decoded_frames.csv", {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"});
+            bool write = ensure_csv_file("decoded_frames.csv", {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"});
             
+            if (!write) {
+                return;
+            }
+
             for (const auto& [signal_name, signal_value] : message.decoded_signals) {
                 std::string unit = "";
                 auto unit_it = message.signal_units.find(signal_name);
@@ -288,8 +311,11 @@ namespace Candy {
             counts_str << can_id << ":" << count << ";";
         }
         
-        ensure_csv_file("metadata.csv", {"stream_name", "description", "creation_time", "last_update", "total_messages", "message_names", "message_counts"});
+        bool write = ensure_csv_file("metadata.csv", {"stream_name", "description", "creation_time", "last_update", "total_messages", "message_names", "message_counts"});
         
+        if (!write) {
+            return;
+        }
         // Build and write metadata row
         std::ostringstream row;
         row << "\"" << escape_csv(metadata.stream_name) << "\","

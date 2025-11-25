@@ -1,4 +1,5 @@
 #include <cstring>
+#include <iostream>
 
 #include "Candy/Core/Frame/FramePacket.hpp"
 
@@ -62,7 +63,8 @@ namespace Candy {
     template <typename IntType>
     IntType FramePacket::transmit_at(size_t offset) const {
         if (offset + sizeof(IntType) > _buff.size()) {
-            throw std::out_of_range("Read beyond buffer bounds");
+            std::cerr << "Read beyond buffer bounds" << std::endl;
+            return {};
         }
         IntType value;
         std::memcpy(&value, _buff.data() + offset, sizeof(IntType));
