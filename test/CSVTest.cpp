@@ -1,4 +1,3 @@
-#include <iostream>
 #include <chrono>
 #include <random>
 
@@ -8,27 +7,30 @@ int main() {
     // Clean up any existing test database
     //std::filesystem::remove("./test_csv_output");
     
-    // Initialize CSVTranscoder this will output 3 csv files
-    Candy::CSVTranscoder transcoder("./test_csv_output", 1000);  // batch size of 1000
-    
-    std::cout << "=== CAN CSV Transcoder Test ===" << std::endl;
+    auto transcoder_optional = Candy::CSVTranscoder::create("./test_csv_output/", 1000);  // batch size of 1000
+    if (!transcoder_optional) {
+        printf("Failed to create CSVTranscoder.\n");
+        return 1;
+    }
+    auto& transcoder = transcoder_optional.value();  
+    printf("=== CAN CSV Transcoder Test ===\n");
     
     // Test 1: Parse DBC file
-    std::cout << "\n1. Parsing DBC file..." << std::endl;
+    printf("\n1. Parsing DBC file...\n");
     auto start = std::chrono::high_resolution_clock::now();
     
     bool parsed = transcoder.parse_dbc(Candy::transmit_file("test/network.dbc"));
     if (!parsed) {
-        std::cerr << "Failed to parse DBC file." << std::endl;
+        printf("Failed to parse DBC file.\n");
         return 1;
     }
     
     auto end = std::chrono::high_resolution_clock::now();
     auto parse_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "   ✓ DBC parsed successfully in " << parse_time.count() << "ms" << std::endl;
+    printf("   ✓ DBC parsed successfully in %lld ms\n", parse_time.count());
     
     // Test 2: Generate and process CAN frames
-    std::cout << "\n2. Processing CAN frames..." << std::endl;
+    printf("\n2. Processing CAN frames...\n");
     const int num_frames = 100000;
     
     std::random_device rd;
@@ -57,10 +59,10 @@ int main() {
     end = std::chrono::high_resolution_clock::now();
     auto processing_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     
-    std::cout << "\n   Frame generation completed in " << processing_time.count() << "ms" << std::endl;
-    std::cout << "   Average generation rate: " << (double)num_frames / (processing_time.count() / 1000.0) << " frames/sec" << std::endl;
+    printf("\n   Frame generation completed in %lld ms\n", processing_time.count());
+    printf("   Average generation rate: %f frames/sec\n", (double)num_frames / (processing_time.count() / 1000.0));
     
     // Only use blocking flush at the very end
-    std::cout << "   Final flush (blocking)..." << std::endl;
+    printf("   Final flush (blocking)...");
     
 }

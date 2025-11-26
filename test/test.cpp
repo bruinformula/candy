@@ -1,5 +1,6 @@
 
 #include "Candy/Core/CANBundle.hpp"
+#include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/Interpreters/LoggingTranscoder.hpp"
 
 #include <Candy/Candy.h>
@@ -7,34 +8,40 @@
 using namespace Candy;
 
 struct Transmitter : public CANTransmittable<Transmitter> {
+
+    CANMessage message = {};
+    std::pair<CANTime, CANFrame> raw_message = {};
+    std::tuple<std::string, TableType> table_message = {};  
+    CANDataStreamMetadata metadata = {};
+
     const CANMessage& transmit_message() {
-        return {};
+        return message;
     }
 
     const std::pair<CANTime, CANFrame>& transmit_raw_message() {
-        return {};
+        return raw_message;
     }
 
     const std::tuple<std::string, TableType>& transmit_table_message() {
-        return {};
+        return table_message;
     }
     const CANDataStreamMetadata& transmit_metadata() {
-        return {};
+        return metadata;
     }
 };
 
 struct Receiver : public CANReceivable<Receiver> {
-        void receive_message(const CANMessage& message) {
-        }
-        
-        void receive_metadata(const CANDataStreamMetadata& metadata) {
-        }
+    void receive_message(const CANMessage& message) {
+    }
+    
+    void receive_metadata(const CANDataStreamMetadata& metadata) {
+    }
 
-        void receive_raw_message(const std::pair<CANTime, CANFrame>& sample) {
-        }
+    void receive_raw_message(const std::pair<CANTime, CANFrame>& sample) {
+    }
 
-        void receive_table_message(const std::string& table, const TableType& data) {
-        }
+    void receive_table_message(const std::string& table, const TableType& data) {
+    }
 };
 
 struct Transceiver : public Receiver, public Transmitter {
@@ -45,7 +52,13 @@ int main() {
 
     SQLTranscoder sql_transcoder("./test.db");
 
-    CSVTranscoder csv_transcoder("./test_csv_output_run");  // batch size of 1000
+    auto csv_transcoder_optional = CSVTranscoder::create("./test_csv_output_run", 1000);  // batch size of 1000
+    if (!csv_transcoder_optional) {
+        printf("Failed to create CSVTranscoder.\n");
+        return 1;
+    }
+    auto& csv_transcoder = csv_transcoder_optional.value();
+
     LoggingTranscoder logger;
 
     DBCBundle dbc_bundle(sql_transcoder, csv_transcoder, logger);
@@ -69,7 +82,7 @@ int main() {
     auto bundle2 = sensor_2.transmit_to(bms, vcu);
     CANMessage input; 
 
-    input.message_name = "testing";
+    input.set_message_name("testing");
 
     bundle1.receive_message(input);
     bundle2.receive_message(input);

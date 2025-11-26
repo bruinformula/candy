@@ -23,6 +23,17 @@ target_include_directories(test_csv PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
 target_link_libraries(test_csv PRIVATE candy)
 
+#CSVWriter Test
+
+add_executable(test_csv_writer CSVWriterTest.cpp)
+target_compile_options(test_csv_writer PRIVATE -fmodules -fmodule-map-file=${CMAKE_SOURCE_DIR}/include/module.modulemap)
+target_include_directories(test_csv_writer PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+target_compile_options(test_csv_writer PUBLIC
+"-Os" "-flto" "-fno-exceptions" "-fno-rtti" "-ffunction-sections" "-fdata-sections"
+)
+target_link_libraries(test_csv_writer PRIVATE candy)
+
 #Motec Test 
 
 add_executable(test_motec MotecTest.cpp)

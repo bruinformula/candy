@@ -33,10 +33,20 @@ namespace Candy {
     }
 
     inline std::string transmit_file(const std::string& dbc_path) {
-        std::ifstream dbc_content(dbc_path);
-        std::ostringstream ss;
-        ss << dbc_content.rdbuf();
-        return ss.str();
+        FILE* file = fopen(dbc_path.c_str(), "rb");
+        if (!file) return "";
+        
+        // Get file size
+        fseek(file, 0, SEEK_END);
+        long file_size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        
+        // Read entire file
+        std::string content(file_size, '\0');
+        fread(content.data(), 1, file_size, file);
+        fclose(file);
+        
+        return content;
     }
     
 }

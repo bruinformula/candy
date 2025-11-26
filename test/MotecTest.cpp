@@ -8,15 +8,21 @@ int main() {
     //std::filesystem::remove("./test_csv_output");
     
     // Initialize CSVTranscoder this will output 3 csv files
-    Candy::CSVTranscoder transcoder("./test_csv_output", 1000);  // batch size of 1000
+    auto transcoder = Candy::CSVTranscoder::create("./test_csv_output", 1000);  // batch size of 1000
     
+    if (!transcoder) {
+        std::cerr << "Failed to create CSVTranscoder." << std::endl;
+        return 1;
+    }
+    auto& transcoder_ref = transcoder.value();
+
     std::cout << "=== Motec CSV Transcoder Test ===" << std::endl;
     
     // Test 1: Parse DBC file
     std::cout << "\n1. Parsing DBC file..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     
-    bool parsed_dbc = transcoder.parse_dbc(Candy::transmit_file("test/network.dbc"));
+    bool parsed_dbc = transcoder_ref.parse_dbc(Candy::transmit_file("test/network.dbc"));
     if (!parsed_dbc) {
         std::cerr << "Failed to parse DBC file." << std::endl;
         return 1;

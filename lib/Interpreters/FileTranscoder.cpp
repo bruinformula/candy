@@ -11,15 +11,15 @@ namespace Candy {
                         std::string unit, std::vector<size_t> receivers)
     {
         SignalDefinition sig_def;
-        sig_def.name = signal_name;
+        sig_def.set_name(signal_name);
         sig_def.codec = std::make_unique<SignalCodec>(start_bit, bit_size, byte_order, sign_type);
         sig_def.numeric_value = std::make_unique<NumericValue>(factor, offset);
         sig_def.min_val = min_val;
         sig_def.max_val = max_val;
-        sig_def.unit = unit;
+        sig_def.set_unit(unit);
         sig_def.mux_val = mux_val;
 
-        messages[message_id].signals.push_back(std::move(sig_def));
+        messages[message_id].add_signal(std::move(sig_def));
     }
 
     template<typename T>
@@ -28,10 +28,10 @@ namespace Candy {
                             std::string unit, std::vector<size_t> receivers)
     {
         SignalDefinition mux_def;
-        mux_def.name = signal_name;
+        mux_def.set_name(signal_name);
         mux_def.codec = std::make_unique<SignalCodec>(start_bit, bit_size, byte_order, sign_type);
         mux_def.numeric_value = std::make_unique<NumericValue>(1.0, 0.0);
-        mux_def.unit = unit;
+        mux_def.set_unit(unit);
         mux_def.is_multiplexer = true;
 
         messages[message_id].multiplexer = std::move(mux_def);
@@ -39,7 +39,7 @@ namespace Candy {
 
     template<typename T>
     void FileTranscoder<T>::bo(canid_t message_id, std::string message_name, size_t message_size, size_t transmitter) {
-        messages[message_id].name = message_name;
+        messages[message_id].set_name(message_name);
         messages[message_id].size = message_size;
         messages[message_id].transmitter = transmitter;
         
@@ -50,8 +50,9 @@ namespace Candy {
     template<typename T>
     void FileTranscoder<T>::sig_valtype(canid_t message_id, const std::string& signal_name, unsigned value_type) {
         auto& msg = messages[message_id];
-        for (auto& sig : msg.signals) {
-            if (sig.name == signal_name) {
+        for (size_t i = 0; i < msg.signal_count && i < msg.signals.size(); ++i) {
+            auto& sig = msg.signals[i];
+            if (sig.get_name() == signal_name) {
                 sig.value_type = static_cast<NumericValueType>(value_type);
                 break;
             }

@@ -1,6 +1,6 @@
-#include <iomanip>
+
 #include <iostream>
-#include <sstream>
+
 
 #include "Candy/Interpreters/SQLTranscoder.hpp"
 
@@ -64,13 +64,15 @@ namespace Candy {
 
     void SQLTranscoder::batch_frame(std::pair<CANTime, CANFrame> sample) {
         auto msg_it = messages.find(sample.second.can_id);
-        std::string message_name = (msg_it != messages.end()) ? msg_it->second.name : "";
+        std::string message_name = (msg_it != messages.end()) ? std::string(msg_it->second.get_name()) : "";
 
-        std::stringstream hex_data;
+        std::string hex_data;
+        hex_data.reserve(sample.second.len * 3); // "XX " per byte
         for (int i = 0; i < sample.second.len; i++) {
-            hex_data << std::hex << std::setw(2) << std::setfill('0')
-                    << static_cast<unsigned>(sample.second.data[i]);
-            if (i < sample.second.len - 1) hex_data << " ";
+            char hex_buf[4];
+            snprintf(hex_buf, sizeof(hex_buf), "%02X", static_cast<unsigned>(sample.second.data[i]));
+            hex_data += hex_buf;
+            if (i < sample.second.len - 1) hex_data += " ";
         }
 
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sample.first.time_since_epoch()).count();
@@ -78,8 +80,8 @@ namespace Candy {
         sqlite3_bind_int64(frames_insert_stmt, 1, timestamp_ms);
         sqlite3_bind_int(frames_insert_stmt, 2, sample.second.can_id);
         sqlite3_bind_int(frames_insert_stmt, 3, sample.second.len);
-        std::string hex_string = hex_data.str();
-        sqlite3_bind_text(frames_insert_stmt, 4, hex_string.c_str(), -1, SQLITE_TRANSIENT);
+        // hex_data is already a string now
+        sqlite3_bind_text(frames_insert_stmt, 4, hex_data.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(frames_insert_stmt, 5, message_name.c_str(), -1, SQLITE_TRANSIENT);
 
         if (sqlite3_step(frames_insert_stmt) != SQLITE_DONE) {
@@ -100,36 +102,40 @@ namespace Candy {
             mux_value = raw_mux;
         }
 
-        for (const auto& signal : msg_def.signals) {
+        for (size_t i = 0; i < msg_def.signal_count && i < msg_def.signals.size(); ++i) {
+            const auto& signal = msg_def.signals[i];
+            
+            // Skip signals with null pointers
+            if (!signal.codec || !signal.numeric_value) {
+                continue;
+            }
+            
             if (signal.mux_val.has_value() && (!mux_value || mux_value.value() != signal.mux_val.value())) {
                 continue;
             }
 
-            try {
-                uint64_t raw_value = (*signal.codec)(sample.second.data);
-                auto converted_value = signal.numeric_value->convert(raw_value, signal.value_type);
-                if (!converted_value.has_value()) continue;
+            uint64_t raw_value = (*signal.codec)(sample.second.data);
+            auto converted_value = signal.numeric_value->convert(raw_value, signal.value_type);
+            if (!converted_value.has_value()) continue;
 
-                sqlite3_bind_int64(decoded_signals_insert_stmt, 1, timestamp_ms);
-                sqlite3_bind_int(decoded_signals_insert_stmt, 2, sample.second.can_id);
-                sqlite3_bind_text(decoded_signals_insert_stmt, 3, msg_def.name.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_text(decoded_signals_insert_stmt, 4, signal.name.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_double(decoded_signals_insert_stmt, 5, converted_value.value());
-                sqlite3_bind_int64(decoded_signals_insert_stmt, 6, raw_value);
-                sqlite3_bind_text(decoded_signals_insert_stmt, 7, signal.unit.c_str(), -1, SQLITE_STATIC);
-                if (mux_value) sqlite3_bind_int64(decoded_signals_insert_stmt, 8, mux_value.value());
-                else sqlite3_bind_null(decoded_signals_insert_stmt, 8);
+            sqlite3_bind_int64(decoded_signals_insert_stmt, 1, timestamp_ms);
+            sqlite3_bind_int(decoded_signals_insert_stmt, 2, sample.second.can_id);
+            sqlite3_bind_text(decoded_signals_insert_stmt, 3, msg_def.get_name().data(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(decoded_signals_insert_stmt, 4, signal.get_name().data(), -1, SQLITE_STATIC);
+            sqlite3_bind_double(decoded_signals_insert_stmt, 5, converted_value.value());
+            sqlite3_bind_int64(decoded_signals_insert_stmt, 6, raw_value);
+            sqlite3_bind_text(decoded_signals_insert_stmt, 7, signal.get_unit().data(), -1, SQLITE_STATIC);
+            if (mux_value) sqlite3_bind_int64(decoded_signals_insert_stmt, 8, mux_value.value());
+            else sqlite3_bind_null(decoded_signals_insert_stmt, 8);
 
-                if (sqlite3_step(decoded_signals_insert_stmt) != SQLITE_DONE) {
-                    std::cerr << "Failed to batch decoded signal insert" << std::endl;
-                    return;
-                }
-
-                sqlite3_reset(decoded_signals_insert_stmt);
-                decoded_signals_batch_count++;
-            } catch (...) {
-                // Silent fail to continue processing other signals
+            if (sqlite3_step(decoded_signals_insert_stmt) != SQLITE_DONE) {
+                std::cerr << "Failed to batch decoded signal insert" << std::endl;
+                return;
             }
+
+            sqlite3_reset(decoded_signals_insert_stmt);
+            decoded_signals_batch_count++;
+
         }
     }
 
@@ -265,26 +271,24 @@ namespace Candy {
     }
 
     void SQLTranscoder::receive_message(const CANMessage& message) {
-        // Convert timestamp to milliseconds
         auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             message.sample.first.time_since_epoch()).count();
         
-        // Use existing transcoder to receive the raw frame
         receive_raw_message(message.sample);
         
-        // Write decoded signals if available
-        if (!message.decoded_signals.empty()) {
-            for (const auto& [signal_name, signal_value] : message.decoded_signals) {
-                std::string unit = "";
-                auto unit_it = message.signal_units.find(signal_name);
-                if (unit_it != message.signal_units.end()) {
-                    unit = unit_it->second;
-                }
+        if (message.signal_count > 0) {
+            for (size_t i = 0; i < message.signal_count && i < message.decoded_signals.size(); ++i) {
+                const auto& signal_entry = message.decoded_signals[i];
+                if (!signal_entry.is_valid) continue;
+                
+                std::string signal_name = std::string(signal_entry.get_name());
+                double signal_value = signal_entry.value;
+                std::string unit = std::string(signal_entry.get_unit());
                 
                 // Directly insert into decoded_frames table
                 sqlite3_bind_int64(decoded_signals_insert_stmt, 1, timestamp_ms);
                 sqlite3_bind_int(decoded_signals_insert_stmt, 2, message.sample.second.can_id);
-                sqlite3_bind_text(decoded_signals_insert_stmt, 3, message.message_name.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(decoded_signals_insert_stmt, 3, message.get_message_name().data(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_text(decoded_signals_insert_stmt, 4, signal_name.c_str(), -1, SQLITE_TRANSIENT);
                 sqlite3_bind_double(decoded_signals_insert_stmt, 5, signal_value);
                 sqlite3_bind_int64(decoded_signals_insert_stmt, 6, 0); // raw_value not available
@@ -317,38 +321,44 @@ namespace Candy {
             metadata.last_update.time_since_epoch()).count();
         
         // Serialize message names and counts as JSON-like strings
-        std::ostringstream names_json, counts_json;
+        std::string names_json, counts_json;
+        names_json.reserve(1024);
+        counts_json.reserve(1024);
         
-        names_json << "{";
+        names_json += "{";
         bool first = true;
-        for (const auto& [can_id, name] : metadata.message_names) {
-            if (!first) names_json << ",";
-            names_json << "\"" << can_id << "\":\"" << name << "\"";
+        for (size_t i = 0; i < metadata.message_count && i < metadata.messages.size(); ++i) {
+            const auto& msg_entry = metadata.messages[i];
+            if (!msg_entry.is_valid) continue;
+            if (!first) names_json += ",";
+            names_json += "\"" + std::to_string(msg_entry.can_id) + "\":\"" + std::string(msg_entry.get_name()) + "\"";
             first = false;
         }
-        names_json << "}";
+        names_json += "}";
         
-        counts_json << "{";
+        counts_json += "{";
         first = true;
-        for (const auto& [can_id, count] : metadata.message_counts) {
-            if (!first) counts_json << ",";
-            counts_json << "\"" << can_id << "\":" << count;
+        for (size_t i = 0; i < metadata.message_count && i < metadata.messages.size(); ++i) {
+            const auto& msg_entry = metadata.messages[i];
+            if (!msg_entry.is_valid) continue;
+            if (!first) counts_json += ",";
+            counts_json += "\"" + std::to_string(msg_entry.can_id) + "\":" + std::to_string(msg_entry.count);
             first = false;
         }
-        counts_json << "}";
+        counts_json += "}";
 
         execute_sql("DELETE FROM metadata");
         
         // Insert new metadata
         std::string insert_sql = 
             "INSERT INTO metadata (stream_name, description, creation_time, last_update, total_messages, message_names, message_counts) "
-            "VALUES ('" + escape_sql(metadata.stream_name) + "', '" + 
-            escape_sql(metadata.description) + "', " + 
+            "VALUES ('" + escape_sql(std::string(metadata.get_stream_name())) + "', '" + 
+            escape_sql(std::string(metadata.get_description())) + "', " + 
             std::to_string(creation_ms) + ", " + 
             std::to_string(update_ms) + ", " + 
             std::to_string(metadata.total_messages) + ", '" + 
-            escape_sql(names_json.str()) + "', '" + 
-            escape_sql(counts_json.str()) + "')";
+            escape_sql(names_json) + "', '" + 
+            escape_sql(counts_json) + "')";
         
         execute_sql(insert_sql);
     }
@@ -409,7 +419,7 @@ namespace Candy {
                 // Get message name
                 const char* msg_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
                 if (msg_name) {
-                    message.message_name = msg_name;
+                    message.set_message_name(msg_name);
                 }
                 
                 messages.push_back(std::move(message));
@@ -437,12 +447,11 @@ namespace Candy {
         
         if (sqlite3_prepare_v2(db, meta_sql, -1, &stmt, nullptr) == SQLITE_OK) {
             if (sqlite3_step(stmt) == SQLITE_ROW) {
-                // Parse metadata fields
                 const char* stream_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
                 const char* description = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
                 
-                if (stream_name) metadata.stream_name = stream_name;
-                if (description) metadata.description = description;
+                if (stream_name) metadata.set_stream_name(stream_name);
+                if (description) metadata.set_description(description);
                 
                 auto creation_ms = sqlite3_column_int64(stmt, 3);
                 auto update_ms = sqlite3_column_int64(stmt, 4);
@@ -458,8 +467,7 @@ namespace Candy {
                 const char* names_json = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
                 const char* counts_json = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7));
                 
-                if (names_json) parse_message_names_json(names_json, metadata.message_names);
-                if (counts_json) parse_message_counts_json(counts_json, metadata.message_counts);
+                // skip the JSON parsing
             }
             sqlite3_finalize(stmt);
         }
@@ -482,10 +490,6 @@ namespace Candy {
                 message_counts TEXT
             );
         )";
-        
-        // Access the underlying database connection from transcoder
-        // This would require exposing a method in SQLTranscoder to execute custom SQL
-        // For now, we'll assume such a method exists or can be added
     }
 
     void SQLTranscoder::load_decoded_signals_for_messages(sqlite3* db, std::vector<CANMessage>& messages) {
@@ -524,10 +528,8 @@ namespace Candy {
                     const char* unit = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
                     
                     if (signal_name) {
-                        messages[msg_idx].decoded_signals[signal_name] = signal_value;
-                    }
-                    if (unit) {
-                        messages[msg_idx].signal_units[signal_name] = unit;
+                        const char* unit_str = unit ? unit : "";
+                        messages[msg_idx].add_signal(signal_name, signal_value, unit_str);
                     }
                     
                     if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) {
@@ -541,20 +543,32 @@ namespace Candy {
     }
 
     void SQLTranscoder::parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len) {
-        std::istringstream hex_stream(hex_str);
-        std::string byte_str;
+        size_t pos = 0;
         size_t i = 0;
         
-        while (std::getline(hex_stream, byte_str, ' ') && i < len && i < 8) {
-            try {
+        while (pos < hex_str.length() && i < len && i < 8) {
+            // Skip spaces
+            while (pos < hex_str.length() && hex_str[pos] == ' ') pos++;
+            if (pos >= hex_str.length()) break;
+            
+            // Find end of hex byte (2 chars or space/end)
+            size_t end_pos = pos;
+            while (end_pos < hex_str.length() && hex_str[end_pos] != ' ' && (end_pos - pos) < 2) {
+                end_pos++;
+            }
+            
+            if (end_pos > pos) {
+                std::string byte_str = hex_str.substr(pos, end_pos - pos);
                 data[i] = static_cast<uint8_t>(std::stoul(byte_str, nullptr, 16));
                 ++i;
-            } catch (const std::exception&) {
+                pos = end_pos;
+            } else {
                 break;
             }
         }
     }
 
+    /*
     void SQLTranscoder::parse_message_names_json(const std::string& json_str, 
                                             std::unordered_map<canid_t, std::string>& names) {
         // Simple JSON-like parsing for "can_id":"name" pairs
@@ -606,6 +620,7 @@ namespace Candy {
             }
         }
     }
+    */
 
 
 }

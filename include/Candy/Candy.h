@@ -1,6 +1,6 @@
 #pragma once 
 //umbrella
-
+#include "Candy/Core/CSVWriter.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/Frame/FrameIterator.hpp"
 #include "Candy/Core/Frame/FramePacket.hpp"

@@ -1,22 +1,27 @@
 #pragma once
 
-#include <fstream>
 #include <string>
+#include <string_view>
 #include <vector>
-#include <memory>
 #include <unordered_map>
 
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
+#include "Candy/Core/CSVWriter.hpp"
 #include "Candy/Interpreters/File/FileTranscoder.hpp"
 
 namespace Candy {
 
     class CSVTranscoder final : public FileTranscoder<CSVTranscoder> {
     public:
-        CSVTranscoder(const std::string& base_path, size_t batch_size = 10000);
-        ~CSVTranscoder();
+    ~CSVTranscoder();
+        CSVTranscoder(std::string_view base_path, 
+                      size_t batch_size, CSVWriter<3> messages_csv,
+                      CSVWriter<5> frames_csv,
+                      CSVWriter<8> decoded_frames_csv,
+                      CSVWriter<7> metadata_csv);
 
+        static std::optional<CSVTranscoder> create(std::string_view base_path, size_t batch_size = 1000);
         //CANReceivable methods 
         void receive_message(const CANMessage& message);
         void receive_raw_message(std::pair<CANTime, CANFrame> sample);
@@ -36,27 +41,36 @@ namespace Candy {
         
     private:
         std::string base_path;
-        std::unordered_map<std::string, std::unique_ptr<std::ofstream>> csv_files;
+
+        CSVWriter<3> messages_csv;
+        CSVWriter<5> frames_csv;
+        CSVWriter<8> decoded_frames_csv;
+        CSVWriter<7> metadata_csv;
+        
         std::unordered_map<std::string, bool> headers_written;
-        std::vector<std::string> frames_batch;
-        std::vector<std::string> decoded_signals_batch;
+        std::vector<std::pair<CANTime, CANFrame>> frames_batch;
+        // Use struct instead of tuple to avoid std::string in tuple
+        struct DecodedSignalBatchEntry {
+            CANTime timestamp;
+            canid_t can_id;
+            MessageName message_name;
+            SignalName signal_name;
+            double signal_value;
+            uint64_t raw_value;
+            Unit unit;
+            std::optional<uint64_t> mux_value;
+        };
+        std::vector<DecodedSignalBatchEntry> decoded_signals_batch;
 
         //csv methods
-        std::string build_csv_row(const std::vector<std::pair<std::string, std::string>>& data);
-        bool ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers);
-        bool receive_to_csv(const std::string& filename, const std::string& row);
-        std::string escape_csv(const std::string& input);
         std::string format_hex_data(const uint8_t* data, size_t len);
 
         //CANIO methods
-
-        void ensure_metadata_file();
         std::vector<std::string> parse_csv_line(const std::string& line);
         void parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len);
-        void parse_serialized_data(const std::string& data_str,
-                                std::unordered_map<canid_t, std::string>& names);
-        void parse_serialized_counts(const std::string& counts_str,
-                                    std::unordered_map<canid_t, size_t>& counts);
+        // Note: These functions need custom implementation for new metadata structure
+        // void parse_serialized_data(const std::string& data_str, CANDataStreamMetadata& metadata);
+        // void parse_serialized_counts(const std::string& counts_str, CANDataStreamMetadata& metadata);
     };
     
 }

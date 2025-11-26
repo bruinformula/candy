@@ -1,33 +1,74 @@
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
+
+#include <optional>
 #include <filesystem>
+#include <cstdio>
 #include <algorithm>
+#include <string_view>
 
 #include "Candy/Interpreters/CSVTranscoder.hpp"
 
 namespace Candy {
 
-    CSVTranscoder::CSVTranscoder(const std::string& base_path, size_t batch_size) : 
+    CSVTranscoder::CSVTranscoder(std::string_view base_path, 
+                      size_t batch_size, 
+                      CSVWriter<3> messages_csv,
+                      CSVWriter<5> frames_csv,
+                      CSVWriter<8> decoded_frames_csv,
+                      CSVWriter<7> metadata_csv) : 
         FileTranscoder<CSVTranscoder>(batch_size, 0, 0),
-        base_path(base_path)
+        base_path(base_path),
+        messages_csv(std::move(messages_csv)),
+        frames_csv(std::move(frames_csv)),
+        decoded_frames_csv(std::move(decoded_frames_csv)),
+        metadata_csv(std::move(metadata_csv))
     {
-        // Ensure the base directory exists
-        std::filesystem::create_directories(base_path);
-        
-        // Reserve space for batches to avoid frequent reallocations
         frames_batch.reserve(batch_size);
         decoded_signals_batch.reserve(batch_size);
     }
 
     CSVTranscoder::~CSVTranscoder() {
-        // Close all CSV files
-        for (auto& [filename, file] : csv_files) {
-            if (file && file->is_open()) {
-                file->close();
-            }
+        flush_all_batches();
+    }
+
+    std::optional<CSVTranscoder> CSVTranscoder::create(std::string_view base_path, size_t batch_size) {
+        std::filesystem::create_directories(base_path);
+        
+        CSVHeader<3> messages_header = {
+            "messages.csv",
+            {"message_id", "message_name", "message_size"}
+        };
+
+        CSVHeader<5> frames_header = {
+            "frames.csv",
+            {"timestamp", "can_id", "dlc", "data", "message_name"}
+        };
+
+        CSVHeader<8> decoded_frames_header = {
+            "decoded_frames.csv",
+            {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"}
+        };
+
+        CSVHeader<7> metadata_header = {
+            "metadata.csv",
+            {"stream_name", "description", "creation_time", "last_update", "total_messages", "message_names", "message_counts"}
+        };
+        
+        std::optional<CSVWriter<3>> messages_csv = CSVWriter<3>::create(base_path, messages_header);
+        std::optional<CSVWriter<5>> frames_csv = CSVWriter<5>::create(base_path, frames_header);    
+        std::optional<CSVWriter<8>> decoded_frames_csv = CSVWriter<8>::create(base_path, decoded_frames_header);
+        std::optional<CSVWriter<7>> metadata_csv = CSVWriter<7>::create(base_path, metadata_header);
+
+        if (!messages_csv.has_value() || !frames_csv.has_value() ||
+            !decoded_frames_csv.has_value() || !metadata_csv.has_value()) {
+            return std::nullopt;
         }
+
+        return std::make_optional<CSVTranscoder>(base_path,
+                                                 batch_size, 
+                                                 std::move(messages_csv.value()), 
+                                                 std::move(frames_csv.value()), 
+                                                 std::move(decoded_frames_csv.value()), 
+                                                 std::move(metadata_csv.value()));
     }
 
     // public Methods
@@ -48,36 +89,17 @@ namespace Candy {
     }
 
     void CSVTranscoder::store_message_metadata(canid_t message_id, const std::string& message_name, size_t message_size) {
-        bool write = ensure_csv_file("messages.csv", {"message_id", "message_name", "message_size"});
-        
-        if (!write) {
-            return;
-        }
-
-        std::ostringstream row;
-        row << message_id << ","
-            << "\"" << escape_csv(message_name) << "\","
-            << message_size;
-        
-        receive_to_csv("messages.csv", row.str());
+        messages_csv.start_row();
+        messages_csv.field(std::to_string(message_id));
+        messages_csv.field(message_name);
+        messages_csv.field(std::to_string(message_size));
+        messages_csv.end_row();
+        messages_csv.flush();
     }
 
     // protected Methods
     void CSVTranscoder::batch_frame(std::pair<CANTime, CANFrame> sample) {
-        auto msg_it = messages.find(sample.second.can_id);
-        std::string message_name = (msg_it != messages.end()) ? msg_it->second.name : "";
-
-        std::string hex_data = format_hex_data(sample.second.data, sample.second.len);
-        auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sample.first.time_since_epoch()).count();
-
-        std::ostringstream row;
-        row << timestamp_ms << ","
-            << sample.second.can_id << ","
-            << static_cast<int>(sample.second.len) << ","
-            << "\"" << hex_data << "\","
-            << "\"" << escape_csv(message_name) << "\"";
-
-        frames_batch.push_back(row.str());
+        frames_batch.push_back(sample);
         frames_batch_count++;
     }
 
@@ -90,68 +112,82 @@ namespace Candy {
             mux_value = raw_mux;
         }
 
-        for (const auto& signal : msg_def.signals) {
+        for (size_t i = 0; i < msg_def.signal_count && i < msg_def.signals.size(); ++i) {
+            const auto& signal = msg_def.signals[i];
+            
+            // Skip signals with null pointers
+            if (!signal.codec || !signal.numeric_value) {
+                continue;
+            }
+            
             if (signal.mux_val.has_value() && (!mux_value || mux_value.value() != signal.mux_val.value())) {
                 continue;
             }
 
-            try {
-                uint64_t raw_value = (*signal.codec)(sample.second.data);
-                auto converted_value = signal.numeric_value->convert(raw_value, signal.value_type);
-                if (!converted_value.has_value()) continue;
+            uint64_t raw_value = (*signal.codec)(sample.second.data);
+            auto converted_value = signal.numeric_value->convert(raw_value, signal.value_type);
+            if (!converted_value.has_value()) continue;
 
-                std::ostringstream row;
-                row << timestamp_ms << ","
-                    << sample.second.can_id << ","
-                    << "\"" << escape_csv(msg_def.name) << "\","
-                    << "\"" << escape_csv(signal.name) << "\","
-                    << std::fixed << std::setprecision(6) << converted_value.value() << ","
-                    << raw_value << ","
-                    << "\"" << escape_csv(signal.unit) << "\","
-                    << (mux_value ? std::to_string(mux_value.value()) : "");
-
-                decoded_signals_batch.push_back(row.str());
-                decoded_signals_batch_count++;
-            } catch (...) {
-                // Silent fail to continue processing other signals
-            }
+            DecodedSignalBatchEntry entry;
+            entry.timestamp = sample.first;
+            entry.can_id = sample.second.can_id;
+            std::copy(msg_def.get_name().begin(), msg_def.get_name().end(), entry.message_name.begin());
+            std::copy(signal.get_name().begin(), signal.get_name().end(), entry.signal_name.begin());
+            std::copy(signal.get_unit().begin(), signal.get_unit().end(), entry.unit.begin());
+            entry.signal_value = converted_value.value();
+            entry.raw_value = raw_value;
+            entry.mux_value = mux_value;
+            decoded_signals_batch.emplace_back(std::move(entry));
+            decoded_signals_batch_count++;
         }
     }
 
     void CSVTranscoder::flush_frames_batch() {
         if (frames_batch_count == 0) return;
 
-        // Ensure frames CSV file exists with headers
-        bool write = ensure_csv_file("frames.csv", {"timestamp", "can_id", "dlc", "data", "message_name"});
+        for (const auto& [timestamp, frame] : frames_batch) {
+            auto msg_it = messages.find(frame.can_id);
+            std::string message_name = (msg_it != messages.end()) ? std::string(msg_it->second.get_name()) : "";
+            
+            auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timestamp.time_since_epoch()).count();
+            std::string hex_data = format_hex_data(frame.data, frame.len);
 
-        if (!write) {
-            return;
-        }
-        // Write all batched frames
-        for (const auto& row : frames_batch) {
-            receive_to_csv("frames.csv", row);
+            frames_csv.start_row();
+            frames_csv.field(std::to_string(timestamp_ms));
+            frames_csv.field(std::to_string(frame.can_id));
+            frames_csv.field(std::to_string(static_cast<int>(frame.len)));
+            frames_csv.field(hex_data);
+            frames_csv.field(message_name);
+            frames_csv.end_row();
         }
 
+        frames_csv.flush();
         frames_batch.clear();
         frames_batch_count = 0;
     }
 
     void CSVTranscoder::flush_decoded_signals_batch() {
         if (decoded_signals_batch_count == 0) return;
-
-        // Ensure decoded signals CSV file exists with headers
-        bool write = ensure_csv_file("decoded_frames.csv", {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"});
-
-        if (!write) {
-            return;
-        }
         
-        // Write all batched decoded signals
-        
-        for (const auto& row : decoded_signals_batch) {
-            receive_to_csv("decoded_frames.csv", row);
+        for (const auto& entry : decoded_signals_batch) {
+            auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(entry.timestamp.time_since_epoch()).count();
+            
+            std::array<char, 32> value_buf;
+            snprintf(value_buf.data(), value_buf.size(), "%.6f", entry.signal_value);
+
+            decoded_frames_csv.start_row();
+            decoded_frames_csv.field(std::to_string(timestamp_ms));
+            decoded_frames_csv.field(std::to_string(entry.can_id));
+            decoded_frames_csv.field(std::string_view(entry.message_name.data(), strnlen(entry.message_name.data(), entry.message_name.size())));
+            decoded_frames_csv.field(std::string_view(entry.signal_name.data(), strnlen(entry.signal_name.data(), entry.signal_name.size())));
+            decoded_frames_csv.field(value_buf.data());
+            decoded_frames_csv.field(std::to_string(entry.raw_value));
+            decoded_frames_csv.field(std::string_view(entry.unit.data(), strnlen(entry.unit.data(), entry.unit.size())));
+            decoded_frames_csv.field(entry.mux_value ? std::to_string(*entry.mux_value) : "");
+            decoded_frames_csv.end_row();
         }
 
+        decoded_frames_csv.flush();
         decoded_signals_batch.clear();
         decoded_signals_batch_count = 0;
     }
@@ -160,99 +196,22 @@ namespace Candy {
         if (frames_batch_count > 0) flush_frames_batch();
         if (decoded_signals_batch_count > 0) flush_decoded_signals_batch();
         
-        // Flush all open file streams
-        for (auto& [filename, file] : csv_files) {
-            if (file && file->is_open()) {
-                file->flush();
-            }
-        }
-    }
-
-    std::string CSVTranscoder::build_csv_row(const std::vector<std::pair<std::string, std::string>>& data) {
-        std::ostringstream row;
-        for (size_t i = 0; i < data.size(); ++i) {
-            row << "\"" << escape_csv(data[i].second) << "\"";
-            if (i < data.size() - 1) {
-                row << ",";
-            }
-        }
-        return row.str();
-    }
-
-    bool CSVTranscoder::ensure_csv_file(const std::string& filename, const std::vector<std::string>& headers) {
-        if (csv_files.find(filename) != csv_files.end()) {
-            return false;
-        }
-
-        std::string full_path = base_path + "/" + filename;
-        
-        // Check if file altransmity exists and has content
-        bool file_exists = std::filesystem::exists(full_path);
-        bool file_has_content = false;
-        
-        if (file_exists) {
-            std::ifstream check_file(full_path);
-            std::string first_line;
-            if (std::getline(check_file, first_line) && !first_line.empty()) {
-                file_has_content = true;
-            }
-            check_file.close();
-        }
-        
-        // Open in append mode
-        csv_files[filename] = std::make_unique<std::ofstream>(full_path, std::ios::app);
-        
-        if (!csv_files[filename]->is_open()) {
-            std::cerr << "Failed to open CSV file: " + full_path << std::endl;
-            return false;
-        }
-
-        // Only receive headers if file doesn't exist or is empty
-        if (!file_has_content && headers_written.find(filename) == headers_written.end()) {
-            std::ostringstream header_row;
-            for (size_t i = 0; i < headers.size(); ++i) {
-                header_row << headers[i];
-                if (i < headers.size() - 1) {
-                    header_row << ",";
-                }
-            }
-            *csv_files[filename] << header_row.str() << "\n";
-            headers_written[filename] = true;
-        } else {
-            // Mark headers as altransmity written for existing files
-            headers_written[filename] = true;
-        }
-        return true;
-    }
-
-    bool CSVTranscoder::receive_to_csv(const std::string& filename, const std::string& row) {
-        auto it = csv_files.find(filename);
-        if (it != csv_files.end() && it->second && it->second->is_open()) {
-            *it->second << row << "\n";
-            return true;
-        } else {
-            std::cerr << "Failed to write to CSV" << std::endl;
-            return false;
-        }
-    }
-
-    std::string CSVTranscoder::escape_csv(const std::string& input) {
-        std::string escaped;
-        for (char c : input) {
-            if (c == '"') escaped += "\"\"";  // Escape quotes by doubling them
-            else escaped += c;
-        }
-        return escaped;
+        messages_csv.flush();
+        frames_csv.flush();
+        decoded_frames_csv.flush();
+        metadata_csv.flush();
     }
 
     std::string CSVTranscoder::format_hex_data(const uint8_t* data, size_t len) {
-        std::ostringstream hex_stream;
+        std::string result;
+        result.reserve(len * 3);
         for (size_t i = 0; i < len; i++) {
-            hex_stream << std::hex << std::setw(2) << std::setfill('0')
-                      << static_cast<unsigned>(data[i]);
-            if (i < len - 1) hex_stream << " ";
+            std::array<char, 4> hex_buf;
+            std::snprintf(hex_buf.data(), hex_buf.size(), "%02X", static_cast<unsigned>(data[i]));
+            result += std::string(hex_buf.data());
+            if (i < len - 1) result += " ";
         }
-        return hex_stream.str();
+        return result;
     }
 
     //CANIO
@@ -265,32 +224,31 @@ namespace Candy {
         
         // Write decoded signals if available
         if (!message.decoded_signals.empty()) {
-            // Ensure decoded signals CSV file exists with headers
-            bool write = ensure_csv_file("decoded_frames.csv", {"timestamp", "can_id", "message_name", "signal_name", "signal_value", "raw_value", "unit", "mux_value"});
-            
-            if (!write) {
-                return;
-            }
 
-            for (const auto& [signal_name, signal_value] : message.decoded_signals) {
-                std::string unit = "";
-                auto unit_it = message.signal_units.find(signal_name);
-                if (unit_it != message.signal_units.end()) {
-                    unit = unit_it->second;
-                }
+            for (size_t i = 0; i < message.signal_count && i < message.decoded_signals.size(); ++i) {
+                const auto& signal_entry = message.decoded_signals[i];
+                if (!signal_entry.is_valid) continue;
                 
-                std::ostringstream row;
-                row << timestamp_ms << ","
-                    << message.sample.second.can_id << ","
-                    << "\"" << escape_csv(message.message_name) << "\","
-                    << "\"" << escape_csv(signal_name) << "\","
-                    << std::fixed << std::setprecision(6) << signal_value << ","
-                    << "0," // raw_value not available
-                    << "\"" << escape_csv(unit) << "\","
-                    << (message.mux_value ? std::to_string(*message.mux_value) : "");
+                std::string signal_name = std::string(signal_entry.get_name());
+                double signal_value = signal_entry.value;
+                std::string unit = std::string(signal_entry.get_unit());
                 
-                receive_to_csv("decoded_frames.csv", row.str());
+                std::array<char, 32> value_buf;
+                snprintf(value_buf.data(), value_buf.size(), "%.6f", signal_value);
+                
+                decoded_frames_csv.start_row();
+                decoded_frames_csv.field(std::to_string(timestamp_ms));
+                decoded_frames_csv.field(std::to_string(message.sample.second.can_id));
+                decoded_frames_csv.field(message.get_message_name());
+                decoded_frames_csv.field(signal_name);
+                decoded_frames_csv.field(std::string_view(value_buf.data()));
+                decoded_frames_csv.field("0"); // raw_value not available
+                decoded_frames_csv.field(unit);
+                decoded_frames_csv.field(message.mux_value ? std::to_string(*message.mux_value) : "");
+                decoded_frames_csv.end_row();
             }
+            
+            decoded_frames_csv.flush();
         }
     }
 
@@ -301,32 +259,27 @@ namespace Candy {
             metadata.last_update.time_since_epoch()).count();
         
         // Serialize message names and counts
-        std::ostringstream names_str, counts_str;
+        std::string names_str, counts_str;
+        names_str.reserve(512);
+        counts_str.reserve(512);
         
-        for (const auto& [can_id, name] : metadata.message_names) {
-            names_str << can_id << ":" << name << ";";
+        for (size_t i = 0; i < metadata.message_count && i < metadata.messages.size(); ++i) {
+            const auto& msg_entry = metadata.messages[i];
+            if (!msg_entry.is_valid) continue;
+            names_str += std::to_string(msg_entry.can_id) + ":" + std::string(msg_entry.get_name()) + ";";
+            counts_str += std::to_string(msg_entry.can_id) + ":" + std::to_string(msg_entry.count) + ";";
         }
         
-        for (const auto& [can_id, count] : metadata.message_counts) {
-            counts_str << can_id << ":" << count << ";";
-        }
-        
-        bool write = ensure_csv_file("metadata.csv", {"stream_name", "description", "creation_time", "last_update", "total_messages", "message_names", "message_counts"});
-        
-        if (!write) {
-            return;
-        }
-        // Build and write metadata row
-        std::ostringstream row;
-        row << "\"" << escape_csv(metadata.stream_name) << "\","
-            << "\"" << escape_csv(metadata.description) << "\","
-            << creation_ms << ","
-            << update_ms << ","
-            << metadata.total_messages << ","
-            << "\"" << escape_csv(names_str.str()) << "\","
-            << "\"" << escape_csv(counts_str.str()) << "\"";
-        
-        receive_to_csv("metadata.csv", row.str());
+        metadata_csv.start_row();
+        metadata_csv.field(metadata.get_stream_name());
+        metadata_csv.field(metadata.get_description());
+        metadata_csv.field(std::to_string(creation_ms));
+        metadata_csv.field(std::to_string(update_ms));
+        metadata_csv.field(std::to_string(metadata.total_messages));
+        metadata_csv.field(names_str);
+        metadata_csv.field(counts_str);
+        metadata_csv.end_row();
+        metadata_csv.flush();
     }
 
     std::vector<CANMessage> CSVTranscoder::transmit_messages(canid_t can_id) {
@@ -351,87 +304,92 @@ namespace Candy {
             return messages; // Return empty if file doesn't exist
         }
         
-        std::ifstream frames_file(frames_path);
-        std::string line;
+        FILE* frames_file = fopen(frames_path.c_str(), "r");
+        if (!frames_file) {
+            return messages;
+        }
         
         // Skip header line
-        if (!std::getline(frames_file, line)) {
+        std::array<char, 2048> line_buf;
+        if (!fgets(line_buf.data(), line_buf.size(), frames_file)) {
+            fclose(frames_file);
             return messages;
         }
         
         // Parse frames
         std::unordered_map<std::string, CANMessage> message_map; // timestamp+can_id -> message
         
-        while (std::getline(frames_file, line)) {
+        while (fgets(line_buf.data(), line_buf.size(), frames_file)) {
+            std::string line(line_buf.data());
+            // Remove trailing newline
+            if (!line.empty() && line.back() == '\n') line.pop_back();
+            if (!line.empty() && line.back() == '\r') line.pop_back();
             auto fields = parse_csv_line(line);
             if (fields.size() < 5) continue;
             
-            try {
-                auto timestamp_ms = std::stoll(fields[0]);
-                auto frame_can_id = static_cast<canid_t>(std::stoul(fields[1]));
-                
-                if (frame_can_id != can_id) continue;
-                if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
-                
-                CANMessage message;
-                message.sample.first = std::chrono::system_clock::time_point(
-                    std::chrono::milliseconds(timestamp_ms));
-                message.sample.second.can_id = frame_can_id;
-                message.sample.second.len = static_cast<uint8_t>(std::stoi(fields[2]));
-                
-                // Parse hex data
-                parse_hex_data(fields[3], message.sample.second.data, message.sample.second.len);
-                
-                // Get message name
-                message.message_name = fields[4];
-                
-                std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(frame_can_id);
-                message_map[key] = std::move(message);
-                
-            } catch (const std::exception&) {
-                continue; // Skip malformed lines
-            }
+
+            auto timestamp_ms = std::stoll(fields[0]);
+            auto frame_can_id = static_cast<canid_t>(std::stoul(fields[1]));
+            
+            if (frame_can_id != can_id) continue;
+            if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
+            
+            CANMessage message;
+            message.sample.first = std::chrono::system_clock::time_point(
+                std::chrono::milliseconds(timestamp_ms));
+            message.sample.second.can_id = frame_can_id;
+            message.sample.second.len = static_cast<uint8_t>(std::stoi(fields[2]));
+            
+            parse_hex_data(fields[3], message.sample.second.data, message.sample.second.len);
+            
+            message.set_message_name(fields[4]);
+            
+            std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(frame_can_id);
+            message_map[key] = std::move(message);
         }
-        frames_file.close();
+
+        fclose(frames_file);
         
         // Read decoded signals
         std::string decoded_path = base_path + "/decoded_frames.csv";
         if (std::filesystem::exists(decoded_path)) {
-            std::ifstream decoded_file(decoded_path);
-            
-            // Skip header
-            if (std::getline(decoded_file, line)) {
-                while (std::getline(decoded_file, line)) {
+            FILE* decoded_file = fopen(decoded_path.c_str(), "r");
+            if (decoded_file) {
+                // Skip header
+                std::array<char, 2048> line_buf;
+                if (fgets(line_buf.begin(), line_buf.size(), decoded_file)) {
+                while (fgets(line_buf.begin(), line_buf.size(), decoded_file)) {
+
+                    std::string line(line_buf.data());
+
+                    if (!line.empty() && line.back() == '\n') line.pop_back();
+                    if (!line.empty() && line.back() == '\r') line.pop_back();
                     auto fields = parse_csv_line(line);
                     if (fields.size() < 8) continue;
                     
-                    try {
-                        auto timestamp_ms = std::stoll(fields[0]);
-                        auto frame_can_id = static_cast<canid_t>(std::stoul(fields[1]));
+                    auto timestamp_ms = std::stoll(fields[0]);
+                    auto frame_can_id = static_cast<canid_t>(std::stoul(fields[1]));
+                    
+                    if (frame_can_id != can_id) continue;
+                    if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
+                    
+                    std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(frame_can_id);
+                    auto it = message_map.find(key);
+                    if (it != message_map.end()) {
+                        std::string signal_name = fields[3];
+                        double signal_value = std::stod(fields[4]);
+                        std::string unit = fields[6];
                         
-                        if (frame_can_id != can_id) continue;
-                        if (timestamp_ms < start_ms || timestamp_ms > end_ms) continue;
+                        it->second.add_signal(signal_name, signal_value, unit);
                         
-                        std::string key = std::to_string(timestamp_ms) + "_" + std::to_string(frame_can_id);
-                        auto it = message_map.find(key);
-                        if (it != message_map.end()) {
-                            std::string signal_name = fields[3];
-                            double signal_value = std::stod(fields[4]);
-                            std::string unit = fields[6];
-                            
-                            it->second.decoded_signals[signal_name] = signal_value;
-                            it->second.signal_units[signal_name] = unit;
-                            
-                            if (!fields[7].empty()) {
-                                it->second.mux_value = std::stoull(fields[7]);
-                            }
+                        if (!fields[7].empty()) {
+                            it->second.mux_value = std::stoull(fields[7]);
                         }
-                    } catch (const std::exception&) {
-                        continue; // Skip malformed lines
                     }
                 }
             }
-            decoded_file.close();
+                fclose(decoded_file);
+            }
         }
         
         // Convert map to vector and sort by timestamp
@@ -449,70 +407,63 @@ namespace Candy {
 
     const CANDataStreamMetadata& CSVTranscoder::transmit_metadata() {
         
-        std::string meta_path = base_path + "/metadata.csv";
-        if (!std::filesystem::exists(meta_path)) {
-            // Set defaults if metadata file doesn't exist
-            metadata.stream_name = "Unknown";
+        std::string meta_path = base_path + metadata_csv.get_header().filename;
+
+        if (!std::filesystem::exists(meta_path)) { // set defaults
+            metadata.set_stream_name("Unknown");
             metadata.creation_time = std::chrono::system_clock::now();
             metadata.last_update = metadata.creation_time;
             return metadata;
         }
         
-        std::ifstream meta_file(meta_path);
-        std::string line;
+        FILE* meta_file = fopen(meta_path.c_str(), "r");
+        if (!meta_file) return metadata;
+        std::array<char, 2048> line_buf;
         
         // Skip header
-        if (!std::getline(meta_file, line)) {
+        if (!fgets(line_buf.data(), line_buf.size(), meta_file)) {
+            fclose(meta_file);
             return metadata;
         }
         
         // Read metadata line
-        if (std::getline(meta_file, line)) {
+        if (fgets(line_buf.data(), line_buf.size(), meta_file)) {
+            std::string line(line_buf.data());
+            if (!line.empty() && line.back() == '\n') line.pop_back();
+            if (!line.empty() && line.back() == '\r') line.pop_back();
             auto fields = parse_csv_line(line);
             if (fields.size() >= 7) {
-                try {
-                    metadata.stream_name = fields[0];
-                    metadata.description = fields[1];
-                    
-                    auto creation_ms = std::stoll(fields[2]);
-                    auto update_ms = std::stoll(fields[3]);
-                    
-                    metadata.creation_time = std::chrono::system_clock::time_point(
-                        std::chrono::milliseconds(creation_ms));
-                    metadata.last_update = std::chrono::system_clock::time_point(
-                        std::chrono::milliseconds(update_ms));
-                    
-                    metadata.total_messages = std::stoull(fields[4]);
-                    
-                    // Parse serialized message names and counts
-                    parse_serialized_data(fields[5], metadata.message_names);
-                    parse_serialized_counts(fields[6], metadata.message_counts);
-                    
-                } catch (const std::exception&) {
-                    // Use defaults on parse error
-                }
+                metadata.set_stream_name(fields[0]);
+                metadata.set_description(fields[1]);
+                
+                auto creation_ms = std::stoll(fields[2]);
+                auto update_ms = std::stoll(fields[3]);
+                
+                metadata.creation_time = std::chrono::system_clock::time_point(
+                    std::chrono::milliseconds(creation_ms)
+                );
+                metadata.last_update = std::chrono::system_clock::time_point(
+                    std::chrono::milliseconds(update_ms)
+                );
+                
+                metadata.total_messages = std::stoull(fields[4]);
+                
+                // TO BE REDONE
+                // parse_serialized_data(fields[5], metadata);
+                // parse_serialized_counts(fields[6], metadata);
             }
         }
         
-        meta_file.close();
+        fclose(meta_file);
         return metadata;
     }
 
 
     //CANIO Helpers
-    void CSVTranscoder::ensure_metadata_file() {
-        std::string meta_path = base_path + "/metadata.csv";
-        if (!std::filesystem::exists(meta_path)) {
-            std::ofstream meta_file(meta_path);
-            meta_file << "stream_name,description,creation_time,last_update,total_messages,message_names,message_counts\n";
-            meta_file.close();
-        }
-    }
 
     std::vector<std::string> CSVTranscoder::parse_csv_line(const std::string& line) {
+        
         std::vector<std::string> fields;
-        std::istringstream stream(line);
-        std::string field;
         bool in_quotes = false;
         std::string current_field;
         
@@ -526,26 +477,40 @@ namespace Candy {
                 current_field += c;
             }
         }
-        fields.push_back(current_field); // Add last field
+
+        fields.push_back(current_field);
         
         return fields;
     }
 
     void CSVTranscoder::parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len) {
-        std::istringstream hex_stream(hex_str);
-        std::string byte_str;
+        size_t pos = 0;
         size_t i = 0;
         
-        while (std::getline(hex_stream, byte_str, ' ') && i < len && i < 8) {
-            try {
+        while (pos < hex_str.length() && i < len && i < 8) {
+            // Skip spaces
+            while (pos < hex_str.length() && hex_str[pos] == ' ') pos++;
+            if (pos >= hex_str.length()) break;
+            
+            // Find end of hex byte (2 chars or space/end)
+            size_t end_pos = pos;
+            while (end_pos < hex_str.length() && hex_str[end_pos] != ' ' && (end_pos - pos) < 2) {
+                end_pos++;
+            }
+            
+            if (end_pos > pos) {
+                std::string byte_str = hex_str.substr(pos, end_pos - pos);
                 data[i] = static_cast<uint8_t>(std::stoul(byte_str, nullptr, 16));
                 ++i;
-            } catch (const std::exception&) {
+                pos = end_pos;
+            } else {
                 break;
             }
         }
     }
 
+    /*
+    TO BE REDONE
     void CSVTranscoder::parse_serialized_data(const std::string& data_str,
                                         std::unordered_map<canid_t, std::string>& names) {
         // Parse "can_id:name;" format
@@ -589,5 +554,6 @@ namespace Candy {
             }
         }
     }
+    */
 
 }

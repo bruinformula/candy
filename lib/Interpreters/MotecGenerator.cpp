@@ -34,7 +34,6 @@ namespace Candy {
         return result;
     }
     
-    // Custom trim function to replace boost::algorithm::trim_copy
     static std::string trim(const std::string& str) {
         auto start = std::find_if_not(str.begin(), str.end(), 
             [](unsigned char ch) { return std::isspace(ch); });
