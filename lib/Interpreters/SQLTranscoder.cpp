@@ -467,7 +467,12 @@ namespace Candy {
                 const char* names_json = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
                 const char* counts_json = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7));
                 
-                // skip the JSON parsing
+                if (names_json) {
+                    parse_message_names_json(std::string(names_json), metadata);
+                }
+                if (counts_json) {
+                    parse_message_counts_json(std::string(counts_json), metadata);
+                }
             }
             sqlite3_finalize(stmt);
         }
@@ -568,59 +573,88 @@ namespace Candy {
         }
     }
 
-    /*
     void SQLTranscoder::parse_message_names_json(const std::string& json_str, 
-                                            std::unordered_map<canid_t, std::string>& names) {
+                                            CANDataStreamMetadata& metadata) {
         // Simple JSON-like parsing for "can_id":"name" pairs
-        // This is a simplified parser - in production you'd want a proper JSON library
         std::string content = json_str;
-        if (content.front() == '{') content = content.substr(1);
-        if (content.back() == '}') content = content.substr(0, content.length()-1);
+        if (!content.empty() && content.front() == '{') content = content.substr(1);
+        if (!content.empty() && content.back() == '}') content = content.substr(0, content.length()-1);
         
-        std::istringstream stream(content);
-        std::string pair;
-        
-        while (std::getline(stream, pair, ',')) {
+        size_t pos = 0;
+        while (pos < content.length() && metadata.message_count < metadata.messages.size()) {
+            size_t comma_pos = content.find(',', pos);
+            if (comma_pos == std::string::npos) comma_pos = content.length();
+            
+            std::string pair = content.substr(pos, comma_pos - pos);
             auto colon_pos = pair.find(':');
-            if (colon_pos != std::string::npos) {
-                try {
-                    std::string id_str = pair.substr(1, colon_pos-2); // Remove quotes
-                    std::string name_str = pair.substr(colon_pos+2, pair.length()-colon_pos-3); // Remove quotes
-                    canid_t can_id = std::stoul(id_str);
-                    names[can_id] = name_str;
-                } catch (const std::exception&) {
-                    continue;
+            if (colon_pos != std::string::npos && colon_pos >= 2 && pair.length() > colon_pos + 3) {
+                std::string id_str = pair.substr(1, colon_pos-2); // Remove quotes
+                std::string name_str = pair.substr(colon_pos+2, pair.length()-colon_pos-3); // Remove quotes
+                
+                char* endptr = nullptr;
+                canid_t can_id = static_cast<canid_t>(std::strtoul(id_str.c_str(), &endptr, 10));
+                if (endptr != id_str.c_str()) {
+                    // Find or create message entry
+                    size_t idx = metadata.message_count;
+                    for (size_t i = 0; i < metadata.message_count; ++i) {
+                        if (metadata.messages[i].can_id == can_id) {
+                            idx = i;
+                            break;
+                        }
+                    }
+                    
+                    if (idx == metadata.message_count) {
+                        metadata.messages[idx].can_id = can_id;
+                        size_t copy_len = name_str.length() < metadata.messages[idx].name.size() - 1 
+                            ? name_str.length() 
+                            : metadata.messages[idx].name.size() - 1;
+                        std::copy_n(name_str.begin(), copy_len, metadata.messages[idx].name.begin());
+                        metadata.messages[idx].name[copy_len] = '\0';
+                        metadata.messages[idx].is_valid = true;
+                        metadata.message_count++;
+                    }
                 }
             }
+            pos = comma_pos + 1;
         }
     }
 
     void SQLTranscoder::parse_message_counts_json(const std::string& json_str,
-                                            std::unordered_map<canid_t, size_t>& counts) {
+                                            CANDataStreamMetadata& metadata) {
         // Simple JSON-like parsing for "can_id":count pairs
         std::string content = json_str;
-        if (content.front() == '{') content = content.substr(1);
-        if (content.back() == '}') content = content.substr(0, content.length()-1);
+        if (!content.empty() && content.front() == '{') content = content.substr(1);
+        if (!content.empty() && content.back() == '}') content = content.substr(0, content.length()-1);
         
-        std::istringstream stream(content);
-        std::string pair;
-        
-        while (std::getline(stream, pair, ',')) {
+        size_t pos = 0;
+        while (pos < content.length()) {
+            size_t comma_pos = content.find(',', pos);
+            if (comma_pos == std::string::npos) comma_pos = content.length();
+            
+            std::string pair = content.substr(pos, comma_pos - pos);
             auto colon_pos = pair.find(':');
-            if (colon_pos != std::string::npos) {
-                try {
-                    std::string id_str = pair.substr(1, colon_pos-2); // Remove quotes
-                    std::string count_str = pair.substr(colon_pos+1);
-                    canid_t can_id = std::stoul(id_str);
-                    size_t count = std::stoull(count_str);
-                    counts[can_id] = count;
-                } catch (const std::exception&) {
-                    continue;
+            if (colon_pos != std::string::npos && colon_pos >= 2) {
+                std::string id_str = pair.substr(1, colon_pos-2); // Remove quotes
+                std::string count_str = pair.substr(colon_pos+1);
+                
+                char* id_endptr = nullptr;
+                char* count_endptr = nullptr;
+                canid_t can_id = static_cast<canid_t>(std::strtoul(id_str.c_str(), &id_endptr, 10));
+                size_t count = static_cast<size_t>(std::strtoull(count_str.c_str(), &count_endptr, 10));
+                
+                if (id_endptr != id_str.c_str() && count_endptr != count_str.c_str()) {
+                    // Find existing message entry and update count
+                    for (size_t i = 0; i < metadata.message_count; ++i) {
+                        if (metadata.messages[i].can_id == can_id) {
+                            metadata.messages[i].count = count;
+                            break;
+                        }
+                    }
                 }
             }
+            pos = comma_pos + 1;
         }
     }
-    */
 
 
 }

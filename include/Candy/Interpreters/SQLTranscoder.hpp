@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <unordered_map>
 #include "sqlite3.h"
 
 #include "Candy/Core/CANKernelTypes.hpp"
@@ -54,8 +53,7 @@ namespace Candy {
         void create_metadata_table();
         void load_decoded_signals_for_messages(sqlite3* db, std::vector<CANMessage>& messages);
         void parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len);
-        // Note: These JSON parsing functions need custom implementation for new metadata structure
-        // void parse_message_names_json(const std::string& json_str, CANDataStreamMetadata& metadata);
-        // void parse_message_counts_json(const std::string& json_str, CANDataStreamMetadata& metadata);
+        void parse_message_names_json(const std::string& json_str, CANDataStreamMetadata& metadata);
+        void parse_message_counts_json(const std::string& json_str, CANDataStreamMetadata& metadata);
     };
 }

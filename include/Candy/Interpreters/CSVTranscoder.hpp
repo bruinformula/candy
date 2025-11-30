@@ -68,9 +68,8 @@ namespace Candy {
         //CANIO methods
         std::vector<std::string> parse_csv_line(const std::string& line);
         void parse_hex_data(const std::string& hex_str, uint8_t* data, size_t len);
-        // Note: These functions need custom implementation for new metadata structure
-        // void parse_serialized_data(const std::string& data_str, CANDataStreamMetadata& metadata);
-        // void parse_serialized_counts(const std::string& counts_str, CANDataStreamMetadata& metadata);
+        void parse_serialized_data(const std::string& data_str, CANDataStreamMetadata& metadata);
+        void parse_serialized_counts(const std::string& counts_str, CANDataStreamMetadata& metadata);
     };
     
 }

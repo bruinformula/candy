@@ -131,9 +131,23 @@ namespace Candy {
             DecodedSignalBatchEntry entry;
             entry.timestamp = sample.first;
             entry.can_id = sample.second.can_id;
-            std::copy(msg_def.get_name().begin(), msg_def.get_name().end(), entry.message_name.begin());
-            std::copy(signal.get_name().begin(), signal.get_name().end(), entry.signal_name.begin());
-            std::copy(signal.get_unit().begin(), signal.get_unit().end(), entry.unit.begin());
+            
+            entry.message_name.fill(0);
+            entry.signal_name.fill(0);
+            entry.unit.fill(0);
+            
+            auto msg_name = msg_def.get_name();
+            size_t msg_len = msg_name.length() < entry.message_name.size() - 1 ? msg_name.length() : entry.message_name.size() - 1;
+            std::copy_n(msg_name.begin(), msg_len, entry.message_name.begin());
+            
+            auto sig_name = signal.get_name();
+            size_t sig_len = sig_name.length() < entry.signal_name.size() - 1 ? sig_name.length() : entry.signal_name.size() - 1;
+            std::copy_n(sig_name.begin(), sig_len, entry.signal_name.begin());
+            
+            auto unit_name = signal.get_unit();
+            size_t unit_len = unit_name.length() < entry.unit.size() - 1 ? unit_name.length() : entry.unit.size() - 1;
+            std::copy_n(unit_name.begin(), unit_len, entry.unit.begin());
+            
             entry.signal_value = converted_value.value();
             entry.raw_value = raw_value;
             entry.mux_value = mux_value;
@@ -448,9 +462,8 @@ namespace Candy {
                 
                 metadata.total_messages = std::stoull(fields[4]);
                 
-                // TO BE REDONE
-                // parse_serialized_data(fields[5], metadata);
-                // parse_serialized_counts(fields[6], metadata);
+                parse_serialized_data(fields[5], metadata);
+                parse_serialized_counts(fields[6], metadata);
             }
         }
         
@@ -509,51 +522,83 @@ namespace Candy {
         }
     }
 
-    /*
-    TO BE REDONE
     void CSVTranscoder::parse_serialized_data(const std::string& data_str,
-                                        std::unordered_map<canid_t, std::string>& names) {
+                                        CANDataStreamMetadata& metadata) {
         // Parse "can_id:name;" format
-        std::istringstream stream(data_str);
-        std::string pair;
-        
-        while (std::getline(stream, pair, ';')) {
-            if (pair.empty()) continue;
+        size_t pos = 0;
+        while (pos < data_str.length() && metadata.message_count < metadata.messages.size()) {
+            size_t semicolon_pos = data_str.find(';', pos);
+            if (semicolon_pos == std::string::npos) break;
             
-            auto colon_pos = pair.find(':');
-            if (colon_pos != std::string::npos) {
-                try {
-                    canid_t can_id = std::stoul(pair.substr(0, colon_pos));
+            std::string pair = data_str.substr(pos, semicolon_pos - pos);
+            if (!pair.empty()) {
+                auto colon_pos = pair.find(':');
+                if (colon_pos != std::string::npos) {
+                    std::string id_str = pair.substr(0, colon_pos);
                     std::string name = pair.substr(colon_pos + 1);
-                    names[can_id] = name;
-                } catch (const std::exception&) {
-                    continue;
+                    
+                    char* endptr = nullptr;
+                    canid_t can_id = static_cast<canid_t>(std::strtoul(id_str.c_str(), &endptr, 10));
+                    if (endptr != id_str.c_str()) {
+                        // Find or create message entry
+                        size_t idx = metadata.message_count;
+                        for (size_t i = 0; i < metadata.message_count; ++i) {
+                            if (metadata.messages[i].can_id == can_id) {
+                                idx = i;
+                                break;
+                            }
+                        }
+                        
+                        if (idx == metadata.message_count) {
+                            metadata.messages[idx].can_id = can_id;
+                            size_t copy_len = name.length() < metadata.messages[idx].name.size() - 1 
+                                ? name.length() 
+                                : metadata.messages[idx].name.size() - 1;
+                            std::copy_n(name.begin(), copy_len, metadata.messages[idx].name.begin());
+                            metadata.messages[idx].name[copy_len] = '\0';
+                            metadata.messages[idx].is_valid = true;
+                            metadata.message_count++;
+                        }
+                    }
                 }
             }
+            pos = semicolon_pos + 1;
         }
     }
 
     void CSVTranscoder::parse_serialized_counts(const std::string& counts_str,
-                                            std::unordered_map<canid_t, size_t>& counts) {
+                                            CANDataStreamMetadata& metadata) {
         // Parse "can_id:count;" format
-        std::istringstream stream(counts_str);
-        std::string pair;
-        
-        while (std::getline(stream, pair, ';')) {
-            if (pair.empty()) continue;
+        size_t pos = 0;
+        while (pos < counts_str.length()) {
+            size_t semicolon_pos = counts_str.find(';', pos);
+            if (semicolon_pos == std::string::npos) break;
             
-            auto colon_pos = pair.find(':');
-            if (colon_pos != std::string::npos) {
-                try {
-                    canid_t can_id = std::stoul(pair.substr(0, colon_pos));
-                    size_t count = std::stoull(pair.substr(colon_pos + 1));
-                    counts[can_id] = count;
-                } catch (const std::exception&) {
-                    continue;
+            std::string pair = counts_str.substr(pos, semicolon_pos - pos);
+            if (!pair.empty()) {
+                auto colon_pos = pair.find(':');
+                if (colon_pos != std::string::npos) {
+                    std::string id_str = pair.substr(0, colon_pos);
+                    std::string count_str = pair.substr(colon_pos + 1);
+                    
+                    char* id_endptr = nullptr;
+                    char* count_endptr = nullptr;
+                    canid_t can_id = static_cast<canid_t>(std::strtoul(id_str.c_str(), &id_endptr, 10));
+                    size_t count = static_cast<size_t>(std::strtoull(count_str.c_str(), &count_endptr, 10));
+                    
+                    if (id_endptr != id_str.c_str() && count_endptr != count_str.c_str()) {
+                        // Find existing message entry and update count
+                        for (size_t i = 0; i < metadata.message_count; ++i) {
+                            if (metadata.messages[i].can_id == can_id) {
+                                metadata.messages[i].count = count;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
+            pos = semicolon_pos + 1;
         }
     }
-    */
 
 }
