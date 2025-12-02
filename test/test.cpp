@@ -1,7 +1,7 @@
 
 #include "Candy/Core/CANBundle.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
-#include "Candy/Interpreters/LoggingTranscoder.hpp"
+#include "Candy/DBCInterpreters/LoggingTranscoder.hpp"
 
 #include <Candy/Candy.h>
 

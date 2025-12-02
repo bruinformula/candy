@@ -1,0 +1,1 @@
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/STM32/STM32H7xx")

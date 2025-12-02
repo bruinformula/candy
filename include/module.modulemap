@@ -16,12 +16,13 @@ module Candy {
     }
 
     module Interpreters {
-        umbrella "Candy/Interpreters"
+        umbrella "Candy/DBCInterpreters"
         module File {
-            umbrella "Candy/Interpreters/File"
+            umbrella "Candy/DBCInterpreters/File"
         }
         module V2C {
-            umbrella "Candy/Interpreters/V2C"
+            umbrella "Candy/DBCInterpreters/V2C"
         }
     }
 }
+

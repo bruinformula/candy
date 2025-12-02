@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(plotato VERSION 0.1 LANGUAGES CXX)
+project(Candy_Project VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
