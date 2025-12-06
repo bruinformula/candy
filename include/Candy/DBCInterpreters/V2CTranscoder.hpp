@@ -14,7 +14,7 @@
 #include "Candy/DBCInterpreters/V2C/TranslatedSignal.hpp"
 #include "Candy/DBCInterpreters/V2C/TranslatedMultiplexer.hpp"
 
-#include "Candy/Core/DBC/DBCInterpreter.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCInterpreter.hpp"
 
 namespace Candy {
     class V2CTranscoder : public DBCInterpreter<V2CTranscoder> {

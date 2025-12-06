@@ -2,9 +2,9 @@
 
 #include <optional>
 
-#include "Candy/Core/DBC/DBCParser.hpp"
-#include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
-#include "Candy/Core/DBC/DBCParsable.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCParser.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCInterpreterConcepts.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCParsable.hpp"
 
 namespace Candy {
     

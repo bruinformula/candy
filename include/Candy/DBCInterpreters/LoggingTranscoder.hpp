@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "Candy/Core/DBC/DBCInterpreter.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCInterpreter.hpp"
 
 namespace Candy {
 

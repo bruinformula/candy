@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "Candy/Core/DBC/DBCInterpreter.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCInterpreter.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
 

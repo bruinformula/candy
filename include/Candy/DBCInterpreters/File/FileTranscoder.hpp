@@ -6,8 +6,8 @@
 
 #include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/DBCInterpreters/File/FileTranscoderConcepts.hpp"
-#include "Candy/Core/DBC/DBCInterpreter.hpp"
-#include "Candy/Core/DBC/DBCInterpreterConcepts.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCInterpreter.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCInterpreterConcepts.hpp"
 
 #include "Candy/Core/CANIO.hpp"
 

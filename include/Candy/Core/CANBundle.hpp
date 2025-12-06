@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Candy/Core/DBC/DBCParsable.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCParsable.hpp"
 #include "Candy/Core/CANIOConcepts.hpp"
 
 

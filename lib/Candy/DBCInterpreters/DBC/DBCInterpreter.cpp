@@ -6,8 +6,8 @@
 #include "Candy/DBCInterpreters/CSVTranscoder.hpp"
 #include "Candy/DBCInterpreters/LoggingTranscoder.hpp"
 
-#include "Candy/Core/DBC/DBCParser.hpp"
-#include "Candy/Core/DBC/DBCInterpreter.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCParser.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCInterpreter.hpp"
 
 namespace Candy {
 

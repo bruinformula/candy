@@ -2,7 +2,7 @@
 #include <charconv>
 #include <string_view>
 
-#include "Candy/Core/DBC/DBCParser.hpp"
+#include "Candy/DBCInterpreters/DBC/DBCParser.hpp"
 
 namespace Candy {
 

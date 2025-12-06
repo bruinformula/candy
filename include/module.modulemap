@@ -4,9 +4,6 @@ module Candy {
 
     module Core {
         umbrella "Candy/Core"
-        module DBC {
-            umbrella "Candy/Core/DBC"
-        }
         module Frame {
             umbrella "Candy/Core/Frame"
         }
@@ -17,6 +14,9 @@ module Candy {
 
     module Interpreters {
         umbrella "Candy/DBCInterpreters"
+        module DBC {
+            umbrella "Candy/DBCInterpreters/DBC"
+        }
         module File {
             umbrella "Candy/DBCInterpreters/File"
         }
