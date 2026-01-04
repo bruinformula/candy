@@ -11,7 +11,12 @@ int main() {
     std::filesystem::remove("./test.db");
     
     // Initialize SQLTranscoder with a database file
-    Candy::SQLTranscoder transcoder("./test.db");
+    auto transcoder_opt = Candy::SQLTranscoder::create("./test.db");
+    if (!transcoder_opt) {
+        std::cerr << "Failed to create SQLTranscoder." << std::endl;
+        return 1;
+    }
+    auto transcoder = std::move(*transcoder_opt);
     
     std::cout << "=== CAN SQL Transcoder Test ===" << std::endl;
     

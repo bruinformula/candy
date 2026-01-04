@@ -13,8 +13,15 @@ namespace Candy {
 
     class SQLTranscoder final : public FileTranscoder<SQLTranscoder> {
     public:
-        SQLTranscoder(const std::string& db_file_path, size_t batch_size = 10000);
         ~SQLTranscoder();
+        
+        SQLTranscoder(SQLTranscoder&& other) noexcept;
+        SQLTranscoder& operator=(SQLTranscoder&& other) noexcept;
+        
+        SQLTranscoder(const SQLTranscoder&) = delete;
+        SQLTranscoder& operator=(const SQLTranscoder&) = delete;
+        
+        static std::optional<SQLTranscoder> create(const std::string& db_file_path, size_t batch_size = 10000);
 
         //CANIO methods 
         void receive_message(const CANMessage& message);
@@ -35,6 +42,7 @@ namespace Candy {
         void store_message_metadata(canid_t message_id, const std::string& message_name, size_t message_size);
 
     private:
+        SQLTranscoder(sqlite3* db, const std::string& db_file_path, size_t batch_size);
 
         std::unique_ptr<sqlite3, decltype(&sqlite3_close)> db;
         std::string db_path;

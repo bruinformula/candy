@@ -18,6 +18,14 @@ else()
     target_compile_definitions(candy PUBLIC CANDY_BUILD_CORE_ONLY)
 endif()
 
+if (NOT CANDY_REGULAR_BUILD_ONLY)
+    file(GLOB_RECURSE CANDY_SWIFT_CXX_FILES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/Swift/*.cpp")
+    target_sources(candy PRIVATE ${CANDY_SWIFT_CXX_FILES})
+else()
+    target_compile_definitions(candy PUBLIC CANDY_REGULAR_BUILD_ONLY)
+endif()
+
 
 target_include_directories(candy PUBLIC "${CANDY_PROJECT_ROOT}/include")
 

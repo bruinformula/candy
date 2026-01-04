@@ -4,6 +4,7 @@
 #include "Candy/DBCInterpreters/LoggingTranscoder.hpp"
 
 #include <Candy/Candy.h>
+#include <iostream>
 
 using namespace Candy;
 
@@ -50,7 +51,12 @@ struct Transceiver : public Receiver, public Transmitter {
 
 int main() {
 
-    SQLTranscoder sql_transcoder("./test.db");
+    auto sql_transcoder_optional = SQLTranscoder::create("./test.db");
+    if (!sql_transcoder_optional) {
+        std::cout << "Failed to create SQLTranscoder." << std::endl;
+        return 1;
+    }
+    auto& sql_transcoder = sql_transcoder_optional.value();
 
     auto csv_transcoder_optional = CSVTranscoder::create("./test_csv_output_run", 1000);  // batch size of 1000
     if (!csv_transcoder_optional) {

@@ -1,28 +1,6 @@
 module Candy {
     requires cplusplus20
     umbrella header "Candy/Candy.h"
-
-    module Core {
-        umbrella "Candy/Core"
-        module Frame {
-            umbrella "Candy/Core/Frame"
-        }
-        module Signal {
-            umbrella "Candy/Core/Signal"
-        }
-    }
-
-    module Interpreters {
-        umbrella "Candy/DBCInterpreters"
-        module DBC {
-            umbrella "Candy/DBCInterpreters/DBC"
-        }
-        module File {
-            umbrella "Candy/DBCInterpreters/File"
-        }
-        module V2C {
-            umbrella "Candy/DBCInterpreters/V2C"
-        }
-    }
+    export *    
 }
 

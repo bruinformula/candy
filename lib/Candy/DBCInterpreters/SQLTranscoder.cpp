@@ -6,30 +6,66 @@
 
 namespace Candy {
 
-    SQLTranscoder::SQLTranscoder(const std::string& db_file_path, size_t batch_size) : 
+    SQLTranscoder::SQLTranscoder(sqlite3* raw_db, const std::string& db_file_path, size_t batch_size) : 
         FileTranscoder<SQLTranscoder>(batch_size, 0, 0),
         db_path(db_file_path),
-        db(nullptr, sqlite3_close)
+        db(raw_db, sqlite3_close),
+        decoded_signals_insert_stmt(nullptr),
+        frames_insert_stmt(nullptr)
     {
+    }
+
+    std::optional<SQLTranscoder> SQLTranscoder::create(const std::string& db_file_path, size_t batch_size) {
         sqlite3* raw_db = nullptr;
         if (sqlite3_open(db_file_path.c_str(), &raw_db) != SQLITE_OK) {
             std::cerr << "Failed to open SQLite database: " + db_file_path << std::endl;
-            return;
+            return std::nullopt;
         }
 
-        db = std::unique_ptr<sqlite3, decltype(&sqlite3_close)>(raw_db, sqlite3_close);
+        SQLTranscoder transcoder(raw_db, db_file_path, batch_size);
 
-        execute_sql("PRAGMA journal_mode=WAL");
-        execute_sql("PRAGMA synchronous=NORMAL");
-        execute_sql("PRAGMA cache_size=10000");
-        execute_sql("PRAGMA temp_store=MEMORY");
+        transcoder.execute_sql("PRAGMA journal_mode=WAL");
+        transcoder.execute_sql("PRAGMA synchronous=NORMAL");
+        transcoder.execute_sql("PRAGMA cache_size=10000");
+        transcoder.execute_sql("PRAGMA temp_store=MEMORY");
 
-        create_tables();
-        bool sucess = prepare_statements();
+        transcoder.create_tables();
+        if (!transcoder.prepare_statements()) {
+            return std::nullopt;
+        }
+
+        return std::make_optional(std::move(transcoder));
     }
 
     SQLTranscoder::~SQLTranscoder() {
         finalize_statements();
+    }
+
+    SQLTranscoder::SQLTranscoder(SQLTranscoder&& other) noexcept
+        : FileTranscoder<SQLTranscoder>(std::move(other)),
+          db(std::move(other.db)),
+          db_path(std::move(other.db_path)),
+          decoded_signals_insert_stmt(other.decoded_signals_insert_stmt),
+          frames_insert_stmt(other.frames_insert_stmt)
+    {
+        other.decoded_signals_insert_stmt = nullptr;
+        other.frames_insert_stmt = nullptr;
+    }
+
+    SQLTranscoder& SQLTranscoder::operator=(SQLTranscoder&& other) noexcept {
+        if (this != &other) {
+            finalize_statements();
+            
+            FileTranscoder<SQLTranscoder>::operator=(std::move(other));
+            db = std::move(other.db);
+            db_path = std::move(other.db_path);
+            decoded_signals_insert_stmt = other.decoded_signals_insert_stmt;
+            frames_insert_stmt = other.frames_insert_stmt;
+            
+            other.decoded_signals_insert_stmt = nullptr;
+            other.frames_insert_stmt = nullptr;
+        }
+        return *this;
     }
 
     //methods 

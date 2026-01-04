@@ -4,6 +4,5 @@
     "clangd.arguments": ["-log=verbose", 
                         "-pretty", 
                         "--background-index=false", 
-                        //"--query-driver=/bin/arm-buildroot-linux-gnueabihf-g++", // for cross compile usage
                         "--compile-commands-dir=/${workspaceFolder}/build"]
 }

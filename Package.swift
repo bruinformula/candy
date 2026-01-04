@@ -24,7 +24,6 @@ let package = Package(
             publicHeadersPath: "include",
             cxxSettings: [
                 .define("CANDY_BUILD_CORE_ONLY", to: "0"),
-                .define("CANDY_SWIFT_BUILD", to: "1"),
                 .headerSearchPath("include")
             ],
             swiftSettings: [

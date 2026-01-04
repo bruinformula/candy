@@ -12,7 +12,14 @@ namespace Candy {
 
     class CSVTranscoder final : public FileTranscoder<CSVTranscoder> {
     public:
-    ~CSVTranscoder();
+        
+        CSVTranscoder(CSVTranscoder&& other) noexcept;
+        CSVTranscoder& operator=(CSVTranscoder&& other) noexcept;
+        
+        CSVTranscoder(const CSVTranscoder&) = delete;
+        CSVTranscoder& operator=(const CSVTranscoder&) = delete;
+    
+        ~CSVTranscoder();
         CSVTranscoder(std::string_view base_path, 
                       size_t batch_size, CSVWriter<3> messages_csv,
                       CSVWriter<5> frames_csv,
@@ -70,6 +77,4 @@ namespace Candy {
         void parse_serialized_counts(const std::string& counts_str, CANDataStreamMetadata& metadata);
     };
 
-    using CSVTranscoderType = CSVTranscoder;
-    
 }

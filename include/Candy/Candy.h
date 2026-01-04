@@ -1,8 +1,6 @@
 #pragma once 
 //umbrella
 
-#include <memory>
-#include <atomic>
 #include "Candy/Core/CSVWriter.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/Frame/FrameIterator.hpp"
@@ -32,3 +30,9 @@
 #include "Candy/DBCInterpreters/V2CTranscoder.hpp"
 
 #endif // CANDY_BUILD_CORE_ONLY
+
+
+#ifndef CANDY_REGULAR_BUILD_ONLY
+#include "Candy/Swift/SQLTranscoderWrapper.hpp"
+#include "Candy/Swift/CSVTranscoderWrapper.hpp"
+#endif

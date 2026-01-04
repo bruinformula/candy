@@ -30,6 +30,36 @@ namespace Candy {
         flush_all_batches();
     }
 
+    CSVTranscoder::CSVTranscoder(CSVTranscoder&& other) noexcept
+        : FileTranscoder<CSVTranscoder>(std::move(other)),
+          base_path(std::move(other.base_path)),
+          messages_csv(std::move(other.messages_csv)),
+          frames_csv(std::move(other.frames_csv)),
+          decoded_frames_csv(std::move(other.decoded_frames_csv)),
+          metadata_csv(std::move(other.metadata_csv)),
+          headers_written(std::move(other.headers_written)),
+          frames_batch(std::move(other.frames_batch)),
+          decoded_signals_batch(std::move(other.decoded_signals_batch))
+    {
+    }
+
+    CSVTranscoder& CSVTranscoder::operator=(CSVTranscoder&& other) noexcept {
+        if (this != &other) {
+            flush_all_batches();
+            
+            FileTranscoder<CSVTranscoder>::operator=(std::move(other));
+            base_path = std::move(other.base_path);
+            messages_csv = std::move(other.messages_csv);
+            frames_csv = std::move(other.frames_csv);
+            decoded_frames_csv = std::move(other.decoded_frames_csv);
+            metadata_csv = std::move(other.metadata_csv);
+            headers_written = std::move(other.headers_written);
+            frames_batch = std::move(other.frames_batch);
+            decoded_signals_batch = std::move(other.decoded_signals_batch);
+        }
+        return *this;
+    }
+
     std::optional<CSVTranscoder> CSVTranscoder::create(std::string_view base_path, size_t batch_size) {
         std::filesystem::create_directories(base_path);
         
