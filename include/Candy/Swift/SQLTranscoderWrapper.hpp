@@ -40,6 +40,25 @@ namespace Candy {
 
         SQLTranscoder* _Nullable getTranscoder() SWIFT_RETURNS_INDEPENDENT_VALUE;
 
+        bool parseDBC(const std::string& dbc_content);
+
+        // CANIO methods
+        void receiveMessage(const CANMessage& message);
+        void receiveRawMessage(std::pair<CANTime, CANFrame> sample);
+        void receiveMetadata(const CANDataStreamMetadata& metadata);
+
+        std::vector<CANMessage> transmitMessages(canid_t can_id);
+        std::vector<CANMessage> transmitMessagesInRange(canid_t can_id, CANTime start, CANTime end);
+        const CANDataStreamMetadata& transmitMetadata();
+
+        // Transcoder methods
+        void batchFrame(std::pair<CANTime, CANFrame> sample);
+        void batchDecodedSignals(std::pair<CANTime, CANFrame> sample, const MessageDefinition& msg_def);
+        void flushFramesBatch();
+        void flushDecodedSignalsBatch();
+        void flushAllBatches();
+        void storeMessageMetadata(canid_t message_id, const std::string& message_name, size_t message_size);
+        
         void flush();
 
     private:
