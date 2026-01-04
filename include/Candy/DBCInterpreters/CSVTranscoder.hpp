@@ -2,8 +2,6 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
-#include <unordered_map>
 
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
@@ -71,5 +69,7 @@ namespace Candy {
         void parse_serialized_data(const std::string& data_str, CANDataStreamMetadata& metadata);
         void parse_serialized_counts(const std::string& counts_str, CANDataStreamMetadata& metadata);
     };
+
+    using CSVTranscoderType = CSVTranscoder;
     
 }

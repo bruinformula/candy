@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <optional>
 #include <vector>
+#include <unordered_map>
 
 #include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/DBCInterpreters/File/FileTranscoderConcepts.hpp"

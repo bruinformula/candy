@@ -115,6 +115,6 @@ namespace Candy {
         return std::make_pair(s, v);
     }
 
-    bool syntax_error(std::string_view where, std::string_view what = "");
+    static bool syntax_error(std::string_view where, std::string_view what = "");
 
 }

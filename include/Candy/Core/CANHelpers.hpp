@@ -1,7 +1,6 @@
 #pragma once 
 
 #include <random>
-#include <fstream>
 
 #include "Candy/Core/CANKernelTypes.hpp"
 

@@ -9,7 +9,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 set(CANDY_BUILD_CORE_ONLY ON CACHE BOOL "Build for MCU/embedded target" FORCE)
 
 set(MX_Defines_Syms 
@@ -18,25 +17,33 @@ set(MX_Defines_Syms
 	STM32H723xx
     $<$<CONFIG:Debug>:DEBUG>
 )
-set(MX_LINK_LIBS 
-    hal
-    ${TOOLCHAIN_LINK_LIBRARIES}
-)
 
 set(MX_include_Dirs
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-# STM32CubeMX generated application sources
-file(GLOB_RECURSE MX_Application_src CONFIGURE_DEPENDS 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
-)
-
-
-# Interface library for includes and symbols
 add_library(stm32cubemx INTERFACE)
 target_include_directories(stm32cubemx INTERFACE ${MX_include_Dirs})
 target_compile_definitions(stm32cubemx INTERFACE ${MX_Defines_Syms})
+
+set(BUILD_HAL ON CACHE BOOL "Build HAL submodule" FORCE)
+
+#will be https to github in an actauly version of the project
+include(FetchContent)
+FetchContent_Declare(
+    candy
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
+FetchContent_MakeAvailable(candy)
+
+set(MX_LINK_LIBS 
+    hal
+    ${TOOLCHAIN_LINK_LIBRARIES}
+)
+
+file(GLOB_RECURSE MX_Application_src CONFIGURE_DEPENDS 
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
+)
 
 target_link_directories(stm32cubemx INTERFACE ${MX_LINK_DIRS})
 
@@ -56,10 +63,11 @@ add_executable(${CMAKE_PROJECT_NAME})
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
+
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32h723xx.s"
+    #"${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32h723xx.s"
     ${MX_Application_src}
 )
 
@@ -77,6 +85,5 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
     hal
-
-    # Add user defined libraries
+    candy
 )

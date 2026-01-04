@@ -156,4 +156,5 @@ namespace Candy {
         CSVHeader<T> csv_header;
         bool first_field;
     };
+    
 }

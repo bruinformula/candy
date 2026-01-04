@@ -1,5 +1,8 @@
 #pragma once 
 //umbrella
+
+#include <memory>
+#include <atomic>
 #include "Candy/Core/CSVWriter.hpp"
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/Frame/FrameIterator.hpp"
@@ -9,7 +12,6 @@
 #include "Candy/Core/Signal/SignalCodec.hpp"
 #include "Candy/Core/Signal/NumericValue.hpp"
 #include "Candy/Core/CANIOHelperTypes.hpp"
-
 
 #ifndef CANDY_BUILD_CORE_ONLY
 

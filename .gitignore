@@ -80,5 +80,7 @@ CMakeLists.txt.user*
 .rcc/
 .uic/
 /build*/
+/.build*/
+/.swiftpm*/
 /**/build*/
 /.cache*

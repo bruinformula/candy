@@ -1,5 +1,5 @@
 module Candy {
-    requires cplusplus23
+    requires cplusplus20
     umbrella header "Candy/Candy.h"
 
     module Core {

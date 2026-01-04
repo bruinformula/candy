@@ -11,7 +11,7 @@ if(NOT CANDY_BUILD_CORE_ONLY)
         "${CMAKE_CURRENT_SOURCE_DIR}/DBCInterpreters/*.cpp")
     target_sources(candy PRIVATE ${CANDY_DBC_CXX_FILES})
 
-    include("${CMAKE_SOURCE_DIR}/cmake/GetSQLite.cmake")
+    include("${CMAKE_SOURCE_DIR}/utils/GetSQLite.cmake")
     target_link_libraries(candy PUBLIC ${SQLite3_LIBS})
     target_include_directories(candy PUBLIC ${SQLite3_INCLUDE_DIRS})
 else()
@@ -19,7 +19,7 @@ else()
 endif()
 
 
-target_include_directories(candy PUBLIC "${CMAKE_SOURCE_DIR}/include")
+target_include_directories(candy PUBLIC "${CANDY_PROJECT_ROOT}/include")
 
 target_compile_options(candy PUBLIC
     "-flto" "-fno-exceptions" "-fno-rtti" "-ffunction-sections" "-fdata-sections"
