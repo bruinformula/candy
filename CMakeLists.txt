@@ -10,16 +10,8 @@ if (NOT DEFINED CANDY_REGULAR_BUILD_ONLY)
     set(CANDY_REGULAR_BUILD_ONLY ON CACHE BOOL "Build regular module without Swift support")
 endif()
 
-if (NOT DEFINED BUILD_HAL)
-    set(BUILD_HAL OFF CACHE BOOL "Build HAL submodule")
-endif()
-
-
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/test")
 
 include(CTest)
 enable_testing()
-
-if (NOT BUILD_HAL)
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/test")
-endif()

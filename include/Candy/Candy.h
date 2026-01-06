@@ -5,7 +5,6 @@
 #include "Candy/Core/CANKernelTypes.hpp"
 #include "Candy/Core/Frame/FrameIterator.hpp"
 #include "Candy/Core/Frame/FramePacket.hpp"
-#include "Candy/Core/CANBundle.hpp"
 #include "Candy/Core/CANHelpers.hpp"
 #include "Candy/Core/Signal/SignalCodec.hpp"
 #include "Candy/Core/Signal/NumericValue.hpp"

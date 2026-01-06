@@ -5,7 +5,6 @@
 
 #include "Candy/Core/CANIOHelperTypes.hpp"
 #include "Candy/Core/CANIOConcepts.hpp"
-#include "Candy/Core/CANBundle.hpp"
 
 namespace Candy {
 
@@ -65,18 +64,6 @@ namespace Candy {
         CANTransmittable() {
             static_assert(IsCANTransmittable<Derived>, "Derived must satisfy IsCANTransmittable concept");
         }
-
-        template <typename... Receivers>
-        requires IsCANTransmittable<Derived> && (IsCANReceivable<Receivers> && ...)
-        CANManyReceiverBundle<Derived, Receivers...> transmit_to(Receivers&... receivers) {
-            return CANManyReceiverBundle<Derived, Receivers...>(static_cast<Derived&>(*this), receivers...);
-        }
-        template <typename Receiver>
-        requires IsCANTransmittable<Derived> && IsCANReceivable<Receiver>
-        CANManyReceiverBundle<Derived, Receiver> transmit_to(Receiver& receiver) {
-            return CANManyReceiverBundle<Derived, Receiver>(static_cast<Derived&>(*this), receiver);
-        }
-
     };
 
     template<size_t BatchSize, typename Derived>
