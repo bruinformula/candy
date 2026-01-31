@@ -83,4 +83,4 @@ CMakeLists.txt.user*
 /.build*/
 /.swiftpm*/
 /**/build*/
-/.cache*
+/.cache*.DS_Store
