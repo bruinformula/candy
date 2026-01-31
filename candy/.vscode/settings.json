@@ -1,8 +1,0 @@
-{
-    "cmake.buildDirectory": "${workspaceFolder}/build",
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
-    "clangd.arguments": ["-log=verbose", 
-                        "-pretty", 
-                        "--background-index=false", 
-                        "--compile-commands-dir=/${workspaceFolder}/build"]
-}
