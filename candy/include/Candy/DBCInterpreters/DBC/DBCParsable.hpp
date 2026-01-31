@@ -1,0 +1,24 @@
+#pragma once
+
+#include <string_view>
+
+namespace Candy {
+
+    template<typename T>
+    concept IsDBCParsable = requires(T t, std::string_view dbc_src) {
+        { t.parse_dbc(dbc_src) } -> std::same_as<bool>;
+    };
+
+    template <typename Derived>
+    struct DBCParsable {
+        bool parse_dbc_vrtl(std::string_view dbc_src) {
+            static_cast<Derived&>(*this).parse_dbc(dbc_src);
+        }
+
+        DBCParsable() {
+            static_assert(IsDBCParsable<Derived>, "Derived must satisfy HasParseDBC concept");
+        }
+    };
+    
+}
+

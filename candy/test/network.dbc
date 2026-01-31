@@ -1,0 +1,176 @@
+VERSION "0.1"
+
+NS_ :
+
+BS_:
+
+BU_: CM4 V2C
+
+BO_ 256 Strain_Gauge_1: 2 CM4
+ SG_ Strain_Gauge_1: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 272 Strain_Gauge_2: 2 CM4
+ SG_ Strain_Gauge_2: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 288 Strain_Gauge_3: 2 CM4
+ SG_ Strain_Gauge_3: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 304 Strain_Gauge_4: 2 CM4
+ SG_ Strain_Gauge_4: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 257 Shock_Pot_1: 2 CM4
+ SG_ Shock_Pot_1: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 273 Shock_Pot_2: 2 CM4
+ SG_ Shock_Pot_2: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 289 Shock_Pot_3: 2 CM4
+ SG_ Shock_Pot_3: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 305 Shock_Pot_4: 2 CM4
+ SG_ Shock_Pot_4: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 258 Brake_Temp_1: 2 CM4
+ SG_ Brake_Temp_1: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 274 Brake_Temp_2: 2 CM4
+ SG_ Brake_Temp_2: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 290 Brake_Temp_3: 2 CM4
+ SG_ Brake_Temp_3: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 306 Brake_Temp_4: 2 CM4
+ SG_ Brake_Temp_4: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 259 Tire_Temp_1: 2 CM4
+ SG_ Tire_Temp_1: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 275 Tire_Temp_2: 2 CM4
+ SG_ Tire_Temp_2: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 291 Tire_Temp_3: 2 CM4
+ SG_ Tire_Temp_3: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 307 Tire_Temp_4: 2 CM4
+ SG_ Tire_Temp_4: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 768 IMU_X_Accel: 2 CM4
+ SG_ IMU_X_Accel: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 784 IMU_Y_Accel: 2 CM4
+ SG_ IMU_Y_Accel: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 800 IMU_Z_Accel: 2 CM4
+ SG_ IMU_Z_Accel: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 816 IMU_Pitch: 2 CM4
+ SG_ IMU_Pitch: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 832 IMU_Yaw: 2 CM4
+ SG_ IMU_Yaw: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 848 IMU_Roll: 2 CM4
+ SG_ IMU_Roll: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 769 Wheel_Speed_1: 2 CM4
+ SG_ Wheel_Speed_1: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 785 Wheel_Speed_2: 2 CM4
+ SG_ Wheel_Speed_2: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 801 Wheel_Speed_3: 2 CM4
+ SG_ Wheel_Speed_3: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 817 Wheel_Speed_4: 2 CM4
+ SG_ Wheel_Speed_4: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 770 Steering_Angle: 2 CM4
+ SG_ Steering_Angle: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 1024 Battery_Health: 2 CM4
+ SG_ Battery_Health: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 1025 Temperature: 2 CM4
+ SG_ Temperature: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 1026 Current: 2 CM4
+ SG_ Current: 0|16@1+ (1,0) [0|10] "" CM4
+
+BO_ 1027 Cell_Voltages: 8 CM4
+ SG_ Cell_Voltages: 0|8@1+ (1,0) [0|255] "V" CM4
+
+BO_ 1028 State_of_Charge: 2 CM4
+ SG_ State_of_Charge: 0|16@1+ (1,0) [0|10] "" CM4
+
+EV_ V2CTxTime: 0 [0|60000] "ms" 2000 1 DUMMY_NODE_VECTOR1 V2C;
+EV_ GPSGroupTxFreq: 0 [0|60000] "ms" 600 11 DUMMY_NODE_VECTOR1 V2C;
+EV_ EnergyGroupTxFreq: 0 [0|60000] "ms" 500 12 DUMMY_NODE_VECTOR1 V2C;
+
+BA_DEF_ BO_ "TxGroupFreq" STRING ;
+BA_DEF_ SG_ "AggType" STRING ;
+
+BA_ "AggType" SG_ 256 Strain_Gauge_1 "AVG";
+BA_ "AggType" SG_ 272 Strain_Gauge_2 "AVG";
+BA_ "AggType" SG_ 288 Strain_Gauge_3 "AVG";
+BA_ "AggType" SG_ 304 Strain_Gauge_4 "AVG";
+BA_ "AggType" SG_ 257 Shock_Pot_1 "AVG";
+BA_ "AggType" SG_ 273 Shock_Pot_2 "AVG";
+BA_ "AggType" SG_ 289 Shock_Pot_3 "AVG";
+BA_ "AggType" SG_ 305 Shock_Pot_4 "AVG";
+BA_ "AggType" SG_ 258 Brake_Temp_1 "AVG";
+BA_ "AggType" SG_ 274 Brake_Temp_2 "AVG";
+BA_ "AggType" SG_ 290 Brake_Temp_3 "AVG";
+BA_ "AggType" SG_ 306 Brake_Temp_4 "AVG";
+BA_ "AggType" SG_ 259 Tire_Temp_1 "AVG";
+BA_ "AggType" SG_ 275 Tire_Temp_2 "AVG";
+BA_ "AggType" SG_ 291 Tire_Temp_3 "AVG";
+BA_ "AggType" SG_ 307 Tire_Temp_4 "AVG";
+BA_ "AggType" SG_ 768 IMU_X_Accel "AVG";
+BA_ "AggType" SG_ 784 IMU_Y_Accel "AVG";
+BA_ "AggType" SG_ 800 IMU_Z_Accel "AVG";
+BA_ "AggType" SG_ 816 IMU_Pitch "AVG";
+BA_ "AggType" SG_ 832 IMU_Yaw "AVG";
+BA_ "AggType" SG_ 848 IMU_Roll "AVG";
+BA_ "AggType" SG_ 769 Wheel_Speed_1 "AVG";
+BA_ "AggType" SG_ 785 Wheel_Speed_2 "AVG";
+BA_ "AggType" SG_ 801 Wheel_Speed_3 "AVG";
+BA_ "AggType" SG_ 817 Wheel_Speed_4 "AVG";
+BA_ "AggType" SG_ 770 Steering_Angle "AVG";
+BA_ "AggType" SG_ 1024 Battery_Health "LAST";
+BA_ "AggType" SG_ 1025 Temperature "AVG";
+BA_ "AggType" SG_ 1026 Current "AVG";
+BA_ "AggType" SG_ 1027 Cell_Voltages "AVG";
+BA_ "AggType" SG_ 1028 State_of_Charge "LAST";
+
+BA_ "TxGroupFreq" BO_ 256 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 272 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 288 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 304 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 257 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 273 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 289 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 305 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 258 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 274 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 290 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 306 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 259 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 275 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 291 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 307 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 768 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 784 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 800 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 816 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 832 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 848 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 769 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 785 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 801 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 817 "GPSGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 770 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 1024 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 1025 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 1026 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 1027 "EnergyGroupTxFreq";
+BA_ "TxGroupFreq" BO_ 1028 "EnergyGroupTxFreq";

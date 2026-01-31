@@ -1,0 +1,6 @@
+module Candy {
+    requires cplusplus20
+    umbrella header "Candy/Candy.h"
+    export *    
+}
+
